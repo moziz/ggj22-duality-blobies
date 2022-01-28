@@ -31,7 +31,7 @@ Shader "FullScreen/fullscrenpassi_testenings"
     // There are also a lot of utility function you can use inside Common.hlsl and Color.hlsl,
     // you can check them out in the source code of the core SRP package.
 
-    float4 FullScreenPass(Varyings varyings) : SV_Target
+    float4 FullScreenPass(Varyings varyings, out float outputDepth : SV_Depth) : SV_Target
     {
         UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(varyings);
         float depth = LoadCameraDepth(varyings.positionCS.xy);
@@ -45,7 +45,10 @@ Shader "FullScreen/fullscrenpassi_testenings"
 
         // Add your custom pass code here
 
-        color.r = 0;
+        //color.r += 2.0;
+
+        posInput.positionWS += viewDirection * 2;
+        outputDepth = ComputeNormalizedDeviceCoordinatesWithZ(posInput.positionWS, GetWorldToHClipMatrix()).z;
 
         // Fade value allow you to increase the strength of the effect while the camera gets closer to the custom pass volume
         float f = 1 - abs(_FadeValue * 2 - 1);
@@ -61,7 +64,7 @@ Shader "FullScreen/fullscrenpassi_testenings"
         {
             Name "Custom Pass 0"
 
-            ZWrite Off
+            ZWrite On
             ZTest Always
             Blend SrcAlpha OneMinusSrcAlpha
             Cull Off
