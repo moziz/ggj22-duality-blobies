@@ -22,8 +22,6 @@
 /[Bb]uild/
 /[Bb]uilds/
 /[Aa]ssetBundles/
-/[Aa]ssets/[Aa]ssetStoreTools/
-/[Pp]ackages/
 /[Uu]serSettings/
 
 # Asset project folder, keep readme file otherwise folder doesn't appear
