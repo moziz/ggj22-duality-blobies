@@ -23,6 +23,16 @@ export interface Game {
     roundScore: number,
     roundStarter: PlayerID,
     roundCards: Card[],
+    player1: GamePlayerData,
+    player2: GamePlayerData,
+}
+
+export interface GamePlayerData {
+    id: PlayerID,
+    hand: Card[],
+    deck: Card[],
+    discard: Card[],
+    score: number,
 }
 
 export const GameCollection = new Mongo.Collection<Game>('games');
