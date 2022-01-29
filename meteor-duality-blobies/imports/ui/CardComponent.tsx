@@ -5,8 +5,8 @@ import {Button, Card} from "react-bootstrap";
 
 interface CardProps {
     card: CardData,
-    playCard: (c: CardData) => void,
-    canPlay: boolean,
+    playCard?: (c: CardData) => void,
+    canPlay?: boolean,
 }
 
 export const CardComponent: React.FC<CardProps> = ({card, playCard, canPlay}) => {
@@ -22,7 +22,7 @@ export const CardComponent: React.FC<CardProps> = ({card, playCard, canPlay}) =>
                     }) : null
                 }
                 <div className={"d-flex justify-content-around"}>
-                    <Button disabled={!canPlay} onClick={() => playCard(card)}>Play</Button>
+                    {playCard ? <Button disabled={!canPlay} onClick={() => playCard(card)}>Play</Button> : null}
                 </div>
             </Card.Body>
         </Card>

@@ -1,5 +1,5 @@
 import {Card, startDeck, Side} from "/imports/data/card-data";
-import {cloneDeep, concat} from "lodash";
+import {cloneDeep, concat, findIndex} from "lodash";
 import {Game} from "/imports/data/game";
 import {PlayerID} from "/imports/data/player";
 
@@ -82,9 +82,9 @@ export const drawPhase = (game: Game) => {
     }
 }
 
-const activePlayer = (game: Game) => {
+const getActivePlayer = (game: Game) => {
     if (game.roundCards.length === 0 || game.roundCards.length === 3) {
-        game.roundStarter
+        return game.roundStarter;
     } else {
         return game.roundStarter === "p1" ? "p2" : "p1";
     }
@@ -98,16 +98,35 @@ const getPlayedColors: (game: Game) => Record<Side, number> = (game: Game) => {
     return result;
 }
 
-export const canPlayCard = (game: Game, card: Card, player: PlayerID) => {
-    const whosTurn = activePlayer(game);
+export const canPlayCard: (game: Game, card: Card, player: PlayerID) => boolean = (game: Game, card: Card, player: PlayerID) => {
+    const whosTurn = getActivePlayer(game);
+    debugger;
     if (whosTurn === player) {
         const playedColors = getPlayedColors(game);
-        if(playedColors[card.side] > 1 ){
-            return false;
-        }
+        return playedColors[card.side] <= 1;
     }
     return false;
+}
+export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boolean = (game, card, player) => {
+    if (!canPlayCard(game, card, player)) {
+        return false;
+    }
+    if (player === "p1") {
+        const i = findIndex(game.player1Hand, c => c.name === card.name);
+        game.player1Hand.splice(i, 1);
+        game.roundCards.push(card);
+    }
+    if (player === "p2") {
+        const i = findIndex(game.player2Hand, c => c.name === card.name);
+        game.player2Hand.splice(i, 1);
+        game.roundCards.push(card);
+    }
 
+    // start new round?
+    if (game.roundCards.length > 3) {
+
+    }
+    return true;
 }
 
 function shuffle(array: Array<any>) {
