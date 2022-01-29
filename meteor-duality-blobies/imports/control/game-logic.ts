@@ -121,12 +121,14 @@ const nextRound = (game: Game) => {
     game.shop.secondGotOne = false;
     game.roundNumber += 1;
     // put round cards back to hands:
-    game.players[game.roundStarter].discard.push(game.roundCards[0])
-    game.players[game.roundStarter].discard.push(game.roundCards[3])
-    game.players[getOtherPlayer(game.roundStarter)].discard.push(game.roundCards[1])
-    game.players[getOtherPlayer(game.roundStarter)].discard.push(game.roundCards[2])
+    game.players[game.roundStarter].discard.push(game.roundCards[0]);
+    game.players[game.roundStarter].discard.push(game.roundCards[3]);
+    game.players[getOtherPlayer(game.roundStarter)].discard.push(game.roundCards[1]);
+    game.players[getOtherPlayer(game.roundStarter)].discard.push(game.roundCards[2]);
 
+    game.roundCards = [];
     game.roundStarter = game.latestWinner;
+    drawPhase(game);
 }
 
 export const roundScore = (game: Game) => {
@@ -141,7 +143,7 @@ export const roundScore = (game: Game) => {
     game.latestWinner = winner;
     game.message = "Player " + winner + " is winner! Score " + game.roundScore;
     game.players[winner].score += game.roundScore;
-    game.roundScore = 0;
+    game.roundScore = 1;
     toShopPhase(game);
 }
 
@@ -185,7 +187,7 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
 
     // start new round?
     if (game.roundCards.length > 3) {
-        toShopPhase(game)
+        roundScore(game);
     }
     return true;
 }
