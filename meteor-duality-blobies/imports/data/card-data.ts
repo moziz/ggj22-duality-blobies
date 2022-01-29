@@ -37,12 +37,12 @@ export const StartDeck: Card[] = [
 ]
 
 export const effects: ComboEffect[] = [
-    {name: "Draw 1", trigger: "Play", effectType: "Draw", effectArgs:{"amount": 1}},
-    {name: "Draw 2", trigger: "Play", effectType: "Draw", effectArgs:{"amount": 2}},
-    {name: "Draw 3", trigger: "Play", effectType: "Draw", effectArgs:{"amount": 3}},
+    {name: "Draw 1", trigger: "Play", effectType: "Draw", effectArgs: {"amount": 1}},
+    {name: "Draw 2", trigger: "Play", effectType: "Draw", effectArgs: {"amount": 2}},
+    {name: "Draw 3", trigger: "Play", effectType: "Draw", effectArgs: {"amount": 3}},
 ]
 
-const getRandomCard = () => {
+const getRandomCard: () => Card = () => {
     const power: number = Math.ceil(Math.random() * 5)
     const side: Side = Math.random() > 0.5 ? "Dino" : "Cat"
     const effect = effects[Math.floor(Math.random() * (effects.length - 0.01))]
@@ -54,8 +54,7 @@ const getRandomCard = () => {
     }
 }
 
-export const getShopPool = (amount: number) =>
-{
+export const getShopPool = (amount: number) => {
     const deck = []
     for (let i = 0; i < amount; ++i) {
         deck.push(getRandomCard());
