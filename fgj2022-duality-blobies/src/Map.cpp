@@ -110,13 +110,7 @@ void Map::draw()
 	sf::Vector2f windowSize(float(windowSizeI.x), float(windowSizeI.y));
 	sf::Vector2i windowCenter = windowSizeI / 2;
 	sf::Vector2i mousePixelPos = sf::Mouse::getPosition(*g_window);
-	sf::Vector2i mouseDiff = mousePixelPos - windowCenter;
-	sf::Vector2f mouseDelta(mouseDiff.x / windowSize.x * 2, mouseDiff.y / windowSize.y * 2);
 	sf::Vector2f mousePos(mousePixelPos.x / windowSize.x, mousePixelPos.y / windowSize.y);
-
-	//auto worldToScreen = [windowSize](sf::Vector2f pos)
-	//{
-	//};
 
 	auto screenToWorld = [=](sf::Vector2f pos)
 	{
@@ -125,40 +119,13 @@ void Map::draw()
 
 	sf::Vector2f aimPos = screenToWorld(mousePos);
 
-	//sf::Vector2f relMouseDelta(mouseDelta.x / windowSize.x, mouseDelta.y / windowSize.y);
-
 	if (g_window->hasFocus())
 	{
 		g_window->setMouseCursorVisible(false);
 	}
 		
-	static bool resetMouseOnce = true;
-	if (resetMouseOnce || !g_window->hasFocus())
-	{
-		resetMouseOnce = false;
-		mouseDelta = sf::Vector2f(0, 0);
-	}
-
 	static sf::Vector2f playerPos(0.5f, 0.5f);
-	static sf::Vector2f playerRotation;
-	playerRotation.x += mouseDelta.x * 0.3f;
-	playerRotation.y += mouseDelta.y * 0.3f;
-	if (playerRotation.y > 0.5f)
-		playerRotation.y = 0.5f;
-	if (playerRotation.y < -0.5f)
-		playerRotation.y = -0.5f;
-
-	auto length3 = [](sf::Vector3f a) -> float
-	{
-		return sqrtf(a.x * a.x + a.y * a.y + a.z * a.z);
-	};
-
 	const float pi = 3.14159f;
-	sf::Vector3f playerFacing;
-	playerFacing.x = sin(playerRotation.x * pi);
-	playerFacing.y = -sin(playerRotation.y * pi);
-	playerFacing.z = cos(playerRotation.x * pi);
-	playerFacing /= length3(playerFacing);
 
 	float xInput = 0, yInput = 0, zInput = 0;
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A))
@@ -190,7 +157,7 @@ void Map::draw()
 	if (enemySpawnCounter.getElapsedTime().asSeconds() > 1.0f && enemyPoss.size() < 40)
 	{
 		enemySpawnCounter.restart();
-		float r = std::rand() / float(RAND_MAX) * 3.14f * 2.0f;
+		float r = std::rand() / float(RAND_MAX) * pi * 2.0f;
 		enemyPoss.push_back(sf::Vector2f(sinf(r), cosf(r)) * 0.75f + sf::Vector2f(0.5f, 0.5f));
 		float rx = std::rand() / float(RAND_MAX) - 0.5f;
 		float ry = std::rand() / float(RAND_MAX) - 0.5f;
@@ -215,10 +182,10 @@ void Map::draw()
 	static sf::Vector2f lazerStart;
 	static sf::Vector2f lazerEnd;
 	static sf::Clock lazerClock;
-	const float lazerCooldown = 0.0f;
-	const float lazerDuration = 0.4f;
+	const float lazerCooldown = 0.5f;
+	const float lazerDuration = 0.51f;
 	const float lazerLength = 0.3f;
-	const float lazerWidth = 0.013f;
+	const float lazerWidth = 0.02f;
 
 	{
 		static bool wasPressed = false;
@@ -262,6 +229,9 @@ void Map::draw()
 				{
 					enemyDeath.push_back(enemyBlobs[i]);
 					enemyDeathClock.emplace_back();
+
+					splosionPoss.push_back(enemyPoss[i]);
+					splosionClocks.emplace_back();
 
 					enemyPoss.erase(enemyPoss.begin() + i);
 					enemyBlobs.erase(enemyBlobs.begin() + i);
@@ -368,5 +338,44 @@ void Map::draw()
 	static sf::Clock t;
 	mapVisShader->setUniform("time", t.getElapsedTime().asSeconds());
 
-	render(&texture, mapVisShader.get(), -0.5f, -0.5f, 1, 1);
+	{
+		auto smoothstep = [](float a, float b, float t)
+		{
+			float f = (t - a) / (b - a);
+			return fminf(1.0, fmaxf(0.0, f));
+		};
+
+		auto normalize = [](sf::Vector2f v)
+		{
+			return v / fmaxf(0.0001f, length(v));
+		};
+
+		sf::Vector2f p(-0.5, -0.5f);
+		sf::Vector2f s(1, 1);
+		p += normalize(lazerEnd - lazerStart) * smoothstep(0.1f, 0.0f, lazerClock.getElapsedTime().asSeconds()) * 0.006f;
+
+
+		for (int i = 0; i < grenadePoss.size(); ++i)
+		{
+			p += normalize(-grenadeFacings[i]) * smoothstep(0.1f, 0.0f, grenadeClocks[i].getElapsedTime().asSeconds()) * 0.003f;
+		}
+
+		render(&texture, mapVisShader.get(), p.x, p.y, 1, 1);
+	}
 }
+
+/*
+// TODO:
+
+ 1. Damage
+   * Vihollisessa oleminen alkaa tehdä damagea hetken jälkeen
+   * Regenaroiva heltti?
+ 2. Combo counter & score multiplier
+   * kranaatti nollaa kombon
+   * huti laaseri nollaa kombon
+ 3. Hutiampuminen laaserilla antaa pidemmän cooldownin
+ 4. Hahmo muuttuu valkoiseksi, kun laaseri on latautunut
+   * muuten siniseksi muuten
+ 5. Combo numero
+ 6. Score numero
+*/
