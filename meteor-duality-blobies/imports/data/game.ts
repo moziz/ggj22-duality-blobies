@@ -1,5 +1,5 @@
 import {Mongo} from "meteor/mongo";
-import {Player, PlayerID} from "/imports/data/player";
+import {PlayerID} from "/imports/data/player";
 import {Card} from "/imports/data/card-data";
 
 
