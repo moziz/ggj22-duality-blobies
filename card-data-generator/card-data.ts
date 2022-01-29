@@ -2,9 +2,9 @@
 
 type Side = "Dino"|"Cat"
 
-type EffectTriggerPhase: "PlayFirst" | "Play" | "Resolve" | "Discard"
+type EffectTriggerPhase = "PlayFirst" | "Play" | "Resolve" | "Discard"
 
-type EffectType: "None" | "Draw" | "AddPower" 
+type EffectType = "None" | "Draw" | "AddPower" 
  
 
 export interface ComboEffect{
