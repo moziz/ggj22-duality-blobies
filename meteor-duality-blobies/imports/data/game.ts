@@ -22,6 +22,7 @@ export interface Game {
     roundNumber: number,
     roundScore: number,
     roundStarter: PlayerID,
+    roundCards: Card[],
 }
 
 export const GameCollection = new Mongo.Collection<Game>('games');

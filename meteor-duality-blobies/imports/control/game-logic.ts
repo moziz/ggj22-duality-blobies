@@ -1,4 +1,4 @@
-import {Card, startDeck} from "/imports/data/card-data";
+import {Card, startDeck, Side} from "/imports/data/card-data";
 import {cloneDeep, concat} from "lodash";
 import {Game} from "/imports/data/game";
 import {PlayerID} from "/imports/data/player";
@@ -20,6 +20,7 @@ export const startNewGame: () => Game = () => {
         roundNumber: 1,
         roundScore: 1,
         roundStarter: Math.random() > 0.5 ? "p1" : "p2",
+        roundCards: [],
     }
     return newGame;
 }
@@ -81,8 +82,32 @@ export const drawPhase = (game: Game) => {
     }
 }
 
-export const playCard = (game:Game, card:Card, player:PlayerID) => {
- // todo
+const activePlayer = (game: Game) => {
+    if (game.roundCards.length === 0 || game.roundCards.length === 3) {
+        game.roundStarter
+    } else {
+        return game.roundStarter === "p1" ? "p2" : "p1";
+    }
+}
+
+const getPlayedColors: (game: Game) => Record<Side, number> = (game: Game) => {
+    const result = {"Dino": 0, "Cat": 0};
+    for (const c of game.roundCards) {
+        result[c.side] = result[c.side] ? result[c.side] + 1 : 1;
+    }
+    return result;
+}
+
+export const canPlayCard = (game: Game, card: Card, player: PlayerID) => {
+    const whosTurn = activePlayer(game);
+    if (whosTurn === player) {
+        const playedColors = getPlayedColors(game);
+        if(playedColors[card.side] > 1 ){
+            return false;
+        }
+    }
+    return false;
+
 }
 
 function shuffle(array: Array<any>) {
