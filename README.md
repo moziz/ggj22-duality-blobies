@@ -1,3 +1,5 @@
-# ggj22-duality-blobies
-is game
-does things
+# Duality Blobies
+Global Game Jam 2022 project
+
+## Guide
+TBA
