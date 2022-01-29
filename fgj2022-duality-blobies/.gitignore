@@ -1,0 +1,40 @@
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Fortran module files
+*.mod
+*.smod
+
+# Executables
+*.exe
+*.out
+*.app
+
+# IDE crap
+/vs_proj/.vs
+/vs_proj/Release
+/vs_proj/Debug
+/vs_proj/*.user
+.vs/
+.vscode/
+#CMakeSettings.json
+out/
+
+# Build artifacts
+build/
+build-linux/
+*.xcuserstate
+*.kra
+*.kra~
+*.png~
+util/fgj2021-lost-and-found/fgj2021-lost-and-found.xcodeproj/xcuserdata/tomikokkonen.xcuserdatad/xcdebugger

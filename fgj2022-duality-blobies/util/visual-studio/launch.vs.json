@@ -1,0 +1,18 @@
+{
+// POISTA NÄMÄ KOMMENTIT!!!!
+// Esimerkki launch.vs.json jos ei jaksa ite säätää
+// Kopsaa tämä polkuun <projectRoot>/.vs/launch.vs.json
+// Tarvii käynnistää Visual Studio uudestaan.
+
+  "version": "0.2.1",
+  "defaults": {},
+  "configurations": [
+    {
+      "type": "default",
+      "project": "CMakeLists.txt",
+      "projectTarget": "ggj22.exe",
+      "name": "ggj22.exe",
+      "currentDir": "${projectDir}"
+    }
+  ]
+}
