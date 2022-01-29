@@ -13,6 +13,7 @@ export interface ComboEffect {
     effectType: EffectType,
     effectArgs: { [key: string]: any },
     comboNeed?: "NoNeed" | "OtherSame" | "OtherDifferent",
+    text?: string,
 }
 
 export interface Card {

@@ -10,10 +10,10 @@ export const startNewGame: () => Game = () => {
         players: [{name: "1"}, {name: "2"}],
         player1Hand: [],
         player2Hand: [],
-        player1Deck: cloneDeep(startDeck),
-        player2Deck: cloneDeep(startDeck),
-        player1Discard: [],
-        player2Discard: [],
+        player1Deck: [],
+        player2Deck: [],
+        player1Discard: cloneDeep(startDeck),
+        player2Discard: cloneDeep(startDeck),
         shop: [],
         player1Score: 0,
         player2Score: 0,
@@ -61,7 +61,7 @@ const drawCard: (game: Game, player: PlayerID) => Card | undefined = (game: Game
 }
 
 export const drawPhase = (game: Game) => {
-    // 1 player
+    // player 1
     while (game.player1Hand.length < 5) {
         const c = drawCard(game, "p1");
         if (!c) {
@@ -70,6 +70,7 @@ export const drawPhase = (game: Game) => {
         }
         game.player1Hand.push(c);
     }
+    // player 2
     while (game.player2Hand.length < 5) {
         const c = drawCard(game, "p2");
         if (!c) {
@@ -78,6 +79,10 @@ export const drawPhase = (game: Game) => {
         }
         game.player2Hand.push(c);
     }
+}
+
+export const playCard = (game:Game, card:Card, player:PlayerID) => {
+ // todo
 }
 
 function shuffle(array: Array<any>) {
