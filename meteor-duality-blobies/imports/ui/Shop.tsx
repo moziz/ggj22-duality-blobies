@@ -23,7 +23,7 @@ export const Shop: React.FC<ShopProps> = ({offers, turn, active, onPurchase}) =>
             <Popover.Header>SHOP</Popover.Header>
             <Popover.Body>
                 <p>{infoLabel}</p>
-                {offers.map(card => <CardComponent key={card.name} card={card} playCard={onPlayerPurchase}
+                {offers.map((card, index) => <CardComponent key={index} card={card} playCard={onPlayerPurchase}
                                                    canPlay={active}
                                                    playLabel={"Purchace"}/>)}
             </Popover.Body>
