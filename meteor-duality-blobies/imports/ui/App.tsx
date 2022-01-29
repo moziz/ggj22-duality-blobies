@@ -1,4 +1,4 @@
-import React, from 'react';
+import React from 'react';
 import {GameComponent} from "/imports/ui/GameComponent";
 import {drawPhase, startNewGame,playCardInGame} from "/imports/control/game-logic";
 import {cloneDeep} from "lodash";
