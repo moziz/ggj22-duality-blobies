@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import {CardsCollection, Card, startDeck} from '/imports/data/card-data';
+import {GameCollection} from "/imports/data/game";
 
 function insertCard(card: Card) {
   CardsCollection.insert(card);
@@ -12,4 +13,8 @@ Meteor.startup(() => {
       insertCard(card)
     })
   }
+});
+
+Meteor.publish('games', function () {
+  return GameCollection.find({})
 });
