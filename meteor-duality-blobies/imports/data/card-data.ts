@@ -1,5 +1,7 @@
 // Korttipeli data
 
+import {Mongo} from "meteor/mongo";
+
 type Side = "Dino"|"Cat"
 
 type EffectTriggerPhase = "PlayFirst" | "Play" | "Resolve" | "Discard"
@@ -12,7 +14,7 @@ export interface ComboEffect{
 	trigger: EffectTriggerPhase,
 	activeInHand?: boolean,
 	effectType: EffectType,
-	effectArgs: {[key:string]:any},
+	/*effectArgs: {[key:string]:any},*/
 	comboNeed?: "NoNeed" | "OtherSame" | "OtherDifferent",
 }
 
@@ -38,7 +40,7 @@ export const StartDeck: Card[] = [
 ]
 
 export const effects: ComboEffect[] = [
-	{trigger:"Play", effectType:"Draw", effectArgs}
+	{name: "Draw", trigger:"Play", effectType:"Draw"}
 ]
 
 const getRandomCard = () => {
@@ -53,11 +55,12 @@ const getRandomCard = () => {
 	}
 }
 
-export const getShopPool(amount: number) {
+/*export const getShopPool(amount: number) {
 	const deck = []
 	for(let i=0; i < amount; ++i){
 		deck.push(getRandomCard());
 	}
 	return deck;
-}
+}*/
 
+export const CardsCollection = new Mongo.Collection<Card>('cards');

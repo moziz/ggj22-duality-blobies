@@ -1,31 +1,15 @@
 import { Meteor } from 'meteor/meteor';
-import { LinksCollection } from '/imports/api/links';
+import {CardsCollection, Card, StartDeck} from '/imports/data/card-data';
 
-function insertLink(title: string, url: string) {
-  LinksCollection.insert({ title, url, createdAt: new Date() });
+function insertCard(card: Card) {
+  CardsCollection.insert(card);
 }
 
 Meteor.startup(() => {
-  // If the Links collection is empty, add some data.
-  if (LinksCollection.find().count() === 0) {
-    insertLink(
-      'Do the Tutorial',
-      'https://www.meteor.com/tutorials/react/creating-an-app'
-    );
-
-    insertLink(
-      'Follow the Guide',
-      'http://guide.meteor.com'
-    );
-
-    insertLink(
-      'Read the Docs',
-      'https://docs.meteor.com'
-    );
-
-    insertLink(
-      'Discussions',
-      'https://forums.meteor.com'
-    );
+  // If the Cards collection is empty, add some data.
+  if (CardsCollection.find().count() === 0) {
+    StartDeck.forEach((card) => {
+      insertCard(card)
+    })
   }
 });
