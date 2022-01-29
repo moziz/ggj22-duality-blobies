@@ -1,13 +1,14 @@
 import React from 'react';
 import { Hello } from './Hello';
 import { Info } from './Info';
-import {Card} from "/imports/ui/Card";
+import {GameComponent} from "/imports/ui/Game";
+import {startNewGame} from "/imports/control/game-logic";
 
 export const App = () => (
-  <div>
+  <div className={"container-fluid"}>
     <h1>Welcome to Meteor!</h1>
     <Hello />
     <Info />
-    <Card />
+    <GameComponent game={startNewGame()} />
   </div>
 );
