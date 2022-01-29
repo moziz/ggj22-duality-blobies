@@ -22,7 +22,7 @@ export interface Card {
     effects: ComboEffect[],
 }
 
-export const StartDeck: Card[] = [
+export const startDeck: Card[] = [
     {name: "Dino 1", power: 1, side: "Dino", effects: []},
     {name: "Dino 2", power: 2, side: "Dino", effects: []},
     {name: "Dino 3", power: 3, side: "Dino", effects: []},

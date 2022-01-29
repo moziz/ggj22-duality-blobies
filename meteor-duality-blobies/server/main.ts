@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor';
-import {CardsCollection, Card, StartDeck} from '/imports/data/card-data';
+import {CardsCollection, Card, startDeck} from '/imports/data/card-data';
 
 function insertCard(card: Card) {
   CardsCollection.insert(card);
@@ -8,7 +8,7 @@ function insertCard(card: Card) {
 Meteor.startup(() => {
   // If the Cards collection is empty, add some data.
   if (CardsCollection.find().count() === 0) {
-    StartDeck.forEach((card) => {
+    startDeck.forEach((card) => {
       insertCard(card)
     })
   }
