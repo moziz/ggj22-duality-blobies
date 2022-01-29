@@ -1,22 +1,29 @@
 import {Card, startDeck, Side} from "/imports/data/card-data";
 import {cloneDeep, concat, findIndex} from "lodash";
-import {Game} from "/imports/data/game";
+import {Game, GamePlayerData} from "/imports/data/game";
 import {PlayerID} from "/imports/data/player";
 
+const getDefaultPlayer: (player: PlayerID) => GamePlayerData = (player) => {
+    return {
+        name: player,
+        deck: [],
+        id: player,
+        discard: cloneDeep(startDeck),
+        hand: [],
+        score: 0,
+    }
+}
+
+const getOtherPlayer = (p: PlayerID) => p === "p1" ? "p2" : "p1";
 
 export const startNewGame: () => Game = () => {
     const newGame: Game = {
         name: "new game",
-        players: [{name: "1"}, {name: "2"}],
-        player1Hand: [],
-        player2Hand: [],
-        player1Deck: [],
-        player2Deck: [],
-        player1Discard: cloneDeep(startDeck),
-        player2Discard: cloneDeep(startDeck),
+        players: {
+            p1: getDefaultPlayer("p1"),
+            p2: getDefaultPlayer("p2"),
+        },
         shop: [],
-        player1Score: 0,
-        player2Score: 0,
         roundNumber: 1,
         roundScore: 1,
         roundStarter: Math.random() > 0.5 ? "p1" : "p2",
@@ -25,60 +32,37 @@ export const startNewGame: () => Game = () => {
     return newGame;
 }
 
+
 const reShuffleDeck = (game: Game, player: PlayerID) => {
-    if (player === "p1") {
-        if (game.player1Deck.length > 0) {
-            game.player1Discard = concat(game.player1Deck, game.player1Discard);
-            game.player1Deck = [];
-        }
-        let new_deck = cloneDeep(game.player1Discard);
-        new_deck = shuffle(new_deck);
-        game.player1Deck = new_deck;
+
+    if (game.players[player].deck.length > 0) {
+        game.players[player].discard = concat(game.players[player].deck, game.players[player].discard);
+        game.players[player].deck = [];
     }
-    if (player === "p2") {
-        if (game.player2Deck.length > 0) {
-            game.player2Discard = concat(game.player2Deck, game.player2Discard);
-            game.player2Deck = [];
-        }
-        let new_deck = cloneDeep(game.player2Discard);
-        new_deck = shuffle(new_deck);
-        game.player2Deck = new_deck;
-    }
+    let new_deck = cloneDeep(game.players[player].discard);
+    new_deck = shuffle(new_deck);
+    game.players[player].deck = new_deck;
+    game.players[player].discard = [];
 }
 
+
 const drawCard: (game: Game, player: PlayerID) => Card | undefined = (game: Game, player: PlayerID) => {
-    if (player === "p1") {
-        if (game.player1Deck.length === 0) {
-            reShuffleDeck(game, player);
-        }
-        return game.player1Deck.pop();
+    if (game.players[player].deck.length === 0) {
+        reShuffleDeck(game, player);
     }
-    if (player === "p2") {
-        if (game.player2Deck.length === 0) {
-            reShuffleDeck(game, player);
-        }
-        return game.player2Deck.pop();
-    }
+    return game.players[player].deck.pop();
 }
 
 export const drawPhase = (game: Game) => {
-    // player 1
-    while (game.player1Hand.length < 5) {
-        const c = drawCard(game, "p1");
-        if (!c) {
-            // empty deck and discard
-            break;
+    for(let player of ["p1", "p2"] as PlayerID[]) {
+        while (game.players[player].hand.length < 5) {
+            const c = drawCard(game, player);
+            if (!c) {
+                // empty deck and discard
+                break;
+            }
+            game.players[player].hand.push(c);
         }
-        game.player1Hand.push(c);
-    }
-    // player 2
-    while (game.player2Hand.length < 5) {
-        const c = drawCard(game, "p2");
-        if (!c) {
-            // empty deck and discard
-            break;
-        }
-        game.player2Hand.push(c);
     }
 }
 
@@ -86,7 +70,7 @@ const getActivePlayer = (game: Game) => {
     if (game.roundCards.length === 0 || game.roundCards.length === 3) {
         return game.roundStarter;
     } else {
-        return game.roundStarter === "p1" ? "p2" : "p1";
+        return getOtherPlayer(game.roundStarter);
     }
 }
 
@@ -99,9 +83,7 @@ const getPlayedColors: (game: Game) => Record<Side, number> = (game: Game) => {
 }
 
 export const canPlayCard: (game: Game, card: Card, player: PlayerID) => boolean = (game: Game, card: Card, player: PlayerID) => {
-    const whosTurn = getActivePlayer(game);
-    debugger;
-    if (whosTurn === player) {
+    if (getActivePlayer(game) === player) {
         const playedColors = getPlayedColors(game);
         return playedColors[card.side] <= 1;
     }
@@ -111,16 +93,10 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
     if (!canPlayCard(game, card, player)) {
         return false;
     }
-    if (player === "p1") {
-        const i = findIndex(game.player1Hand, c => c.name === card.name);
-        game.player1Hand.splice(i, 1);
-        game.roundCards.push(card);
-    }
-    if (player === "p2") {
-        const i = findIndex(game.player2Hand, c => c.name === card.name);
-        game.player2Hand.splice(i, 1);
-        game.roundCards.push(card);
-    }
+
+    const i = findIndex(game.players[player].hand, c => c.name === card.name);
+    game.players[player].hand.splice(i, 1);
+    game.roundCards.push(card);
 
     // start new round?
     if (game.roundCards.length > 3) {

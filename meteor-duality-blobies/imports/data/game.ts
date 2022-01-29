@@ -9,26 +9,20 @@ import {Card} from "/imports/data/card-data";
 
 export interface Game {
     name: string,
-    players: Player[],
-    player1Hand: Card[],
-    player2Hand: Card[],
-    player1Deck: Card[],
-    player2Deck: Card[],
-    player1Discard: Card[],
-    player2Discard: Card[],
     shop: Card[],
-    player1Score: number,
-    player2Score: number,
     roundNumber: number,
     roundScore: number,
     roundStarter: PlayerID,
     roundCards: Card[],
-    player1: GamePlayerData,
-    player2: GamePlayerData,
+    players: {
+        "p1": GamePlayerData,
+        "p2": GamePlayerData,
+    },
 }
 
 export interface GamePlayerData {
     id: PlayerID,
+    name: string,
     hand: Card[],
     deck: Card[],
     discard: Card[],

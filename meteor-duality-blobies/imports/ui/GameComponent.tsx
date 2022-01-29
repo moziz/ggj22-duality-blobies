@@ -4,7 +4,7 @@ import {HandComponent} from "/imports/ui/HandComponent";
 import {Button} from "react-bootstrap";
 import {PlayerID} from "/imports/data/player";
 import {Card} from "/imports/data/card-data";
-import {CardComponent} from "/imports/ui/CardComponent";
+import {PlayedCards} from "/imports/ui/PlayedCards";
 
 interface GameProps {
     game: Game,
@@ -17,18 +17,18 @@ export const GameComponent: React.FC<GameProps> = ({game, toDrawState, playCard}
         <div className={"row"}>
             <div className={"col"}>
                 <h2>Player 1</h2>
-                <HandComponent cards={game.player1Hand} game={game} player={"p1"} playCard={playCard}/>
+                <HandComponent cards={game.players["p1"].hand} game={game} player={"p1"} playCard={playCard}/>
             </div>
             <div className={"col"}>
                 <h2>{game.name}</h2>
                 <Button onClick={toDrawState}>To draw state</Button>
-                <div>
-                    {game.roundCards.map(c => <CardComponent card={c} key={c.name}/>)}
+                <div className={"row"}>
+                    <PlayedCards playedCards={game.roundCards} startPlayer={game.roundStarter} />
                 </div>
             </div>
             <div className={"col"}>
                 <h2>Player 2</h2>
-                <HandComponent cards={game.player2Hand} game={game} player={"p2"} playCard={playCard}/>
+                <HandComponent cards={game.players["p2"].hand} game={game} player={"p2"} playCard={playCard}/>
             </div>
         </div>
     );
