@@ -18,7 +18,7 @@ export const CardComponent: React.FC<CardProps> = (
         playLabel,
     }) => {
     return (
-        <Card className={"mb-3"}>
+        <Card className={"mb-3 p-0"}>
             <Card.Header className={"d-flex justify-content-around"}><b>{card.name}</b></Card.Header>
             <Card.Body className={"d-flex- flex-column justify-content-around"}
                        style={{backgroundColor: card.side === "Dino" ? "#FF5733" : "#6495ED"}}>

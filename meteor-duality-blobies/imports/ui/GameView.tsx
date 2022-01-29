@@ -30,7 +30,7 @@ export const GameView: React.FC = () => {
     if(!isLoading) {
         if(gameObject != undefined) {
             return (
-                <GameComponent game={gameObject} / >
+                <GameComponent game={gameObject} />
             );
         }
         else {

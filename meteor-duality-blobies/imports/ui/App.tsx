@@ -8,7 +8,7 @@ import {Card} from "/imports/data/card-data";
 export const App = () => {
     const [game, setGame] = React.useState(startNewGame());
 
-    const playCard = React.useCallback((c:Card, p:PlayerID)=>{
+    const playCard = React.useCallback((c: Card, p: PlayerID) => {
         setGame(prevState => {
             const game = cloneDeep(prevState);
             playCardInGame(game, c, p);
@@ -16,7 +16,7 @@ export const App = () => {
         })
     }, [setGame])
 
-    const toDrawState = React.useCallback(()=>{
+    const toDrawState = React.useCallback(() => {
         setGame(prevState => {
             const game = cloneDeep(prevState);
             drawPhase(game);
@@ -24,7 +24,7 @@ export const App = () => {
         })
     }, [setGame])
 
-    const onPurchase = React.useCallback((c:Card, p:PlayerID)=>{
+    const onPurchase = React.useCallback((c: Card, p: PlayerID) => {
         setGame(prevState => {
             const game = cloneDeep(prevState);
             handlePurchase(game, c, p);
@@ -32,7 +32,7 @@ export const App = () => {
         })
     }, [setGame])
 
-    return(
+    return (
         <div className={"container-fluid"}>
             <h1>Doality Blobies</h1>
             <GameComponent game={game} toDrawState={toDrawState} playCard={playCard} purchaseCard={onPurchase}/>

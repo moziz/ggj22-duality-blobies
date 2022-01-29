@@ -2,6 +2,7 @@ import React, {useCallback} from "react"
 import {Card} from "/imports/data/card-data";
 import {PlayerID} from "/imports/data/player";
 import {CardComponent} from "/imports/ui/CardComponent";
+import {Button, OverlayTrigger, Popover} from "react-bootstrap";
 
 interface ShopProps {
     offers: Card[],
@@ -17,14 +18,22 @@ export const Shop: React.FC<ShopProps> = ({offers, turn, active, onPurchase}) =>
 
     //TODO get active player from client, and not from who's turn it is
     const onPlayerPurchase = useCallback((c: Card) => onPurchase(c, turn), [turn]);
+    const shopContent = (
+        <Popover>
+            <Popover.Header>SHOP</Popover.Header>
+            <Popover.Body>
+                <p>{infoLabel}</p>
+                {offers.map(card => <CardComponent key={card.name} card={card} playCard={onPlayerPurchase}
+                                                   canPlay={active}
+                                                   playLabel={"Purchace"}/>)}
+            </Popover.Body>
+        </Popover>
+    )
 
     return (
-        <>
-            <h2>SHOP</h2>
-            <p>{infoLabel}</p>
-            {offers.map(card => <CardComponent key={card.name} card={card} playCard={onPlayerPurchase} canPlay={active}
-                                               playLabel={"Purchace"} />)}
-        </>
+        <OverlayTrigger trigger={"click"} placement={"bottom"} overlay={shopContent} rootClose>
+            <Button>SHOP</Button>
+        </OverlayTrigger>
     );
 }
 

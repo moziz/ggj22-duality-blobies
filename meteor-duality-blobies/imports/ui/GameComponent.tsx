@@ -20,10 +20,12 @@ export const GameComponent: React.FC<GameProps> = ({game, toDrawState, playCard,
         <div className={"row"}>
             <div className={"col"}>
                 <h2>Player 1</h2>
+                <h2>Score {game.players["p1"].score}</h2>
                 <HandComponent cards={game.players["p1"].hand} game={game} player={"p1"} playCard={playCard}/>
             </div>
             <div className={"col"}>
                 <h2>{game.name}</h2>
+                <p className={"h2"}>{game.message}</p>
                 <Button onClick={toDrawState}>To draw state</Button>
                 <div className={"row"}>
                     <PlayedCards playedCards={game.roundCards} startPlayer={game.roundStarter}/>
@@ -35,6 +37,7 @@ export const GameComponent: React.FC<GameProps> = ({game, toDrawState, playCard,
             </div>
             <div className={"col"}>
                 <h2>Player 2</h2>
+                <h2>Score {game.players["p2"].score}</h2>
                 <HandComponent cards={game.players["p2"].hand} game={game} player={"p2"} playCard={playCard}/>
             </div>
         </div>
