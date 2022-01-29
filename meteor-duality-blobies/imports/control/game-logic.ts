@@ -1,4 +1,4 @@
-import {Card, startDeck, Side} from "/imports/data/card-data";
+import {Card, startDeck, Side, getShopPool} from "/imports/data/card-data";
 import {cloneDeep, concat, findIndex} from "lodash";
 import {Game, GamePlayerData} from "/imports/data/game";
 import {PlayerID} from "/imports/data/player";
@@ -23,11 +23,18 @@ export const startNewGame: () => Game = () => {
             p1: getDefaultPlayer("p1"),
             p2: getDefaultPlayer("p2"),
         },
-        shop: [],
+        shop: {
+            offers: cloneDeep(getShopPool(3)),
+            active: false,
+            firstGotOne: false,
+            secondGotOne: false,
+        },
         roundNumber: 1,
         roundScore: 1,
         roundStarter: Math.random() > 0.5 ? "p1" : "p2",
         roundCards: [],
+        message: "",
+        latestWinner: Math.random() > 0.5 ? "p1" : "p2",
     }
     return newGame;
 }
@@ -54,7 +61,7 @@ const drawCard: (game: Game, player: PlayerID) => Card | undefined = (game: Game
 }
 
 export const drawPhase = (game: Game) => {
-    for(let player of ["p1", "p2"] as PlayerID[]) {
+    for (let player of ["p1", "p2"] as PlayerID[]) {
         while (game.players[player].hand.length < 5) {
             const c = drawCard(game, player);
             if (!c) {
@@ -64,6 +71,83 @@ export const drawPhase = (game: Game) => {
             game.players[player].hand.push(c);
         }
     }
+}
+
+
+export const handlePurchase = (game: Game, card: Card, player: PlayerID) =>
+{
+    // remove from shop
+    const i = findIndex(game.shop.offers, c => c.name === card.name);
+    game.shop.offers.splice(i, 1);
+    game.players[player].discard.push(card);
+
+    game.shop.firstGotOne = game.shop.offers.length < 3;
+    game.shop.secondGotOne = game.shop.offers.length < 2;
+
+    // if both purchased, then next round
+    if(game.shop.firstGotOne && game.shop.secondGotOne){
+        game.shop.active = false;
+        nextRound(game);
+    }
+}
+
+
+export const getPlayersPower = (game: Game) => {
+    if (game.roundCards.length < 4) {
+        throw new Error("Dont end round if less than 4 cards!");
+    }
+    const startPlayerPower = game.roundCards[0].power + game.roundCards[3].power;
+    const secondPlayerPower = game.roundCards[1].power + game.roundCards[2].power;
+    return game.roundStarter === "p1" ? {
+        "p1": startPlayerPower,
+        "p2": secondPlayerPower,
+    } : {
+        "p1": secondPlayerPower,
+        "p2": startPlayerPower,
+    };
+}
+
+
+export const getShopTurn = (game: Game) => {
+    if (!game.shop.firstGotOne) {
+        return getOtherPlayer(game.latestWinner);
+    }
+    return game.latestWinner;
+}
+
+const nextRound = (game: Game) => {
+    game.shop.offers = cloneDeep(getShopPool(3));
+    game.shop.firstGotOne = false;
+    game.shop.secondGotOne = false;
+    game.roundNumber += 1;
+    // put round cards back to hands:
+    game.players[game.roundStarter].discard.push(game.roundCards[0])
+    game.players[game.roundStarter].discard.push(game.roundCards[3])
+    game.players[getOtherPlayer(game.roundStarter)].discard.push(game.roundCards[1])
+    game.players[getOtherPlayer(game.roundStarter)].discard.push(game.roundCards[2])
+
+    game.roundStarter = game.latestWinner;
+}
+
+export const roundScore = (game: Game) => {
+    const powers = getPlayersPower(game);
+    if (powers.p1 === powers.p2) {
+        game.roundScore += 1;
+        // skip shop phase
+        game.message = "Equal power. No winner this round!";
+        return nextRound(game);
+    }
+    const winner: PlayerID = powers.p1 > powers.p2 ? "p1" : "p2";
+    game.latestWinner = winner;
+    game.message = "Player " + winner + " is winner! Score " + game.roundScore;
+    game.players[winner].score += game.roundScore;
+    game.roundScore = 0;
+    toShopPhase(game);
+}
+
+
+export const toShopPhase = (game: Game) => {
+    game.shop.active = true;
 }
 
 const getActivePlayer = (game: Game) => {
@@ -89,6 +173,7 @@ export const canPlayCard: (game: Game, card: Card, player: PlayerID) => boolean 
     }
     return false;
 }
+
 export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boolean = (game, card, player) => {
     if (!canPlayCard(game, card, player)) {
         return false;
@@ -100,7 +185,7 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
 
     // start new round?
     if (game.roundCards.length > 3) {
-
+        toShopPhase(game)
     }
     return true;
 }

@@ -7,9 +7,16 @@ interface CardProps {
     card: CardData,
     playCard?: (c: CardData) => void,
     canPlay?: boolean,
+    playLabel?: string,
 }
 
-export const CardComponent: React.FC<CardProps> = ({card, playCard, canPlay}) => {
+export const CardComponent: React.FC<CardProps> = (
+    {
+        card,
+        playCard,
+        canPlay,
+        playLabel,
+    }) => {
     return (
         <Card className={"mb-3"}>
             <Card.Header className={"d-flex justify-content-around"}><b>{card.name}</b></Card.Header>
@@ -22,7 +29,8 @@ export const CardComponent: React.FC<CardProps> = ({card, playCard, canPlay}) =>
                     }) : null
                 }
                 <div className={"d-flex justify-content-around"}>
-                    {playCard ? <Button disabled={!canPlay} onClick={() => playCard(card)}>Play</Button> : null}
+                    {playCard ? <Button disabled={!canPlay}
+                                        onClick={() => playCard(card)}>{playLabel ?? "PLAY"}</Button> : null}
                 </div>
             </Card.Body>
         </Card>

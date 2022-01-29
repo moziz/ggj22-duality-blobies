@@ -1,11 +1,9 @@
 import React from 'react';
 import {GameComponent} from "/imports/ui/GameComponent";
-import {drawPhase, startNewGame,playCardInGame} from "/imports/control/game-logic";
+import {drawPhase, startNewGame, playCardInGame, handlePurchase} from "/imports/control/game-logic";
 import {cloneDeep} from "lodash";
 import {PlayerID} from "/imports/data/player";
 import {Card} from "/imports/data/card-data";
-
-const toState = [{name:"Draw", fn:drawPhase}]
 
 export const App = () => {
     const [game, setGame] = React.useState(startNewGame());
@@ -25,10 +23,19 @@ export const App = () => {
             return game;
         })
     }, [setGame])
+
+    const onPurchase = React.useCallback((c:Card, p:PlayerID)=>{
+        setGame(prevState => {
+            const game = cloneDeep(prevState);
+            handlePurchase(game, c, p);
+            return game;
+        })
+    }, [setGame])
+
     return(
         <div className={"container-fluid"}>
             <h1>Doality Blobies</h1>
-            <GameComponent game={game} toDrawState={toDrawState} playCard={playCard}/>
+            <GameComponent game={game} toDrawState={toDrawState} playCard={playCard} purchaseCard={onPurchase}/>
         </div>
     );
 };
