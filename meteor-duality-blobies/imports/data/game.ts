@@ -1,5 +1,5 @@
 import {Mongo} from "meteor/mongo";
-import {Player} from "/imports/data/player";
+import {Player, PlayerID} from "/imports/data/player";
 import {Card} from "/imports/data/card-data";
 
 
@@ -21,7 +21,7 @@ export interface Game {
     player2Score: number,
     roundNumber: number,
     roundScore: number,
-    roundStarter: "player1" | "player2",
+    roundStarter: PlayerID,
 }
 
 export const GameCollection = new Mongo.Collection<Game>('games');
