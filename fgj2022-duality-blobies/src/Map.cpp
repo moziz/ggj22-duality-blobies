@@ -191,7 +191,7 @@ void Map::draw()
 	{
 		enemySpawnCounter.restart();
 		float r = std::rand() / float(RAND_MAX) * 3.14f * 2.0f;
-		enemyPoss.push_back(sf::Vector2f(std::sinf(r), std::cosf(r)) * 0.75f + sf::Vector2f(0.5f, 0.5f));
+		enemyPoss.push_back(sf::Vector2f(sinf(r), cosf(r)) * 0.75f + sf::Vector2f(0.5f, 0.5f));
 		float rx = std::rand() / float(RAND_MAX) - 0.5f;
 		float ry = std::rand() / float(RAND_MAX) - 0.5f;
 		enemyBlobs.push_back(enemyPoss.back() + sf::Vector2f(rx, ry) * 0.1f);
