@@ -217,11 +217,13 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
             if ((target === "Cat" && counts.Cat === 2) || (target === "Dino" && counts.Dino === 2)) {
                 const indexA = findIndex(game.roundCards, (c) => c.side === target);
                 const indexB = findIndex(game.roundCards, (c) => c.side === target, indexA + 1);
-                console.log("Swap", indexA, indexB);
                 const tmpCard = game.roundCards[indexA];
                 game.roundCards[indexA] = game.roundCards[indexB]
                 game.roundCards[indexB] = tmpCard;
             }
+        }
+        if(effect.effectType === "Destroy"){
+            game.roundCards = [];
         }
     }
 
@@ -238,6 +240,10 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
         }
         if (cards.Dino > 1 && cardsInHand.Cat === 0) {
             game.players[activeP].hand.push(getBadCard("Cat"));
+        }
+        if(game.players[activeP].hand.length ===0)
+        {
+            game.players[activeP].hand.push(getBadCard(Math.random() > 0.5 ? "Cat" : "Dino"));
         }
     }
     return true;
