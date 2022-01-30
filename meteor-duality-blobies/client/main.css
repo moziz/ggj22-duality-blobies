@@ -23,3 +23,7 @@ body {
     box-sizing: border-box;
     border-radius: 50%;
 }
+
+.card-title{
+    font-size: 22px;
+}
