@@ -31,7 +31,7 @@ export const GameComponent: React.FC<GameProps> = ({game, toDrawState, playCard,
             }}>
                 <div className={"col-3 d-flex flex-column"}>
                     <h2 className={"text-center"}>Player 1</h2>
-                    <h2 className={"text-center"}>Score {game.players["p1"].score}</h2>
+                    {game.players["p1"].score ? <h5 className={"text-center"}>Score {game.players["p1"].score}</h5> : null}
                     <HandComponent cards={game.players["p1"].hand}
                                    game={game} player={"p1"}
                                    playCard={playCard}
@@ -64,7 +64,7 @@ export const GameComponent: React.FC<GameProps> = ({game, toDrawState, playCard,
                 </div>
                 <div className={"col-3 d-flex flex-column"}>
                     <h2 className={"text-center"}>Player 2</h2>
-                    <h2 className={"text-center"}>Score {game.players["p2"].score}</h2>
+                    {game.players["p2"].score ? <h5 className={"text-center"}>Score {game.players["p2"].score} / 20</h5>: null}
                     <HandComponent cards={game.players["p2"].hand}
                                    game={game} player={"p2"}
                                    playCard={playCard}

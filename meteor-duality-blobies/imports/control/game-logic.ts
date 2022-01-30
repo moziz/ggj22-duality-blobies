@@ -148,7 +148,7 @@ export const roundScore = (game: Game) => {
     }
     const winner: PlayerID = powers.p1 > powers.p2 ? "p1" : "p2";
     game.latestWinner = winner;
-    game.message = "Player " + winner + " is winner! Score " + game.roundScore;
+    game.message = "Player " + winner + " is winner of the round! Score +" + game.roundScore + ".";
     game.players[winner].score += game.roundScore;
     game.roundScore = 1;
     toShopPhase(game);
