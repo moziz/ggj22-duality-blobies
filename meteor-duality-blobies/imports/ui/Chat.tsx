@@ -12,7 +12,7 @@ interface ChatProps {
     clientPlayer?: PlayerID
 }
 
-const useChat = (gameId: string = "", playerId: PlayerID) => useTracker(() => {
+const useChat = (gameId: string = "", playerId?: PlayerID) => useTracker(() => {
     const subscription = Meteor.subscribe('chat', gameId)
     let chatObject = ChatCollection.findOne({_id: gameId})
     if (chatObject === undefined && subscription.ready()) {
@@ -60,8 +60,8 @@ export const Chat: React.FC<ChatProps> = ({game, clientPlayer}) => {
                         className="form-control"
                     />
                 </form>
-                {chatObject.messages.map((message, idx) =>
-                    <div key={idx} style={!message.playerId ? {fontWeight: 'bold'} : null}>
+                {chatObject?.messages.map((message, idx) =>
+                    <div key={idx} style={!message.playerId ? {fontWeight: 'bold'} : undefined}>
                         {message.timestamp ? message.timestamp.toLocaleString() : "unknown time"} : {message.playerId ? message.playerId : "GAME"} : {message.message}
                     </div>,
                 )}
