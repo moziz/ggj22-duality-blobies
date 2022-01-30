@@ -7,6 +7,8 @@ import {getPlayedColors} from "/imports/control/game-logic";
 interface PlayedCardsProps {
     playedCards: Card[],
     startPlayer: PlayerID,
+    p1Power: number,
+    p2Power: number,
 }
 
 const defaultCard: Card = {
@@ -14,9 +16,16 @@ const defaultCard: Card = {
     power: 0,
     side: "Both",
     effects: [],
+    visuals: 0,
 }
 
-export const PlayedCards: React.FC<PlayedCardsProps> = ({playedCards, startPlayer}) => {
+const highLights = {
+    p1: [0, 1, 3, 2, 9],
+    p2: [1, 0, 2, 3, 9],
+}
+
+
+export const PlayedCards: React.FC<PlayedCardsProps> = ({playedCards, startPlayer, p1Power, p2Power}) => {
     const sides = getPlayedColors(playedCards);
     let defaultSide: Side;
     if (sides.Cat < 2) {
@@ -41,15 +50,40 @@ export const PlayedCards: React.FC<PlayedCardsProps> = ({playedCards, startPlaye
         playedCards.length > 3 ? playedCards[3] : defaultCard,
     ];
 
+    const highLightIndex = highLights[startPlayer][playedCards.length];
+
     return (
         <div>
             <p className={"text-center h4"}>Played cards</p>
+            <div className={"d-flex justify-content-around"}>
+                <div className={"big-power"}>{p1Power}</div>
+                <div className={"big-power"}>{p2Power}</div>
+            </div>
             <div className={"d-flex align-content-around flex-wrap justify-content-center"} style={{
                 width: "400px",
             }}>
-                {cards.map((card, index) =>
-                    <CardComponent key={index} card={card} faceDown={card.name === "HIDDEN"}/>,
-                )}
+                <CardComponent
+                    card={cards[0]}
+                    faceDown={cards[0].name === "HIDDEN"}
+                    highLight={0 === highLightIndex}
+                />
+                <div className={"splitter"}></div>
+                <CardComponent
+                    card={cards[1]}
+                    faceDown={cards[1].name === "HIDDEN"}
+                    highLight={1 === highLightIndex}
+                />
+                <CardComponent
+                    card={cards[2]}
+                    faceDown={cards[2].name === "HIDDEN"}
+                    highLight={2 === highLightIndex}
+                />
+                <div className={"splitter"}></div>
+                <CardComponent
+                    card={cards[3]}
+                    faceDown={cards[3].name === "HIDDEN"}
+                    highLight={3 === highLightIndex}
+                />
             </div>
         </div>
     );

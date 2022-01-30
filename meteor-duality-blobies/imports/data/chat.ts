@@ -2,14 +2,18 @@ import {Mongo} from "meteor/mongo";
 import {Chat} from "/imports/ui/Chat";
 import {PlayerID} from "/imports/data/player";
 
+interface Message {
+    message: string;
+    playerId?: PlayerID;
+    timestamp: Date;
+}
+
+
 export interface Chat {
     _id?: string,
-    messages: {
-        message: string,
-        playerId?: PlayerID,
-        timestamp: Date,
-    }[],
+    messages: Message[],
 }
+
 
 export const AddChatMessage = (gameId: string, message: string, playerId: PlayerID) => {
     ChatCollection.upsert({_id: gameId}, {

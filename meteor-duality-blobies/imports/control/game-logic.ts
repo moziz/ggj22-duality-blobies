@@ -2,7 +2,7 @@ import {Card, startDeck, Side, getShopPool} from "/imports/data/card-data";
 import {cloneDeep, concat, findIndex} from "lodash";
 import {Game, GamePlayerData} from "/imports/data/game";
 import {PlayerID} from "/imports/data/player";
-import {AddChatMessage, AddGameMessage} from "/imports/data/chat";
+import {AddGameMessage} from "/imports/data/chat";
 
 const getDefaultPlayer: (player: PlayerID) => GamePlayerData = (player) => {
     return {
@@ -95,11 +95,9 @@ export const handlePurchase = (game: Game, card: Card, player: PlayerID) => {
 
 
 export const getPlayersPower = (game: Game) => {
-    if (game.roundCards.length < 4) {
-        throw new Error("Dont end round if less than 4 cards!");
-    }
-    const startPlayerPower = game.roundCards[0].power + game.roundCards[3].power;
-    const secondPlayerPower = game.roundCards[1].power + game.roundCards[2].power;
+    const c = game.roundCards.length;
+    const startPlayerPower = (c > 0 ? game.roundCards[0].power : 0) + (c > 3 ? game.roundCards[3].power : 0);
+    const secondPlayerPower = (c > 1 ? game.roundCards[1].power : 0) + (c > 2 ? game.roundCards[2].power : 0);
     return game.roundStarter === "p1" ? {
         "p1": startPlayerPower,
         "p2": secondPlayerPower,

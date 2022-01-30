@@ -6,7 +6,7 @@ import {PlayerID} from "/imports/data/player";
 import {Card} from "/imports/data/card-data";
 import {PlayedCards} from "/imports/ui/PlayedCards";
 import {Shop} from "/imports/ui/Shop";
-import {getShopTurn} from "/imports/control/game-logic";
+import {getPlayersPower, getShopTurn} from "/imports/control/game-logic";
 import {Chat} from "/imports/ui/Chat";
 
 interface GameProps {
@@ -19,6 +19,7 @@ interface GameProps {
 
 export const GameComponent: React.FC<GameProps> = ({game, toDrawState, playCard, purchaseCard, clientPlayer}) => {
     const gameStarted = game.players.p1.hand.length && game.roundNumber !== 0;
+    const powers = getPlayersPower(game);
     return (
         <>
             <div className={"row p-2"} style={{
@@ -41,7 +42,10 @@ export const GameComponent: React.FC<GameProps> = ({game, toDrawState, playCard,
                     <p className={"h4"}>{game.message}</p>
                     {!gameStarted ? (<Button onClick={toDrawState}>Start game</Button>) : null}
                     <div className={"row"}>
-                        <PlayedCards playedCards={game.roundCards} startPlayer={game.roundStarter}/>
+                        {gameStarted ?
+                            <PlayedCards playedCards={game.roundCards} startPlayer={game.roundStarter} p1Power={powers.p1} p2Power={powers.p2}/>
+                            : null
+                        }
                     </div>
                     <div className={"flex-grow-1"}></div>
                     <div className={"mb-4 row"}>

@@ -19,8 +19,8 @@ export const HandComponent: React.FC<HandProps> = ({cards, game, player, playCar
         <>
             <h4 className={"text-center"}>Hand</h4>
             <div className={"d-flex align-content-around flex-wrap justify-content-center"}>
-                {cards.map((card) =>
-                    <CardComponent key={card.name} card={card} canPlay={canPlayCard(game, card, player)}
+                {cards.map((card, index) =>
+                    <CardComponent key={index} card={card} canPlay={canPlayCard(game, card, player)}
                                    playCard={playCardFromHand} faceDown={faceDown}/>,
                 )}
             </div>

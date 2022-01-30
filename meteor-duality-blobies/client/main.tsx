@@ -12,7 +12,7 @@ Meteor.startup(() => {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<App />}/>
-            <Route path="game" element={<App />} >
+            <Route path="game" element={<GameView />} >
                 <Route path=":gameId" element={<GameView />} />
             </Route>
         </Routes>

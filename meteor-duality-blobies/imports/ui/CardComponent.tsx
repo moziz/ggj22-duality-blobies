@@ -9,6 +9,7 @@ interface CardProps {
     canPlay?: boolean,
     playLabel?: string,
     faceDown?: boolean,
+    highLight?: boolean,
 }
 
 export const CardComponent: React.FC<CardProps> = (
@@ -18,6 +19,7 @@ export const CardComponent: React.FC<CardProps> = (
         canPlay,
         playLabel,
         faceDown,
+        highLight,
     }) => {
     return (
         <div className={"m-2 p-1 d-flex flex-column justify-content-between"} style={{
@@ -26,10 +28,10 @@ export const CardComponent: React.FC<CardProps> = (
             maxWidth: "128px",
             maxHeight: "180px",
             borderRadius: "10px",
-            border: "1px solid " + (card.side === "Dino" ? "#9B0000" : "#00009B"),
+            border: (highLight ? "5px" : "1px") + " solid " + (card.side === "Dino" ? "#9B0000" : "#00009B"),
             backgroundColor: card.side === "Dino" ? "#FF5733" : "#6495ED",
-            backgroundImage: card.side === "Both" ? "linear-gradient(#FF5733, #6495ED)" : undefined,
-            boxShadow: faceDown ? "inset 0 0 0 1000px rgba(0,0,0,.5)" : "",
+            backgroundImage: card.side === "Both" ? "linear-gradient(#FF5733, #FF5733, #6495ED, #6495ED)" : undefined,
+            boxShadow: (faceDown && !highLight) ? "inset 0 0 0 1000px rgba(0,0,0,.5)" : "",
         }}>
             {!faceDown ? <div className={"d-flex justify-content-between"}>
                 <p className={"m-0 card-title"}><b>{card.name}</b></p>
@@ -37,7 +39,9 @@ export const CardComponent: React.FC<CardProps> = (
             </div> : null}
             {!faceDown ? <div className={"d-flex flex-column justify-content-around align-items-center"} style={{
                 height: "70px",
-                background: "url('/imgs/" + getImage(card.side, card.visuals) + "') no-repeat center",
+                backgroundImage: "url('/imgs/" + getImage(card.side, card.visuals) + "')",
+                backgroundRepeat: "no-repeat",
+                backgroundOrigin: "center",
                 backgroundSize: "cover",
                 backgroundColor: "white",
                 borderRadius: "4px",

@@ -1,18 +1,19 @@
 import {Mongo} from "meteor/mongo";
-import * as module from "module";
 
-export type Side = "Dino" | "Cat" | "Both"
+export type Side = "Dino" | "Cat" | "Both";
 
-type EffectTriggerPhase = "PlayFirst" | "Play" | "Resolve" | "Discard"
+type EffectTriggerPhase = "PlayFirst" | "Play" | "Resolve" | "Discard";
 
-type EffectType = "None" | "Draw" | "AddPower"
+type EffectType = "None" | "Draw" | "AddPower";
+
+type EffectArgKey = string;
 
 export interface ComboEffect {
     name: string
     trigger: EffectTriggerPhase,
     activeInHand?: boolean,
     effectType: EffectType,
-    effectArgs: { [key: string]: any },
+    effectArgs: Record<EffectArgKey,any>,
     comboNeed?: "NoNeed" | "OtherSame" | "OtherDifferent",
     text?: string,
 }
@@ -26,17 +27,17 @@ export interface Card {
 }
 
 export const startDeck: Card[] = [
-    {name: "Dino 1", power: 1, side: "Dino", effects: [], visuals: 1},
-    {name: "Dino 2", power: 2, side: "Dino", effects: [], visuals: 2},
-    {name: "Dino 3", power: 3, side: "Dino", effects: [], visuals: 3},
-    {name: "Dino 4", power: 4, side: "Dino", effects: [], visuals: 4},
-    {name: "Dino 5", power: 5, side: "Dino", effects: [], visuals: 5},
+    {name: "Dino", power: 1, side: "Dino", effects: [], visuals: 1},
+    {name: "Dino", power: 2, side: "Dino", effects: [], visuals: 2},
+    {name: "Dino", power: 3, side: "Dino", effects: [], visuals: 3},
+    {name: "Dino", power: 4, side: "Dino", effects: [], visuals: 4},
+    {name: "Dino", power: 5, side: "Dino", effects: [], visuals: 5},
 
-    {name: "Cat 1", power: 1, side: "Cat", effects: [], visuals: 1},
-    {name: "Cat 2", power: 2, side: "Cat", effects: [], visuals: 2},
-    {name: "Cat 3", power: 3, side: "Cat", effects: [], visuals: 3},
-    {name: "Cat 4", power: 4, side: "Cat", effects: [], visuals: 4},
-    {name: "Cat 5", power: 5, side: "Cat", effects: [], visuals: 5},
+    {name: "Cat", power: 1, side: "Cat", effects: [], visuals: 1},
+    {name: "Cat", power: 2, side: "Cat", effects: [], visuals: 2},
+    {name: "Cat", power: 3, side: "Cat", effects: [], visuals: 3},
+    {name: "Cat", power: 4, side: "Cat", effects: [], visuals: 4},
+    {name: "Cat", power: 5, side: "Cat", effects: [], visuals: 5},
 ]
 
 export const effects: ComboEffect[] = [
