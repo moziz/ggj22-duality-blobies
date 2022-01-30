@@ -4,38 +4,27 @@ import {drawPhase, startNewGame, playCardInGame, handlePurchase} from "/imports/
 import {cloneDeep} from "lodash";
 import {PlayerID} from "/imports/data/player";
 import {Card} from "/imports/data/card-data";
+import {Button} from "react-bootstrap";
+
+
+const randomString = (len: number) => {
+    const letters = "ABCDEFHJKMPRSTU2345789";
+    let result = ""
+    while (result.length < len) {
+        result += letters[Math.floor(Math.random() * letters.length)];
+    }
+    return result;
+}
 
 export const App = () => {
-    const [game, setGame] = React.useState(startNewGame());
 
-    const playCard = React.useCallback((c: Card, p: PlayerID) => {
-        setGame(prevState => {
-            const game = cloneDeep(prevState);
-            playCardInGame(game, c, p);
-            return game;
-        })
-    }, [setGame])
+    const [code] = React.useState(randomString(6));
 
-    const toDrawState = React.useCallback(() => {
-        setGame(prevState => {
-            const game = cloneDeep(prevState);
-            drawPhase(game);
-            return game;
-        })
-    }, [setGame])
-
-    const onPurchase = React.useCallback((c: Card, p: PlayerID) => {
-        setGame(prevState => {
-            const game = cloneDeep(prevState);
-            handlePurchase(game, c, p);
-            return game;
-        })
-    }, [setGame])
 
     return (
         <div className={"container-fluid"}>
-            <h1>Doality Blobies</h1>
-            <GameComponent game={game} toDrawState={toDrawState} playCard={playCard} purchaseCard={onPurchase}/>
+            <h1>Start new game</h1>
+            <a className={"btn btn-primary"} href={"/game/"+ code} role={"button"}>Start game {code}</a>
         </div>
     );
 };
