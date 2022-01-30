@@ -37,7 +37,7 @@ export const CardComponent: React.FC<CardProps> = (
             </div> : null}
             {!faceDown ? <div className={"d-flex flex-column justify-content-around align-items-center"} style={{
                 height: "70px",
-                background: "url('/imgs/" + getImage(card.side, card.power) + "') no-repeat center",
+                background: "url('/imgs/" + getImage(card.side, card.visuals) + "') no-repeat center",
                 backgroundSize: "cover",
                 backgroundColor: "white",
                 borderRadius: "4px",

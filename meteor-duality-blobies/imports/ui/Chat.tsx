@@ -4,6 +4,8 @@ import {useTracker} from "meteor/react-meteor-data";
 import {Meteor} from "meteor/meteor";
 import {AddChatMessage, ChatCollection} from "/imports/data/chat";
 import {PlayerID} from "/imports/data/player";
+import {Button} from "react-bootstrap";
+import {Variant} from "/imports/data/utils";
 
 interface ChatProps {
     game: Game,
@@ -38,24 +40,31 @@ export const Chat: React.FC<ChatProps> = ({game, clientPlayer}) => {
 
     if (!isLoading) {
         return (
-            <div>
-                {chatObject.messages.map((message, idx) =>
-                    <div key={idx} style={!message.playerId ? {fontWeight: 'bold'}:null}>
-                        {message.timestamp ? message.timestamp.toLocaleString() : "unknown time"} : {message.playerId ? message.playerId : "GAME"} : {message.message}
-                    </div>
-                )}
-                <form onSubmit={(e) => {
-                    e.preventDefault();
-                    addMessage(clientPlayer, chatMessage)
-                }}>
-                    <input value={chatMessage} onChange={(e) => setChatMessage(e.target.value)} type="text"
-                           className="form-control"/>
-                    <button className="btn btn-success" disabled={!clientPlayer} onClick={(e) => {
+            <div className={"row p-2"}>
+                <h2>Messages</h2>
+                <form className={"d-flex"}
+                      onSubmit={(e) => {
+                          e.preventDefault();
+                          addMessage(clientPlayer, chatMessage)
+                      }}
+                >
+                    <Button variant={Variant.success} disabled={!clientPlayer} onClick={(e) => {
                         e.preventDefault();
                         addMessage(clientPlayer, chatMessage)
-                    }}>Send
-                    </button>
+                    }}>
+                        Send
+                    </Button>
+                    <input
+                        value={chatMessage}
+                        onChange={(e) => setChatMessage(e.target.value)} type="text"
+                        className="form-control"
+                    />
                 </form>
+                {chatObject.messages.map((message, idx) =>
+                    <div key={idx} style={!message.playerId ? {fontWeight: 'bold'} : null}>
+                        {message.timestamp ? message.timestamp.toLocaleString() : "unknown time"} : {message.playerId ? message.playerId : "GAME"} : {message.message}
+                    </div>,
+                )}
             </div>
         );
     } else {
