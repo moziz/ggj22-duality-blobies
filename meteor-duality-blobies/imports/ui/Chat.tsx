@@ -7,7 +7,7 @@ import {PlayerID} from "/imports/data/player";
 
 interface ChatProps {
     game: Game,
-    clientPlayer: PlayerID
+    clientPlayer?: PlayerID
 }
 
 const useChat = (gameId: string = "", playerId: PlayerID) => useTracker(() => {
