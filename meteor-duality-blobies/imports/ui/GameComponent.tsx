@@ -8,6 +8,7 @@ import {PlayedCards} from "/imports/ui/PlayedCards";
 import {Shop} from "/imports/ui/Shop";
 import {getPlayersPower, getShopTurn} from "/imports/control/game-logic";
 import {Chat} from "/imports/ui/Chat";
+import {Deck} from "/imports/ui/Deck";
 
 interface GameProps {
     game: Game,
@@ -36,6 +37,7 @@ export const GameComponent: React.FC<GameProps> = ({game, toDrawState, playCard,
                                    playCard={playCard}
                                    faceDown={clientPlayer !== "p1"}
                     />
+                     {gameStarted ? <Deck cardsInDeck={game.players.p1.deck} cardsInHand={game.players.p1.deck} cardsInDiscard={game.players.p1.discard} title={"Player 1 cards"} /> : null}
                 </div>
                 <div className={"col-6 d-flex flex-column justify-content-between align-items-center"}>
                     <h2 className={"text-center"}>{game.name}</h2>
@@ -55,6 +57,7 @@ export const GameComponent: React.FC<GameProps> = ({game, toDrawState, playCard,
                                 turn={getShopTurn(game)}
                                 active={game.shop.active}
                                 onPurchase={purchaseCard}
+                                clientPlayer={clientPlayer ?? "p1"}
                             /> : null
                         }
                     </div>
@@ -67,6 +70,7 @@ export const GameComponent: React.FC<GameProps> = ({game, toDrawState, playCard,
                                    playCard={playCard}
                                    faceDown={clientPlayer !== "p2"}
                     />
+                    {gameStarted ? <Deck cardsInDeck={game.players.p2.deck} cardsInHand={game.players.p2.deck} cardsInDiscard={game.players.p2.discard} title={"Player 2 cards"} />: null}
                 </div>
             </div>
             <Chat game={game} clientPlayer={clientPlayer}/>
