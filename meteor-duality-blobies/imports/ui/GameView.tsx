@@ -10,6 +10,7 @@ import {Card} from "/imports/data/card-data";
 import {PlayerID} from "/imports/data/player";
 import {cloneDeep} from "lodash";
 import {Button} from "react-bootstrap";
+import {AddGameMessage} from "/imports/data/chat";
 
 const useGame = (gameId: string = "") => useTracker(() => {
     const subscription = Meteor.subscribe('games', gameId)
@@ -18,6 +19,7 @@ const useGame = (gameId: string = "") => useTracker(() => {
         console.log("new game")
         gameObject = startNewGame()
         gameObject.name = gameId;
+        AddGameMessage(gameObject.name, "New game has started!")
         GameCollection.upsert({_id: gameId}, gameObject)
     }
     return {
@@ -36,7 +38,6 @@ export const GameView: React.FC = () => {
     const [clientPlayer, setClientPlayer] = React.useState<PlayerID | undefined>(undefined);
 
     const setGame = React.useCallback((game: Game) => {
-        debugger;
         GameCollection.upsert({_id: gameId}, game)
     }, [gameId])
 
@@ -59,13 +60,13 @@ export const GameView: React.FC = () => {
     }, [setGame])
 
     // calculate the size
-    
+
 
     if (!isLoading) {
         if (gameObject) {
             return (
                 <div className={"container"}>
-                    <h1>Doality Blobies</h1>
+                    <h1>Cattosaurus</h1>
                     {(!clientPlayer) ? (
                         <><p><b>Select side:</b></p>
                             <Button onClick={() => setClientPlayer("p1")}>

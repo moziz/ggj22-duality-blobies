@@ -1,34 +1,100 @@
 import React from "react"
-import {Card} from "/imports/data/card-data";
+import {Card, Side} from "/imports/data/card-data";
 import {PlayerID} from "/imports/data/player";
 import {CardComponent} from "/imports/ui/CardComponent";
+import {getPlayedColors} from "/imports/control/game-logic";
+import {CatIcon, DinoIcon} from "/imports/ui/icons";
 
 interface PlayedCardsProps {
     playedCards: Card[],
     startPlayer: PlayerID,
+    p1Power: number,
+    p2Power: number,
 }
 
-export const PlayedCards: React.FC<PlayedCardsProps> = ({playedCards, startPlayer}) => {
-    const firstCards = (
-        <div className={"col"}>
-            {playedCards.length > 0 ? <CardComponent card={playedCards[0]}/> : null}
-            {playedCards.length > 3 ? <CardComponent card={playedCards[3]}/> : null}
-        </div>
-    );
+const defaultCard: Card = {
+    name: "HIDDEN",
+    power: 0,
+    side: "Both",
+    effects: [],
+    visuals: 0,
+}
 
-    const secondCards = (
-        <div className={"col"}>
+const highLights = {
+    p1: [0, 1, 3, 2, 9],
+    p2: [1, 0, 2, 3, 9],
+}
 
-            {playedCards.length > 1 ? <CardComponent card={playedCards[1]}/> : null}
-            {playedCards.length > 2 ? <CardComponent card={playedCards[2]}/> : null}
-        </div>
-    );
+
+export const PlayedCards: React.FC<PlayedCardsProps> = ({playedCards, startPlayer, p1Power, p2Power}) => {
+    const sides = getPlayedColors(playedCards);
+    let defaultSide: Side;
+    if (sides.Cat < 2) {
+        if (sides.Dino < 2) {
+            defaultSide = "Both";
+        } else {
+            defaultSide = "Cat"
+        }
+    } else {
+        defaultSide = "Dino"
+    }
+    defaultCard.side = defaultSide;
+    const cards = startPlayer === "p1" ? [
+        playedCards.length > 0 ? playedCards[0] : defaultCard,
+        playedCards.length > 1 ? playedCards[1] : defaultCard,
+        playedCards.length > 3 ? playedCards[3] : defaultCard,
+        playedCards.length > 2 ? playedCards[2] : defaultCard,
+    ] : [
+        playedCards.length > 1 ? playedCards[1] : defaultCard,
+        playedCards.length > 0 ? playedCards[0] : defaultCard,
+        playedCards.length > 2 ? playedCards[2] : defaultCard,
+        playedCards.length > 3 ? playedCards[3] : defaultCard,
+    ];
+
+    const highLightIndex = highLights[startPlayer][playedCards.length];
+    const total = sides.Cat + sides.Dino;
+    const balance = total === 0 ? 0.5 : sides.Cat / total;
 
     return (
-        <>
-            {startPlayer === "p1" ? firstCards : secondCards}
-            {startPlayer === "p1" ? secondCards : firstCards}
-        </>
+        <div>
+            <p className={"text-center h4"}>Played cards</p>
+            <div className={"d-flex justify-content-around"}>
+                <div className={"big-power"}>{p1Power}</div>
+                <div className={"big-power"}>{p2Power}</div>
+            </div>
+            <div className={"d-flex align-content-around flex-wrap justify-content-center"} style={{
+                width: "400px",
+            }}>
+                <CardComponent
+                    card={cards[0]}
+                    faceDown={cards[0].name === "HIDDEN"}
+                    highLight={0 === highLightIndex}
+                />
+                <div className={"splitter"}></div>
+                <CardComponent
+                    card={cards[1]}
+                    faceDown={cards[1].name === "HIDDEN"}
+                    highLight={1 === highLightIndex}
+                />
+                <CardComponent
+                    card={cards[2]}
+                    faceDown={cards[2].name === "HIDDEN"}
+                    highLight={2 === highLightIndex}
+                />
+                <div className={"splitter"}></div>
+                <CardComponent
+                    card={cards[3]}
+                    faceDown={cards[3].name === "HIDDEN"}
+                    highLight={3 === highLightIndex}
+                />
+            </div>
+            <label htmlFor="customRange1" className="form-label m-0 ps-4 pe-4"><i>Keep the balance!</i></label>
+            <div className={"d-flex ps-4 pe-4 mb-4"}>
+                <div className={"me-2 icon"} ><DinoIcon/></div>
+                <input type="range" className="form-range" id="customRange1" disabled value={balance*100}/>
+                <div className={"ms-2 icon"}><CatIcon/></div>
+            </div>
+        </div>
     );
 }
 

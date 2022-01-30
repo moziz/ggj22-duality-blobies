@@ -1,7 +1,9 @@
-import {Card, startDeck, Side, getShopPool} from "/imports/data/card-data";
+import {Card, startDeck, Side, getShopPool, getBadCard} from "/imports/data/card-data";
 import {cloneDeep, concat, findIndex} from "lodash";
 import {Game, GamePlayerData} from "/imports/data/game";
 import {PlayerID} from "/imports/data/player";
+import {AddGameMessage} from "/imports/data/chat";
+
 
 const getDefaultPlayer: (player: PlayerID) => GamePlayerData = (player) => {
     return {
@@ -14,9 +16,12 @@ const getDefaultPlayer: (player: PlayerID) => GamePlayerData = (player) => {
     }
 }
 
+
 const getOtherPlayer = (p: PlayerID) => p === "p1" ? "p2" : "p1";
 
+
 export const startNewGame: () => Game = () => {
+
     const newGame: Game = {
         name: "new game",
         players: {
@@ -36,6 +41,7 @@ export const startNewGame: () => Game = () => {
         message: "",
         latestWinner: Math.random() > 0.5 ? "p1" : "p2",
     }
+
     return newGame;
 }
 
@@ -60,6 +66,7 @@ const drawCard: (game: Game, player: PlayerID) => Card | undefined = (game: Game
     return game.players[player].deck.pop();
 }
 
+
 export const drawPhase = (game: Game) => {
     for (let player of ["p1", "p2"] as PlayerID[]) {
         while (game.players[player].hand.length < 5) {
@@ -74,8 +81,7 @@ export const drawPhase = (game: Game) => {
 }
 
 
-export const handlePurchase = (game: Game, card: Card, player: PlayerID) =>
-{
+export const handlePurchase = (game: Game, card: Card, player: PlayerID) => {
     // remove from shop
     const i = findIndex(game.shop.offers, c => c.name === card.name);
     game.shop.offers.splice(i, 1);
@@ -85,7 +91,7 @@ export const handlePurchase = (game: Game, card: Card, player: PlayerID) =>
     game.shop.secondGotOne = game.shop.offers.length < 2;
 
     // if both purchased, then next round
-    if(game.shop.firstGotOne && game.shop.secondGotOne){
+    if (game.shop.firstGotOne && game.shop.secondGotOne) {
         game.shop.active = false;
         nextRound(game);
     }
@@ -93,11 +99,9 @@ export const handlePurchase = (game: Game, card: Card, player: PlayerID) =>
 
 
 export const getPlayersPower = (game: Game) => {
-    if (game.roundCards.length < 4) {
-        throw new Error("Dont end round if less than 4 cards!");
-    }
-    const startPlayerPower = game.roundCards[0].power + game.roundCards[3].power;
-    const secondPlayerPower = game.roundCards[1].power + game.roundCards[2].power;
+    const c = game.roundCards.length;
+    const startPlayerPower = (c > 0 ? game.roundCards[0].power : 0) + (c > 3 ? game.roundCards[3].power : 0);
+    const secondPlayerPower = (c > 1 ? game.roundCards[1].power : 0) + (c > 2 ? game.roundCards[2].power : 0);
     return game.roundStarter === "p1" ? {
         "p1": startPlayerPower,
         "p2": secondPlayerPower,
@@ -115,6 +119,7 @@ export const getShopTurn = (game: Game) => {
     return game.latestWinner;
 }
 
+
 const nextRound = (game: Game) => {
     game.shop.offers = cloneDeep(getShopPool(3));
     game.shop.firstGotOne = false;
@@ -131,6 +136,7 @@ const nextRound = (game: Game) => {
     drawPhase(game);
 }
 
+
 export const roundScore = (game: Game) => {
     const powers = getPlayersPower(game);
     if (powers.p1 === powers.p2) {
@@ -145,12 +151,15 @@ export const roundScore = (game: Game) => {
     game.players[winner].score += game.roundScore;
     game.roundScore = 1;
     toShopPhase(game);
+
+    AddGameMessage(game.name, "Player " + winner + " is winner! Score " + game.roundScore);
 }
 
 
 export const toShopPhase = (game: Game) => {
     game.shop.active = true;
 }
+
 
 const getActivePlayer = (game: Game) => {
     if (game.roundCards.length === 0 || game.roundCards.length === 3) {
@@ -160,21 +169,24 @@ const getActivePlayer = (game: Game) => {
     }
 }
 
-const getPlayedColors: (game: Game) => Record<Side, number> = (game: Game) => {
-    const result = {"Dino": 0, "Cat": 0};
-    for (const c of game.roundCards) {
+
+export const getPlayedColors: (cards: Card[]) => Record<Side, number> = (cards) => {
+    const result = {"Dino": 0, "Cat": 0, "Both": 0};
+    for (const c of cards) {
         result[c.side] = result[c.side] ? result[c.side] + 1 : 1;
     }
     return result;
 }
 
+
 export const canPlayCard: (game: Game, card: Card, player: PlayerID) => boolean = (game: Game, card: Card, player: PlayerID) => {
     if (getActivePlayer(game) === player) {
-        const playedColors = getPlayedColors(game);
+        const playedColors = getPlayedColors(game.roundCards);
         return playedColors[card.side] <= 1;
     }
     return false;
 }
+
 
 export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boolean = (game, card, player) => {
     if (!canPlayCard(game, card, player)) {
@@ -189,8 +201,21 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
     if (game.roundCards.length > 3) {
         roundScore(game);
     }
+    else{
+        // check that user has the card needed, if not add 0-power card
+        const activeP = getActivePlayer(game);
+        const cards = getPlayedColors(game.roundCards);
+        const cardsInHand = getPlayedColors(game.players[activeP].hand);
+        if(cards.Cat > 1 && cardsInHand.Dino === 0){
+            game.players[activeP].hand.push(getBadCard("Dino"));
+        }
+        if(cards.Dino > 1 && cardsInHand.Cat === 0){
+            game.players[activeP].hand.push(getBadCard("Cat"));
+        }
+    }
     return true;
 }
+
 
 function shuffle(array: Array<any>) {
     let currentIndex = array.length, randomIndex;

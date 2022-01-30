@@ -2,3 +2,51 @@ body {
   padding: 10px;
   font-family: sans-serif;
 }
+
+.flex-container::after {
+    content: "";
+    flex-grow: 1;
+    max-width: 450px;
+    min-width: 350px;
+    margin-right: 10px;        /* to match the other flex items */
+}
+
+.power{
+    font-size: 24px;
+    background: white;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 3px solid black;
+    box-sizing: border-box;
+    border-radius: 50%;
+}
+.big-power{
+    font-size: 28px;
+    background: white;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 3px solid black;
+    box-sizing: border-box;
+    border-radius: 50%;
+}
+
+.card-title{
+    font-size: 22px;
+}
+
+.splitter{
+    margin-left: 4px;
+    margin-right: 4px;
+    border: 2px dashed rebeccapurple;
+}
+
+.icon{
+    width: 24px;
+    height: 24px;
+}

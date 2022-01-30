@@ -1,6 +1,6 @@
 import React from 'react';
-import {Card as CardData} from "/imports/data/card-data";
-import {Button, Card} from "react-bootstrap";
+import {Card as CardData, getImage} from "/imports/data/card-data";
+import {Button} from "react-bootstrap";
 
 
 interface CardProps {
@@ -9,6 +9,7 @@ interface CardProps {
     canPlay?: boolean,
     playLabel?: string,
     faceDown?: boolean,
+    highLight?: boolean,
 }
 
 export const CardComponent: React.FC<CardProps> = (
@@ -18,23 +19,52 @@ export const CardComponent: React.FC<CardProps> = (
         canPlay,
         playLabel,
         faceDown,
+        highLight,
     }) => {
     return (
-        <Card className={"mb-3 p-0"}>
-            <Card.Header className={"d-flex justify-content-around"}><b>{faceDown ? "" : card.name}</b></Card.Header>
-            <Card.Body className={"d-flex- flex-column justify-content-around"}
-                       style={{backgroundColor: card.side === "Dino" ? "#FF5733" : "#6495ED"}}>
-                <p className={"text-center"} style={{fontSize: 144}}>{faceDown ? "" : card.power}</p>
-                {card.effects.length > 0 ? card.effects.map(
-                    effect => {
-                        return <p key={effect.name}>{faceDown ? "" : (effect.text ?? effect.name)}</p>
-                    }) : <p/>
+        <div className={"m-2 p-1 d-flex flex-column justify-content-between"} style={{
+            minWidth: "128px",
+            minHeight: "180px",
+            maxWidth: "128px",
+            maxHeight: "180px",
+            borderRadius: "10px",
+            border: (highLight ? "5px" : "1px") + " solid " + (card.side === "Dino" ? "#9B0000" : "#00009B"),
+            backgroundColor: card.side === "Dino" ? "#FF5733" : "#6495ED",
+            backgroundImage: card.side === "Both" ? "linear-gradient(#FF5733, #FF5733, #6495ED, #6495ED)" : undefined,
+            boxShadow: (faceDown && !highLight) ? "inset 0 0 0 1000px rgba(0,0,0,.5)" : "",
+        }}>
+            {!faceDown ? <div className={"d-flex justify-content-between"}>
+                <p className={"m-0 card-title"}><b>{card.name}</b></p>
+                <p className={"m-0 power"}>{card.power}</p>
+            </div> : null}
+            {!faceDown ? <div className={"d-flex flex-column justify-content-around align-items-center"} style={{
+                height: "70px",
+                backgroundImage: "url('/imgs/" + getImage(card.side, card.visuals) + "')",
+                backgroundRepeat: "no-repeat",
+                backgroundOrigin: "center",
+                backgroundSize: "cover",
+                backgroundColor: "white",
+                borderRadius: "4px",
+                border: "1px solid " + (card.side === "Dino" ? "#9B0000" : "#00009B"),
+            }}>
+            </div> : null}
+            {card.effects.length > 0 ? card.effects.map(
+                effect => {
+                    return <p key={effect.name} className={"m-0"}>{faceDown ? "" : (effect.text ?? effect.name)}</p>
+                }) : <p/>
+            }
+            <div className={"d-flex justify-content-around"}>
+                {(playCard && !faceDown) ?
+                    <Button
+                        disabled={!canPlay}
+                        onClick={() => playCard(card)}
+                        size={"sm"}
+                        title={"moi"}
+                    >
+                        {playLabel ?? "PLAY"}
+                    </Button> : null
                 }
-                <div className={"d-flex justify-content-around"}>
-                    {(playCard && !faceDown) ? <Button disabled={!canPlay}
-                                        onClick={() => playCard(card)}>{playLabel ?? "PLAY"}</Button> : null}
-                </div>
-            </Card.Body>
-        </Card>
+            </div>
+        </div>
     );
 };
