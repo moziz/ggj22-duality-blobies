@@ -1,8 +1,7 @@
 import React, {useState} from 'react';
-import {Game, GameCollection} from "/imports/data/game";
+import {Game} from "/imports/data/game";
 import {useTracker} from "meteor/react-meteor-data";
 import {Meteor} from "meteor/meteor";
-import {startNewGame} from "/imports/control/game-logic";
 import {ChatCollection} from "/imports/data/chat";
 import {PlayerID} from "/imports/data/player";
 
@@ -15,8 +14,8 @@ const useChat = (gameId: string = "", playerId: PlayerID) => useTracker(() => {
     const subscription = Meteor.subscribe('chat', gameId)
     let chatObject = ChatCollection.findOne({_id: gameId})
     if (chatObject === undefined && subscription.ready()) {
-        chatObject = {gameId: gameId, messages: []}
-        ChatCollection.upsert({gameId: gameId}, chatObject)
+        chatObject = {_id: gameId, messages: []}
+        ChatCollection.upsert({_id: gameId}, chatObject)
     }
     return {
         chatObject: chatObject,
