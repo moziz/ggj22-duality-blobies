@@ -8,18 +8,32 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 #include <SFML/System/Clock.hpp>
+#include "GuiRendering.h"
 
 extern float g_deltaTime;
 
+static bool initialized = false;
+static sf::Texture* texture = nullptr;
+static sf::Shader* mapVisShader = nullptr;
+extern sf::Clock timeFromStart;
+
+
 Map::Map()
 {
-	bool success = image.loadFromFile(Resources::getResources().mapName);
-	assert(success);
+	if (!initialized)
+	{
+		initialized = true;
 
-	success = texture.loadFromImage(image);
-	assert(success);
+		texture = new sf::Texture();
+		bool success = texture->create(1, 1);
+		assert(success);
 
-	mapVisShader = Resources::getResources().getShader(ShaderResourceName::mapVis);
+		mapVisShader = new sf::Shader();
+		mapVisShader->loadFromFile(
+			Resources::getResourcePath("assets/shader/2d.glsl"),
+			sf::Shader::Type::Fragment
+		);
+	}
 }
 
 static float length(sf::Vector2f a)
@@ -83,6 +97,26 @@ static void render(const sf::Texture* texture, const sf::Shader* shader, float x
 }
 
 
+void Map::reset(Map*& self)
+{
+	sf::Vector2f playerPos = self->playerPos;
+	std::vector<sf::Vector2f> deaths;
+	
+	std::vector<sf::Clock> deathClocks;
+	deaths.swap(self->enemyDeath);
+	deathClocks.swap(self->enemyDeathClock);
+
+	deaths.insert(deaths.end(), self->enemyBlobs.begin(), self->enemyBlobs.end());
+	deathClocks.resize(deaths.size());
+
+	delete self;
+	self = new Map();
+
+	self->playerPos = playerPos;
+	self->enemyDeath.swap(deaths);
+	self->enemyDeathClock.swap(deathClocks);
+}
+
 void Map::draw()
 {
 	const bool hotloading = true;
@@ -101,7 +135,7 @@ void Map::draw()
 
 		if (!success)
 		{
-			render(&texture, nullptr, -0.5f, -0.5f, 1, 1);
+			render(texture, nullptr, -0.5f, -0.5f, 1, 1);
 			return;
 		}
 	}
@@ -123,8 +157,12 @@ void Map::draw()
 	{
 		g_window->setMouseCursorVisible(false);
 	}
-		
-	static sf::Vector2f playerPos(0.5f, 0.5f);
+
+	bool playerBeingDamaged = false;
+	const float healthDamageDuration = 2.0f;
+	const float shieldDamageDuration = 0.5f;
+	const float shieldRecoveryDuration = 2.0f;
+	const float healthRegenDuration = 10.0f;
 	const float pi = 3.14159f;
 
 	float xInput = 0, yInput = 0, zInput = 0;
@@ -136,25 +174,56 @@ void Map::draw()
 		++yInput;
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || sf::Keyboard::isKeyPressed(sf::Keyboard::S))
 		--yInput;
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
-		++zInput;
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) || sf::Keyboard::isKeyPressed(sf::Keyboard::RControl))
-		--zInput;
 
-	if (g_window->hasFocus())
+	static bool screenShake = false;
+
+	{
+		static bool wasPressed = false;
+		if (wasPressed && !sf::Keyboard::isKeyPressed(sf::Keyboard::H))
+		{
+			wasPressed = false;
+		}
+
+		if (!wasPressed && sf::Keyboard::isKeyPressed(sf::Keyboard::H))
+		{
+			wasPressed = true;
+			screenShake = !screenShake;
+		}
+	}
+
+	{
+		static bool wasPressed = false;
+		if (wasPressed && !sf::Keyboard::isKeyPressed(sf::Keyboard::P))
+		{
+			wasPressed = false;
+		}
+
+		if (!wasPressed && sf::Keyboard::isKeyPressed(sf::Keyboard::P))
+		{
+			wasPressed = true;
+			menuOpen = !menuOpen;
+		}
+	}
+
+	if (!playerSpawningDone)
+	{
+		sf::Vector2f target(0.5f, 0.5f);
+		playerPos = lerpVector2f(playerPos, target, 4.0f * g_deltaTime);
+		if (length(playerPos - target) < 0.01f)
+			playerSpawningDone = true;
+	}
+
+	if (g_window->hasFocus() && playerSpawningDone)
 	{
 		sf::Vector2f xMovement = sf::Vector2f(-1.0f, 0.0f) * xInput;
 		sf::Vector2f yMovement = sf::Vector2f(0.0f, -1.0f) * yInput;
 		playerPos += (yMovement + xMovement) * 0.01f * g_deltaTime * 60.0f;;
 	}
 
-	static std::vector<sf::Vector2f> enemyDeath;
-	static std::vector<sf::Clock> enemyDeathClock;
+	float spawnDelay = 1.01f - fmaxf(0.0f, fminf(1.0f, score / 10000.0f));
 
-	static std::vector<sf::Vector2f> enemyPoss;
-	static std::vector<sf::Vector2f> enemyBlobs;
-	static sf::Clock enemySpawnCounter;
-	if (enemySpawnCounter.getElapsedTime().asSeconds() > 1.0f && enemyPoss.size() < 40)
+	const float enemyDamageRadius = 0.1f;
+	if (enemySpawnCounter.getElapsedTime().asSeconds() > spawnDelay && enemyPoss.size() < 40)
 	{
 		enemySpawnCounter.restart();
 		float r = std::rand() / float(RAND_MAX) * pi * 2.0f;
@@ -164,24 +233,42 @@ void Map::draw()
 		enemyBlobs.push_back(enemyPoss.back() + sf::Vector2f(rx, ry) * 0.1f);
 	}
 
+	float enemySpeed = 1.0f + score / 10000.0f;
+
 	for (int i = 0; i < enemyPoss.size(); ++i)
 	{
 		sf::Vector2f dir = playerPos - enemyBlobs[i];
 		dir = dir / length(dir);
-		enemyPoss[i] += dir * 0.001f;
-		enemyBlobs[i] += dir * 0.001f;
+		dir = dir * 0.001f * 60.0f * g_deltaTime * enemySpeed;
+		enemyPoss[i] += dir;
+		enemyBlobs[i] += dir;
+
+		if (length(playerPos - enemyBlobs[i]) < enemyDamageRadius)
+		{
+			playerBeingDamaged = true;
+			if (playerShield > 0)
+			{
+				playerShield -= g_deltaTime / shieldDamageDuration;
+			}
+
+			if (playerShield <= 0)
+			{
+				playerShield = 0;
+				playerHealth -= g_deltaTime / healthDamageDuration;
+			}
+		}
 	}
 
-	static std::vector<sf::Vector2f> grenadePoss;
-	static std::vector<sf::Vector2f> grenadeFacings;
-	static std::vector<sf::Clock> grenadeClocks;
+	if (!playerBeingDamaged && playerShield >= 1 && playerHealth < 1)
+	{
+		playerHealth = fminf(1.0f, playerHealth + g_deltaTime / healthRegenDuration);
+	}
 
-	static std::vector<sf::Vector2f> splosionPoss;
-	static std::vector<sf::Clock> splosionClocks;
+	if (!playerBeingDamaged && playerShield < 1)
+	{
+		playerShield = fminf(1.0f, playerShield + g_deltaTime / shieldRecoveryDuration);
+	}
 
-	static sf::Vector2f lazerStart;
-	static sf::Vector2f lazerEnd;
-	static sf::Clock lazerClock;
 	const float lazerCooldown = 0.5f;
 	const float lazerDuration = 0.51f;
 	const float lazerLength = 0.3f;
@@ -195,7 +282,7 @@ void Map::draw()
 		}
 		else if (g_window->hasFocus() && !wasPressed && sf::Mouse::isButtonPressed(sf::Mouse::Left))
 		{
-			static volatile float grenadeFlightSpeed = 0.01f;
+			const float grenadeFlightSpeed = 0.01f;
 
 			wasPressed = true;
 			sf::Vector2f grenadeDirection = aimPos - playerPos;
@@ -222,6 +309,8 @@ void Map::draw()
 			lazerStart = playerPos;
 			lazerEnd = playerPos + lazerDirection / length(lazerDirection) * lazerLength;
 
+			int hitCount = 0;
+
 			for (int i = 0; i < enemyPoss.size(); i++)
 			{
 				float dist = distanceFromLine(lazerStart, lazerEnd, enemyPoss[i]);
@@ -236,7 +325,19 @@ void Map::draw()
 					enemyPoss.erase(enemyPoss.begin() + i);
 					enemyBlobs.erase(enemyBlobs.begin() + i);
 					--i;
+
+					hitCount += 1;
 				}
+			}
+
+			if (hitCount == 0)
+			{
+				combo = 0;
+			}
+			else
+			{
+				score += combo * hitCount;
+				combo += hitCount;
 			}
 		}
 	}
@@ -256,7 +357,7 @@ void Map::draw()
 		enemyDeathProgress.push_back(enemyDeathClock[i].getElapsedTime() / enemyDeathDuration);
 	}
 
-	sf::Time grenadeFlightDuration = sf::seconds(0.5f);
+	sf::Time grenadeFlightDuration = sf::seconds(0.3f);
 
 	for (int i = 0; i < grenadePoss.size(); ++i)
 	{
@@ -295,13 +396,19 @@ void Map::draw()
 	mapVisShader->setUniform("playerPos", playerPos);
 	mapVisShader->setUniform("aimDirection", aimPos);
 
+	mapVisShader->setUniform("playerHealth", playerHealth);
+	mapVisShader->setUniform("playerShield", playerShield);
+	mapVisShader->setUniform("playerBeingDamaged", playerBeingDamaged);
+
 	float lazerProgress = lazerClock.getElapsedTime() / sf::seconds(lazerDuration);
+	float lazerCooldownProgress = lazerClock.getElapsedTime() / sf::seconds(lazerCooldown);
 	if (lazerProgress >= 0.0 && lazerProgress <= 1.0)
 	{
 		mapVisShader->setUniform("lazer_start", lazerStart);
 		mapVisShader->setUniform("lazer_end", lazerEnd);
-		mapVisShader->setUniform("lazer_progress", lazerClock.getElapsedTime() / sf::seconds(lazerDuration));
+		mapVisShader->setUniform("lazer_progress", lazerProgress);
 	}
+	mapVisShader->setUniform("lazer_cooldown", lazerCooldownProgress);
 
 	if (grenadePoss.size() > 0)
 	{
@@ -335,32 +442,52 @@ void Map::draw()
 		mapVisShader->setUniformArray("deaths_progress", enemyDeathProgress.data(), enemyDeathProgress.size());
 	}
 
-	static sf::Clock t;
-	mapVisShader->setUniform("time", t.getElapsedTime().asSeconds());
+	mapVisShader->setUniform("time", timeFromStart.getElapsedTime().asSeconds());
+
+	static float scoreBlend = 0.0f;
+	static float comboBlend = 0.0f;
+
+	auto lerp = [](float a, float b)
+	{
+		float r = a + (b - a) * (1.0f * g_deltaTime);
+		r = fmaxf(fminf(a, b), fminf(r, fmaxf(a, b)));
+		return r;
+	};
+
+	scoreBlend = lerp(scoreBlend, float(score));
+	comboBlend = lerp(comboBlend, float(combo));
+
+	mapVisShader->setUniform("score", scoreBlend);
+	mapVisShader->setUniform("combo", comboBlend);
 
 	{
-		auto smoothstep = [](float a, float b, float t)
+		sf::Vector2f s = sf::Vector2f(1, 1) * fmaxf(windowSize.x / windowSize.y, 1.0f);
+
+		sf::Vector2f p = s * -0.5f;
+
+		if (screenShake)
 		{
-			float f = (t - a) / (b - a);
-			return fminf(1.0, fmaxf(0.0, f));
-		};
+			auto smoothstep = [](float a, float b, float t)
+			{
+				float f = (t - a) / (b - a);
+				return fminf(1.0, fmaxf(0.0, f));
+			};
 
-		auto normalize = [](sf::Vector2f v)
-		{
-			return v / fmaxf(0.0001f, length(v));
-		};
+			auto normalize = [](sf::Vector2f v)
+			{
+				return v / fmaxf(0.0001f, length(v));
+			};
 
-		sf::Vector2f p(-0.5, -0.5f);
-		sf::Vector2f s(1, 1);
-		p += normalize(lazerEnd - lazerStart) * smoothstep(0.1f, 0.0f, lazerClock.getElapsedTime().asSeconds()) * 0.006f;
+			p += normalize(lazerEnd - lazerStart) * smoothstep(0.3f, 0.0f, lazerClock.getElapsedTime().asSeconds()) * 0.006f;
 
 
-		for (int i = 0; i < grenadePoss.size(); ++i)
-		{
-			p += normalize(-grenadeFacings[i]) * smoothstep(0.1f, 0.0f, grenadeClocks[i].getElapsedTime().asSeconds()) * 0.003f;
+			for (int i = 0; i < grenadePoss.size(); ++i)
+			{
+				p += normalize(-grenadeFacings[i]) * smoothstep(0.3f, 0.0f, grenadeClocks[i].getElapsedTime().asSeconds()) * 0.001f;
+			}
 		}
 
-		render(&texture, mapVisShader.get(), p.x, p.y, 1, 1);
+		render(texture, mapVisShader, p.x, p.y, s.x, s.y);
 	}
 }
 

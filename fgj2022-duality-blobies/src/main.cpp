@@ -8,10 +8,14 @@
 sf::RenderWindow *g_window = nullptr;
 
 extern float g_deltaTime = 0.016f;
+extern sf::Vector2f g_resolution;
 
 int main()
 {
     std::cout << "Working directory: " << getWorkingDir() << std::endl;
+
+	float monitorHeight = sf::VideoMode::getDesktopMode().height - 80;
+	g_resolution = sf::Vector2f(monitorHeight, monitorHeight);
 
 	sf::RenderWindow window{ sf::VideoMode(int(Game::getResolution().x), int(Game::getResolution().y)), Game::getName() };
 	g_window = &window;

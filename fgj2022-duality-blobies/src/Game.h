@@ -24,7 +24,7 @@ public:
 
 	static sf::String getName()
 	{
-		return "FGJ 2021";
+		return "Duality Blobies";
 	}
 
 	static sf::Vector2f getResolution()
@@ -42,7 +42,7 @@ public:
 private:
 
 	sf::Text m_guiText;
-	Map map;
+	Map* map = new Map;
     float cameraLerpPerSecond = 5;
     std::string debugText;
     float cameraMinSize = 10;

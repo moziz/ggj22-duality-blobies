@@ -12,7 +12,7 @@
 #include "Map.h"
 
 std::string g_currentTextInput;
-sf::Vector2f g_resolution{ 1280,720 };
+sf::Vector2f g_resolution{ 720,720 };
 sf::Clock syncClock;
 sf::Clock timeFromStart;
 sf::Time syncCycle = sf::seconds(0.1f);
@@ -24,6 +24,31 @@ Game::Game()
 
 void Game::update(sf::Time elapsedTime)
 {
+    bool reset = false;
+
+    {
+        static bool wasPressed = false;
+        if (wasPressed && !sf::Keyboard::isKeyPressed(sf::Keyboard::R))
+        {
+            wasPressed = false;
+        }
+
+        if (!wasPressed && sf::Keyboard::isKeyPressed(sf::Keyboard::R))
+        {
+            wasPressed = true;
+            reset = true;
+        }
+    }
+
+    if (map->playerHealth <= 0)
+    {
+        reset = true;
+    }
+
+    if (reset)
+    {
+        Map::reset(map);
+    }
 }
 
 static void encodeAnsi(sf::Uint32 codepoint, std::back_insert_iterator<std::string> output, char replacement = '?', const std::locale &locale = std::locale())
@@ -79,7 +104,7 @@ void Game::textInput(sf::Uint32 unicode)
 
 void Game::draw(sf::RenderWindow& window)
 {
-    map.draw();
+    map->draw();
 }
 
 void Game::gui(sf::RenderWindow& window)

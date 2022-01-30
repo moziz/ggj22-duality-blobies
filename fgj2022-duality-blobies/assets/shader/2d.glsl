@@ -1,12 +1,21 @@
 #version 120
 
-uniform vec2 playerPos;
-uniform vec2 aimDirection;
-uniform int bulletCount;
-uniform vec3[] bulletPosArray;
-uniform vec3[] bulletFacingArray;
-uniform float[] bulletTimeArray;
 uniform float time;
+uniform float score;
+uniform float combo;
+
+uniform vec2 playerPos;
+uniform float playerHealth;
+//const float playerHealth = 1.0;
+uniform float playerShield;
+uniform bool playerBeingDamaged;
+
+uniform vec2 aimDirection;
+uniform vec2 lazer_start;
+uniform vec2 lazer_end;
+uniform float lazer_progress;
+uniform float lazer_cooldown;
+
 
 //const int enemy_max = 2;
 //const vec2[] enemies = vec2[enemy_max]( vec2(0.2, 0.2), vec2(0.8, 0.8) );
@@ -32,10 +41,6 @@ uniform float[] splosions_progress;
 //const vec2[] grenades = vec2[grenades_max](vec2(0.4,0.4), vec2(0.6, 0.45));
 uniform int grenades_count;
 uniform vec2[] grenades;
-
-uniform vec2 lazer_start;
-uniform vec2 lazer_end;
-uniform float lazer_progress;
 
 const vec4 pParam = vec4( 17.0*17.0, 34.0, 1.0, 7.0);
 const float pi = 3.14159;
@@ -93,7 +98,7 @@ vec4 drawBlobies(vec2 pos)
 	
 	REPEAT_40(DEATHS);
 
-	return vec4(0,1,0,resultHeight);
+	return vec4(0.2,1,0.3,resultHeight);
 }
 
 vec4 drawSplosions(vec2 pos)
@@ -159,7 +164,13 @@ vec4 drawPlayer(vec2 pos)
 	float radius = 0.03;
 	float dist = length(pos - obj);
 	float height = smoothstep(0.0, 0.3, 1 - dist / radius);
-	return vec4(0,0,1,height);
+	vec3 color = vec3(0.9,2.0,0) * smoothstep(0.3, 1.0, lazer_cooldown) + vec3(0,0,1.2);
+	if (playerBeingDamaged)
+	{
+		color = vec3(0, 0.8, 3);
+		color += vec3(1, -2, -2) * smoothstep(0,1,1-playerShield);
+	}
+	return vec4(color,height);
 }
 
 vec4 drawAim(vec2 pos)
@@ -178,8 +189,8 @@ vec4 drawLazer(vec2 pos)
 	float t = ((pos.x - a.x) * d.x + (pos.y - a.y) * d.y) / (d.x * d.x + d.y * d.y);
 	float radius = 0.02 * s(1.0, 0.0, lazer_progress);
 	float dist = length((a + d * t) - pos);
-	float height = smoothstep(0.0, 0.3, 1 - dist / radius) * 1.2;
-	return vec4(1,1,1,height);
+	float height = smoothstep(0.0, 0.8, 1 - dist / radius) * 1.2;
+	return vec4(1,2,3,height);
 }
 
 vec4 drawGrenades(vec2 pos)
@@ -301,7 +312,7 @@ vec3 mb(vec3 p) {
 
 		theta = atan(z.y / z.x);
         #ifdef phase_shift_on
-		phi = asin(z.z / r) + time*0.03;
+		phi = asin(z.z / r) + score*0.001 - time*0.01;
         #else
         phi = asin(z.z / r);
         #endif
@@ -359,7 +370,7 @@ vec3 intersect( in vec3 ro, in vec3 rd )
     float step = 0.0;
     float error = 1000.0;
     
-    for( int i=0; i<80; i++ )
+    for( int i=0; i < 80; i++ )
     {
         if( error < pixel_size*0.5 || t > 20.0 )
         {
@@ -402,8 +413,8 @@ vec3 intersect( in vec3 ro, in vec3 rd )
  { 
 	pixel_size = 1.0f / 2000.0f;
 	 
-	vec3 pos = vec3(0.,0.,-2.5f);
-	vec3 forward = vec3(0.,0.,1.);
+	vec3 pos = vec3(0.,2.5f,-0.02f);
+	vec3 forward = vec3(0.,-1.0 - smoothstep(0, 20, float(combo)),.02);
 	vec3 right = normalize(cross(vec3(0,1,0), forward));
 	vec3 up = normalize(cross(right, forward));
 	vec3 rd = normalize(right * (uv.x - 0.5) + up * (uv.y - 0.5) + forward);
@@ -411,9 +422,9 @@ vec3 intersect( in vec3 ro, in vec3 rd )
 
     vec3 sundir = normalize(vec3(0.1, 0.8, 0.6)); 
     vec3 sun = vec3(1.64, 1.27, 0.99); 
-    vec3 skycolor = vec3(0.6, 1.5, 1.0); 
+    vec3 skycolor = vec3(0.6, 1.5, 0.1); 
 
-	vec3 bg = exp(uv.y-2.0)*vec3(0.4, 1.6, 1.0);
+	vec3 bg = exp(uv.y-2.0)*vec3(0.4, 1.6, 0.2);
 
     float halo=clamp(dot(normalize(vec3(-ro.x, -ro.y, -ro.z)), rd), 0.0, 1.0); 
     vec3 col=bg+vec3(1.0,0.8,0.4)*pow(halo,17.0); 
@@ -440,7 +451,7 @@ vec3 intersect( in vec3 ro, in vec3 rd )
 
 		   res.y = pow(clamp(res.y, 0.0, 1.0), 0.55);
 		   vec3 tc0 = 0.5 + 0.5 * sin(3.0 + 4.2 * res.y + vec3(0.0, 0.5, 1.0));
-           col = lin *vec3(0.9, 0.8, 0.6) *  0.2 * tc0;
+           col = lin *vec3(0.9, 0.8, 0.1) *  0.2 * tc0;
  		   col=mix(col,bg, 1.0-exp(-0.001*res.x*res.x)); 
     } 
 
@@ -448,7 +459,7 @@ vec3 intersect( in vec3 ro, in vec3 rd )
     col=pow(clamp(col,0.0,1.0),vec3(0.45)); 
     col=col*0.6+0.4*col*col*(3.0-2.0*col);  // contrast
     col=mix(col, vec3(dot(col, vec3(0.33))), -0.5);  // satuation
-	vec2 q = uv;
+	//vec2 q = uv;
     //col*=0.5+0.5*pow(16.0*q.x*q.y*(1.0-q.x)*(1.0-q.y),0.7);  // vigneting
  	return vec4(col.xyz, smoothstep(0.55, .76, 1.-res.x/5.)); 
  }
@@ -467,6 +478,7 @@ void main()
 	}
 	
 	vec2 q = uv;
+	colorOut.xyz*=vec3(1,0.3,0.1) + vec3(0,0.7,0.7)*smoothstep(0, 1.0, playerHealth);
     colorOut*=0.5+0.5*pow(16.0*q.x*q.y*(1.0-q.x)*(1.0-q.y),0.7);  // vigneting
 	gl_FragColor = colorOut;
 }

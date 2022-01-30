@@ -12,7 +12,7 @@
 
 #include <assert.h>
 
-static sf::Vector2f g_resolution = sf::Vector2f(1280, 720);
+static sf::Vector2f g_resolution = sf::Vector2f(720, 720);
 static sf::Text g_text;
 
 void SfmlGuiRendering::setResolution(float x, float y)
