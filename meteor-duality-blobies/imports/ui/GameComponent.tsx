@@ -7,6 +7,7 @@ import {Card} from "/imports/data/card-data";
 import {PlayedCards} from "/imports/ui/PlayedCards";
 import {Shop} from "/imports/ui/Shop";
 import {getShopTurn} from "/imports/control/game-logic";
+import {Chat} from "/imports/ui/Chat";
 
 interface GameProps {
     game: Game,
@@ -50,6 +51,7 @@ export const GameComponent: React.FC<GameProps> = ({game, toDrawState, playCard,
                 <HandComponent cards={game.players["p2"].hand} game={game} player={"p2"} playCard={playCard}
                                faceDown={clientPlayer !== "p2"}/>
             </div>
+            <Chat game={game} clientPlayer={clientPlayer} />
         </div>
     );
 }
