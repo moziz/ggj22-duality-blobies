@@ -1,10 +1,4 @@
 import React from 'react';
-import {GameComponent} from "/imports/ui/GameComponent";
-import {drawPhase, startNewGame, playCardInGame, handlePurchase} from "/imports/control/game-logic";
-import {cloneDeep} from "lodash";
-import {PlayerID} from "/imports/data/player";
-import {Card} from "/imports/data/card-data";
-import {Button} from "react-bootstrap";
 
 
 const randomString = (len: number) => {

@@ -59,7 +59,7 @@ export const GameView: React.FC = () => {
     }, [setGame])
 
     // calculate the size
-    
+
 
     if (!isLoading) {
         if (gameObject) {
