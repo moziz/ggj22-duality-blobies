@@ -9,6 +9,7 @@ import {drawPhase, handlePurchase, playCardInGame, startNewGame} from "/imports/
 import {Card} from "/imports/data/card-data";
 import {PlayerID} from "/imports/data/player";
 import {cloneDeep} from "lodash";
+import {Button} from "react-bootstrap";
 
 const useGame = (gameId: string = "") => useTracker(() => {
     const subscription = Meteor.subscribe('games', gameId)
@@ -31,6 +32,8 @@ export const GameView: React.FC = () => {
     let {gameId} = useParams();
     console.log("id", gameId);
     const {isLoading, gameObject} = useGame(gameId);
+
+    const [clientPlayer, setClientPlayer] = React.useState<PlayerID | undefined>(undefined);
 
     const setGame = React.useCallback((game: Game) => {
         debugger;
@@ -59,12 +62,24 @@ export const GameView: React.FC = () => {
     if (!isLoading) {
         if (gameObject) {
             return (
-                <div className={"container-fluid"}>
+                <div className={"container"}>
                     <h1>Doality Blobies</h1>
+                    {(!clientPlayer) ? (
+                        <><p><b>Select side:</b></p>
+                            <Button onClick={() => setClientPlayer("p1")}>
+                                Player 1
+                            </Button>
+                            <Button onClick={() => setClientPlayer("p2")}>
+                                Player 2
+                            </Button>
+                        </>
+                    ) : null}
                     <GameComponent game={gameObject}
                                    toDrawState={() => toDrawState(gameObject)}
                                    playCard={(c, p) => playCard(c, p, gameObject)}
-                                   purchaseCard={(c, p) => onPurchase(c, p, gameObject)}/>
+                                   purchaseCard={(c, p) => onPurchase(c, p, gameObject)}
+                                   clientPlayer={clientPlayer}
+                    />
                 </div>
             );
         } else {
