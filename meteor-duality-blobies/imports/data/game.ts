@@ -9,7 +9,12 @@ import {Card} from "/imports/data/card-data";
 
 export interface Game {
     name: string,
-    shop: Card[],
+    shop: {
+        offers: Card[],
+        active: boolean,
+        firstGotOne: boolean,
+        secondGotOne: boolean,
+    },
     roundNumber: number,
     roundScore: number,
     roundStarter: PlayerID,
@@ -18,6 +23,8 @@ export interface Game {
         "p1": GamePlayerData,
         "p2": GamePlayerData,
     },
+    message: string,
+    latestWinner: PlayerID,
 }
 
 export interface GamePlayerData {

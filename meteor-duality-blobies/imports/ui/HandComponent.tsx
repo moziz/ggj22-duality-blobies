@@ -10,14 +10,15 @@ interface HandProps {
     game: Game,
     player: PlayerID,
     playCard: (c: Card, player:PlayerID) => void,
+    faceDown: boolean,
 }
 
-export const HandComponent: React.FC<HandProps> = ({cards, game, player, playCard}) => {
-    const playCardFromHand = React.useCallback((card:Card)=> playCard(card,player), [player]);
+export const HandComponent: React.FC<HandProps> = ({cards, game, player, playCard, faceDown}) => {
+    const playCardFromHand = React.useCallback((card:Card)=> playCard(card,player), [player, playCard]);
     return (
         <div>
             {cards.map((card) =>
-                <CardComponent key={card.name} card={card} canPlay={canPlayCard(game, card, player)} playCard={playCardFromHand}/>
+                <CardComponent key={card.name} card={card} canPlay={canPlayCard(game, card, player)} playCard={playCardFromHand} faceDown={faceDown}/>
             )}
         </div>
     );
