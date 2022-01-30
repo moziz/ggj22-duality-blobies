@@ -19,7 +19,7 @@ export const Shop: React.FC<ShopProps> = ({offers, turn, active, onPurchase}) =>
     //TODO get active player from client, and not from who's turn it is
     const onPlayerPurchase = useCallback((c: Card) => onPurchase(c, turn), [turn, onPurchase]);
     const shopContent = (
-        <Popover style={{width:"500px"}}>
+        <Popover style={{minWidth:"500px"}}>
             <Popover.Header>SHOP</Popover.Header>
             <Popover.Body className={"d-flex align-content-around flex-wrap justify-content-center"}>
                 <p>{infoLabel}</p>
