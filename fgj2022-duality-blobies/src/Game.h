@@ -24,7 +24,7 @@ public:
 
 	static sf::String getName()
 	{
-		return "Duality Blobies";
+		return "Blob Dive";
 	}
 
 	static sf::Vector2f getResolution()
