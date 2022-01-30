@@ -1,22 +1,27 @@
-# 5x5 Treasure Hunt
-A game about friendship and other treasures. You are trying to find the greatest treasure in the world. Connect with your friend and start the Hunt!
+# Duality Blobies
+Fend off a growing horde of blood thirsty blobs. Reveal a their weak points with anti-blob bombs (Mouse1) and finish them with a lazer (Mouse2). Dying blobs spread anti-blob effect to their neighbors. Dive into their fractal base to destroy them once and for all... It can't go on forever... Right?
+
+Successfully hitting a weak point with the lazer let's you shoot again faster. Additionally every consequent lazer hit grows a combo multiplier that makes you dive faster towards your destination at the end of infinity.
 
 # Controls
-Move your character with Arrow keys. Use mouse to start game with buttons at the top left corner (host or join multiplayer or play single player game).
-
+W,A,S,D - Move
+Mouse1 - Non-lethal anti-blob bomb
+Mouse2 - Lethal lazer
+H - Toggle screenshake
+R - Reset
 
 # Building on Linux
 Just works - I guess
 
-# Building on Windows
-- Open "local folder" like a root
-- Should notice cmake automatically
-- Select from solution Explorer "switch views" > cmake target
-- Select ggj22 (executable) Add debug config and add  "currentDir": "${projectDir}" under "configuration" array
-- Then select ggj22 (executable) > generate cache
-- Then you can select ggj22.exe as a startup item and go on pressing Debug-buttons
+# Building on Windows (Visual Studio 2019)
+- In Visual Studio open "local folder"
+- Should notice cmake automatically (wait around 10 seconds)
+- Add debug config and add "currentDir": "${projectDir}" under "configuration" array
+- (OR just copy util/visual-studio/launch.vs.json >> .vs/launch.vs.json)
+- Select "ggj22.exe" in the "Show/Hide Debug Targets..." dropdown dialog
+- Press F5 ("Start Debugging")
 
-## missing OpenAL32.dll (Windows)
+## missing OpenAL32.dll or shader (Windows)
 - Select ggj22 (executable) Add debug config and add  "currentDir": "${projectDir}" under "configuration" array
 
 # Building on a Mac
@@ -31,7 +36,5 @@ Just works - I guess
 codesign -s <identity> <code-path>
 ```
 
-
-- You might be able to build without xcode, but I don't know how :)
-
-tominDayroll325
+You might be able to build without xcode, but I don't know how :)
+- tominDayroll325
