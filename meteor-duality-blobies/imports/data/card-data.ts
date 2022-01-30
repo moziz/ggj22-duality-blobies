@@ -5,7 +5,7 @@ export type Side = "Dino" | "Cat" | "Both";
 
 type EffectTriggerPhase = "PlayFirst" | "Play" | "Resolve" | "Discard";
 
-type EffectType = "None" | "Draw" | "AddPower";
+type EffectType = "None" | "Draw" | "Swap";
 
 type EffectArgKey = string;
 
@@ -55,6 +55,8 @@ export const effects: ComboEffect[] = [
     {cardName: "Draw 1", text: "Play: Draw 1", trigger: "Play", effectType: "Draw", effectArgs: {"amount": 1}},
     {cardName: "Draw 2", text: "Play: Draw 2", trigger: "Play", effectType: "Draw", effectArgs: {"amount": 2}},
     {cardName: "Draw 3", text: "Play: Draw 3", trigger: "Play", effectType: "Draw", effectArgs: {"amount": 3}},
+    {cardName: "Swap C", text: "Play: Swap Cats", trigger: "Play", effectType: "Swap", effectArgs: {"target": "Cat"}},
+    {cardName: "Swap D", text: "Play: Swap Dinos", trigger: "Play", effectType: "Swap", effectArgs: {"target": "Dino"}},
 ];
 
 

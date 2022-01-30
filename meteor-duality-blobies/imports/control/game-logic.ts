@@ -198,17 +198,29 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
     game.roundCards.push(card);
 
     // special effects
-    for(const effect of card.effects){
-        if(effect.trigger!=="Play"){
+    for (const effect of card.effects) {
+        if (effect.trigger !== "Play") {
             continue;
         }
-        if(effect.effectType === "Draw"){
-            for(let i = 0; i < effect.effectArgs["amount"]; ++i){
+        if (effect.effectType === "Draw") {
+            for (let i = 0; i < effect.effectArgs["amount"]; ++i) {
                 const c = drawCard(game, player);
-                if(!c){
+                if (!c) {
                     break;
                 }
                 game.players[player].hand.push(c);
+            }
+        }
+        if (effect.effectType === "Swap") {
+            const counts = getPlayedColors(game.roundCards);
+            const target = effect.effectArgs["target"];
+            if ((target === "Cat" && counts.Cat === 2) || (target === "Dino" && counts.Dino === 2)) {
+                const indexA = findIndex(game.roundCards, (c) => c.side === target);
+                const indexB = findIndex(game.roundCards, (c) => c.side === target, indexA + 1);
+                console.log("Swap", indexA, indexB);
+                const tmpCard = game.roundCards[indexA];
+                game.roundCards[indexA] = game.roundCards[indexB]
+                game.roundCards[indexB] = tmpCard;
             }
         }
     }
@@ -216,16 +228,15 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
     // start new round?
     if (game.roundCards.length > 3) {
         roundScore(game);
-    }
-    else{
+    } else {
         // check that user has the card needed, if not add 0-power card
         const activeP = getActivePlayer(game);
         const cards = getPlayedColors(game.roundCards);
         const cardsInHand = getPlayedColors(game.players[activeP].hand);
-        if(cards.Cat > 1 && cardsInHand.Dino === 0){
+        if (cards.Cat > 1 && cardsInHand.Dino === 0) {
             game.players[activeP].hand.push(getBadCard("Dino"));
         }
-        if(cards.Dino > 1 && cardsInHand.Cat === 0){
+        if (cards.Dino > 1 && cardsInHand.Cat === 0) {
             game.players[activeP].hand.push(getBadCard("Cat"));
         }
     }
