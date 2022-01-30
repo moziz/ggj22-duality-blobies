@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import {Game} from "/imports/data/game";
 import {useTracker} from "meteor/react-meteor-data";
 import {Meteor} from "meteor/meteor";
-import {ChatCollection} from "/imports/data/chat";
+import {AddChatMessage, ChatCollection} from "/imports/data/chat";
 import {PlayerID} from "/imports/data/player";
 
 interface ChatProps {
@@ -30,42 +30,35 @@ export const Chat: React.FC<ChatProps> = ({game, clientPlayer}) => {
     const [chatMessage, setChatMessage] = useState("")
 
     const addMessage = React.useCallback((playerId, message) => {
-        if(playerId && message) {
-            ChatCollection.upsert({_id: game.name}, {
-                $push: {
-                    messages: {
-                        message: message,
-                        playerId: playerId,
-                        timestamp: new Date()
-                    }
-                }
-            })
+        if (playerId && message) {
+            AddChatMessage(game.name, message, playerId)
         }
         setChatMessage("")
     }, [game, clientPlayer])
 
-    if(!isLoading) {
+    if (!isLoading) {
         return (
             <div>
                 {chatObject.messages.map((message, idx) =>
-                    <div key={idx}>{message.timestamp ? message.timestamp.toLocaleString() : "unknown time"} : {message.playerId ? message.playerId : "unknown player"} : {message.message}</div>
+                    <div key={idx} style={!message.playerId ? {fontWeight: 'bold'}:null}>
+                        {message.timestamp ? message.timestamp.toLocaleString() : "unknown time"} : {message.playerId ? message.playerId : "GAME"} : {message.message}
+                    </div>
                 )}
                 <form onSubmit={(e) => {
                     e.preventDefault();
                     addMessage(clientPlayer, chatMessage)
                 }}>
-                <input value={chatMessage} onChange={(e) => setChatMessage(e.target.value)} type="text"
-                       className="form-control"/>
-                <button className="btn btn-success" disabled={!clientPlayer} onClick={(e) => {
-                    e.preventDefault();
-                    addMessage(clientPlayer, chatMessage)
-                }}>Send
-                </button>
+                    <input value={chatMessage} onChange={(e) => setChatMessage(e.target.value)} type="text"
+                           className="form-control"/>
+                    <button className="btn btn-success" disabled={!clientPlayer} onClick={(e) => {
+                        e.preventDefault();
+                        addMessage(clientPlayer, chatMessage)
+                    }}>Send
+                    </button>
                 </form>
             </div>
         );
-    }
-    else {
+    } else {
         return <div>loading</div>
     }
 };

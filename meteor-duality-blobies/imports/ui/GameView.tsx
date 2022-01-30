@@ -10,6 +10,7 @@ import {Card} from "/imports/data/card-data";
 import {PlayerID} from "/imports/data/player";
 import {cloneDeep} from "lodash";
 import {Button} from "react-bootstrap";
+import {AddGameMessage} from "/imports/data/chat";
 
 const useGame = (gameId: string = "") => useTracker(() => {
     const subscription = Meteor.subscribe('games', gameId)
@@ -18,6 +19,7 @@ const useGame = (gameId: string = "") => useTracker(() => {
         console.log("new game")
         gameObject = startNewGame()
         gameObject.name = gameId;
+        AddGameMessage(gameObject.name, "New game has started!")
         GameCollection.upsert({_id: gameId}, gameObject)
     }
     return {

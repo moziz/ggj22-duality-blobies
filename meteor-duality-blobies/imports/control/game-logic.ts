@@ -2,6 +2,7 @@ import {Card, startDeck, Side, getShopPool} from "/imports/data/card-data";
 import {cloneDeep, concat, findIndex} from "lodash";
 import {Game, GamePlayerData} from "/imports/data/game";
 import {PlayerID} from "/imports/data/player";
+import {AddChatMessage, AddGameMessage} from "/imports/data/chat";
 
 const getDefaultPlayer: (player: PlayerID) => GamePlayerData = (player) => {
     return {
@@ -17,6 +18,7 @@ const getDefaultPlayer: (player: PlayerID) => GamePlayerData = (player) => {
 const getOtherPlayer = (p: PlayerID) => p === "p1" ? "p2" : "p1";
 
 export const startNewGame: () => Game = () => {
+
     const newGame: Game = {
         name: "new game",
         players: {
@@ -36,6 +38,7 @@ export const startNewGame: () => Game = () => {
         message: "",
         latestWinner: Math.random() > 0.5 ? "p1" : "p2",
     }
+
     return newGame;
 }
 
@@ -144,6 +147,8 @@ export const roundScore = (game: Game) => {
     game.players[winner].score += game.roundScore;
     game.roundScore = 1;
     toShopPhase(game);
+
+    AddGameMessage(game.name, "Player " + winner + " is winner! Score " + game.roundScore);
 }
 
 
