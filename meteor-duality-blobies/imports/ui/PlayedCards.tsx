@@ -6,7 +6,7 @@ import {getPlayedColors} from "/imports/control/game-logic";
 import {CatIcon, DinoIcon} from "/imports/ui/icons";
 
 interface PlayedCardsProps {
-    playedCards: (Card|undefined)[],
+    playedCards: (Card | undefined)[],
     startPlayer: PlayerID,
     p1Power: number,
     p2Power: number,
@@ -51,7 +51,7 @@ export const PlayedCards: React.FC<PlayedCardsProps> = ({playedCards, startPlaye
         playedCards[3] ?? defaultCard,
     ];
     let active = 0;
-    while(playedCards[active]){
+    while (playedCards[active]) {
         active++;
     }
     const highLightIndex = highLights[startPlayer][active];
@@ -64,9 +64,9 @@ export const PlayedCards: React.FC<PlayedCardsProps> = ({playedCards, startPlaye
             <div className={"d-flex justify-content-between"}>
                 <div/>
                 <div/>
-                <div className={"big-power"}>{p1Power}</div>
+                <div className={"big-power" + (p1Power > p2Power ? " winner-power" : "")}>{p1Power}</div>
                 <div/>
-                <div className={"big-power"}>{p2Power}</div>
+                <div className={"big-power" + (p1Power < p2Power ? " winner-power" : "")}>{p2Power}</div>
                 <div/>
                 <div/>
             </div>

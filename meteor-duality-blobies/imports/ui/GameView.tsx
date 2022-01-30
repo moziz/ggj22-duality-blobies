@@ -18,7 +18,7 @@ const useGame = (gameId: string = "") => useTracker(() => {
     if (gameObject === undefined && subscription.ready()) {
         gameObject = startNewGame()
         gameObject.name = gameId;
-        AddGameMessage(gameObject.name, "New game has started!")
+        AddGameMessage(gameObject.name, "The game has started!")
         GameCollection.upsert({_id: gameId}, gameObject)
     }
     return {

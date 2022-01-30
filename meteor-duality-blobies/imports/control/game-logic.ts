@@ -142,6 +142,7 @@ export const roundScore = (game: Game) => {
         game.roundScore += 1;
         // skip shop phase
         game.message = "Equal power. No winner this round!";
+        AddGameMessage(game.name, game.message);
         return nextRound(game);
     }
     const winner: PlayerID = powers.p1 > powers.p2 ? "p1" : "p2";
@@ -151,7 +152,7 @@ export const roundScore = (game: Game) => {
     game.roundScore = 1;
     toShopPhase(game);
 
-    AddGameMessage(game.name, "Player " + winner + " is winner! Score " + game.roundScore);
+    AddGameMessage(game.name, game.message);
 }
 
 
@@ -232,6 +233,7 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
                 }
                 game.players[player].hand.push(c);
             }
+            AddGameMessage(game.name, "" + player + " draws " + effect.effectArgs["amount"] + " cards!");
         }
         if (effect.effectType === "Swap") {
             const counts = getPlayedColors(game.roundCards);
@@ -242,24 +244,28 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
                 const tmpCard = game.roundCards[indexA];
                 game.roundCards[indexA] = game.roundCards[indexB]
                 game.roundCards[indexB] = tmpCard;
+                AddGameMessage(game.name, "Swap: " + game.roundCards[indexA]?.name + " " + game.roundCards[indexB]?.name + ".");
             }
         }
         if (effect.effectType === "Destroy") {
             const target = effect.effectArgs["target"];
             const power = card.power;
             if (target === "all") {
+                AddGameMessage(game.name, "" + player + " destroys them all!");
                 game.roundCards = [];
             }
             if (target === "smaller") {
-                for(let i = 0; i < game.roundCards.length; ++i){
-                    if((game.roundCards[i]?.power ?? 0) < power){
+                for (let i = 0; i < game.roundCards.length; ++i) {
+                    if ((game.roundCards[i]?.power ?? 0) < power) {
+                        AddGameMessage(game.name, "" + player + " destroys " + game.roundCards[i]?.name + "!");
                         game.roundCards[i] = undefined;
                     }
                 }
             }
             if (target === "bigger") {
-                for(let i = 0; i < game.roundCards.length; ++i){
-                    if((game.roundCards[i]?.power ?? 0) > power){
+                for (let i = 0; i < game.roundCards.length; ++i) {
+                    if ((game.roundCards[i]?.power ?? 0) > power) {
+                        AddGameMessage(game.name, "" + player + " destroys " + game.roundCards[i]?.name + "!");
                         game.roundCards[i] = undefined;
                     }
                 }
