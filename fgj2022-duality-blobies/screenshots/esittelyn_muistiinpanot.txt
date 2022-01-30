@@ -1,0 +1,27 @@
+no sound, so don't worry that you aren't hearing anything
+
+runtime funtime diversifier
+ * no assets
+ * only code
+
+programmer art at its finest
+
+worst case for video compression
+
+you can move
+throw anti-blob bombs
+and shoot lasers
+
+throw anti-blob bombs to reveal the weak points
+
+and shoot with the laser for massive damage
+
+if you hit with the laser you can quickly shoot again
+and additionally you acrue combo to increase your score
+
+combo is visualized by zoom
+and score is visualized how much of the background fractal you have pealed back
+
+so yeah, i went hardcore with the "runtime funtime" diversifier. it was fun to invent ways around text.
+
+and finally when you die, you can see how much score you had from the duration it takes for the fractal to scroll back
