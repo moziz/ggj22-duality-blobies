@@ -36,7 +36,6 @@ export const GameView: React.FC = () => {
     const [clientPlayer, setClientPlayer] = React.useState<PlayerID | undefined>(undefined);
 
     const setGame = React.useCallback((game: Game) => {
-        debugger;
         GameCollection.upsert({_id: gameId}, game)
     }, [gameId])
 

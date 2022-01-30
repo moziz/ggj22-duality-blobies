@@ -27,6 +27,7 @@ export const CardComponent: React.FC<CardProps> = (
             maxHeight: "180px",
             borderRadius: "10px",
             backgroundColor: card.side === "Dino" ? "#FF5733" : "#6495ED",
+            backgroundImage: card.side === "Both" ? "linear-gradient(#FF5733, #6495ED)" : undefined,
             boxShadow: faceDown ? "inset 0 0 0 1000px rgba(0,0,0,.5)" : "",
         }}>
             <p className={"text-center m-0"}><b>{faceDown ? "" : card.name}</b></p>

@@ -31,7 +31,7 @@ export const Shop: React.FC<ShopProps> = ({offers, turn, active, onPurchase}) =>
     )
 
     return (
-        <OverlayTrigger trigger={"click"} placement={"top"} overlay={shopContent} rootClose>
+        <OverlayTrigger show={active ? true : undefined} trigger={"click"} placement={"top"} overlay={shopContent} rootClose>
             <Button>SHOP</Button>
         </OverlayTrigger>
     );

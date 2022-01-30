@@ -74,8 +74,7 @@ export const drawPhase = (game: Game) => {
 }
 
 
-export const handlePurchase = (game: Game, card: Card, player: PlayerID) =>
-{
+export const handlePurchase = (game: Game, card: Card, player: PlayerID) => {
     // remove from shop
     const i = findIndex(game.shop.offers, c => c.name === card.name);
     game.shop.offers.splice(i, 1);
@@ -85,7 +84,7 @@ export const handlePurchase = (game: Game, card: Card, player: PlayerID) =>
     game.shop.secondGotOne = game.shop.offers.length < 2;
 
     // if both purchased, then next round
-    if(game.shop.firstGotOne && game.shop.secondGotOne){
+    if (game.shop.firstGotOne && game.shop.secondGotOne) {
         game.shop.active = false;
         nextRound(game);
     }
@@ -160,9 +159,9 @@ const getActivePlayer = (game: Game) => {
     }
 }
 
-const getPlayedColors: (game: Game) => Record<Side, number> = (game: Game) => {
-    const result = {"Dino": 0, "Cat": 0};
-    for (const c of game.roundCards) {
+export const getPlayedColors: (cards: Card[]) => Record<Side, number> = (cards) => {
+    const result = {"Dino": 0, "Cat": 0, "Both": 0};
+    for (const c of cards) {
         result[c.side] = result[c.side] ? result[c.side] + 1 : 1;
     }
     return result;
@@ -170,7 +169,7 @@ const getPlayedColors: (game: Game) => Record<Side, number> = (game: Game) => {
 
 export const canPlayCard: (game: Game, card: Card, player: PlayerID) => boolean = (game: Game, card: Card, player: PlayerID) => {
     if (getActivePlayer(game) === player) {
-        const playedColors = getPlayedColors(game);
+        const playedColors = getPlayedColors(game.roundCards);
         return playedColors[card.side] <= 1;
     }
     return false;

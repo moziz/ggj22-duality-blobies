@@ -1,6 +1,6 @@
 import {Mongo} from "meteor/mongo";
 
-export type Side = "Dino" | "Cat"
+export type Side = "Dino" | "Cat" | "Both"
 
 type EffectTriggerPhase = "PlayFirst" | "Play" | "Resolve" | "Discard"
 

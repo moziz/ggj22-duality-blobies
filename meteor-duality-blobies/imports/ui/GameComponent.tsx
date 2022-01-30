@@ -35,7 +35,7 @@ export const GameComponent: React.FC<GameProps> = ({game, toDrawState, playCard,
                                faceDown={clientPlayer !== "p1"}
                 />
             </div>
-            <div className={"col-6  d-flex flex-column justify-content-between align-content-center"}>
+            <div className={"col-6 d-flex flex-column justify-content-between align-items-center"}>
                 <h2 className={"text-center"}>{game.name}</h2>
                 <p className={"h4"}>{game.message}</p>
                 {!gameStarted ? (<Button onClick={toDrawState}>Start game</Button>) : null}
