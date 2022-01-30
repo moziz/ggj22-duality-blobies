@@ -45,3 +45,8 @@ body {
     margin-right: 4px;
     border: 2px dashed rebeccapurple;
 }
+
+.icon{
+    width: 24px;
+    height: 24px;
+}

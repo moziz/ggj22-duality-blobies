@@ -13,7 +13,7 @@ export interface ComboEffect {
     trigger: EffectTriggerPhase,
     activeInHand?: boolean,
     effectType: EffectType,
-    effectArgs: Record<EffectArgKey,any>,
+    effectArgs: Record<EffectArgKey, any>,
     comboNeed?: "NoNeed" | "OtherSame" | "OtherDifferent",
     text?: string,
 }
@@ -24,6 +24,16 @@ export interface Card {
     side: Side,
     effects: ComboEffect[],
     visuals: number,
+}
+
+export const getBadCard: (side: Side) => Card = (side) => {
+    return {
+        name: side,
+        side,
+        power: 0,
+        effects: [],
+        visuals: 0,
+    }
 }
 
 export const startDeck: Card[] = [

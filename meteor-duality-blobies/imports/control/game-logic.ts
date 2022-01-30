@@ -1,8 +1,9 @@
-import {Card, startDeck, Side, getShopPool} from "/imports/data/card-data";
+import {Card, startDeck, Side, getShopPool, getBadCard} from "/imports/data/card-data";
 import {cloneDeep, concat, findIndex} from "lodash";
 import {Game, GamePlayerData} from "/imports/data/game";
 import {PlayerID} from "/imports/data/player";
 import {AddGameMessage} from "/imports/data/chat";
+
 
 const getDefaultPlayer: (player: PlayerID) => GamePlayerData = (player) => {
     return {
@@ -15,7 +16,9 @@ const getDefaultPlayer: (player: PlayerID) => GamePlayerData = (player) => {
     }
 }
 
+
 const getOtherPlayer = (p: PlayerID) => p === "p1" ? "p2" : "p1";
+
 
 export const startNewGame: () => Game = () => {
 
@@ -62,6 +65,7 @@ const drawCard: (game: Game, player: PlayerID) => Card | undefined = (game: Game
     }
     return game.players[player].deck.pop();
 }
+
 
 export const drawPhase = (game: Game) => {
     for (let player of ["p1", "p2"] as PlayerID[]) {
@@ -115,6 +119,7 @@ export const getShopTurn = (game: Game) => {
     return game.latestWinner;
 }
 
+
 const nextRound = (game: Game) => {
     game.shop.offers = cloneDeep(getShopPool(3));
     game.shop.firstGotOne = false;
@@ -130,6 +135,7 @@ const nextRound = (game: Game) => {
     game.roundStarter = game.latestWinner;
     drawPhase(game);
 }
+
 
 export const roundScore = (game: Game) => {
     const powers = getPlayersPower(game);
@@ -154,6 +160,7 @@ export const toShopPhase = (game: Game) => {
     game.shop.active = true;
 }
 
+
 const getActivePlayer = (game: Game) => {
     if (game.roundCards.length === 0 || game.roundCards.length === 3) {
         return game.roundStarter;
@@ -161,6 +168,7 @@ const getActivePlayer = (game: Game) => {
         return getOtherPlayer(game.roundStarter);
     }
 }
+
 
 export const getPlayedColors: (cards: Card[]) => Record<Side, number> = (cards) => {
     const result = {"Dino": 0, "Cat": 0, "Both": 0};
@@ -170,6 +178,7 @@ export const getPlayedColors: (cards: Card[]) => Record<Side, number> = (cards) 
     return result;
 }
 
+
 export const canPlayCard: (game: Game, card: Card, player: PlayerID) => boolean = (game: Game, card: Card, player: PlayerID) => {
     if (getActivePlayer(game) === player) {
         const playedColors = getPlayedColors(game.roundCards);
@@ -177,6 +186,7 @@ export const canPlayCard: (game: Game, card: Card, player: PlayerID) => boolean 
     }
     return false;
 }
+
 
 export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boolean = (game, card, player) => {
     if (!canPlayCard(game, card, player)) {
@@ -191,8 +201,21 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
     if (game.roundCards.length > 3) {
         roundScore(game);
     }
+    else{
+        // check that user has the card needed, if not add 0-power card
+        const activeP = getActivePlayer(game);
+        const cards = getPlayedColors(game.roundCards);
+        const cardsInHand = getPlayedColors(game.players[activeP].hand);
+        if(cards.Cat > 1 && cardsInHand.Dino === 0){
+            game.players[activeP].hand.push(getBadCard("Dino"));
+        }
+        if(cards.Dino > 1 && cardsInHand.Cat === 0){
+            game.players[activeP].hand.push(getBadCard("Cat"));
+        }
+    }
     return true;
 }
+
 
 function shuffle(array: Array<any>) {
     let currentIndex = array.length, randomIndex;

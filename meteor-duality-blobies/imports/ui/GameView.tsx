@@ -66,7 +66,7 @@ export const GameView: React.FC = () => {
         if (gameObject) {
             return (
                 <div className={"container"}>
-                    <h1>Doality Blobies</h1>
+                    <h1>Cattosaurus</h1>
                     {(!clientPlayer) ? (
                         <><p><b>Select side:</b></p>
                             <Button onClick={() => setClientPlayer("p1")}>

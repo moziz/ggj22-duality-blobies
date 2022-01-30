@@ -19,3 +19,8 @@ image-from-rawpixel-id-3337883-jpeg.jpg
 image-from-rawpixel-id-3286892-jpeg.jpg
 image-from-rawpixel-id-3370570-jpeg.jpg
 CC0
+
+Icons:
+Font Awesome
+https://fontawesome.com/license
+Creative Commons Attribution 4.0

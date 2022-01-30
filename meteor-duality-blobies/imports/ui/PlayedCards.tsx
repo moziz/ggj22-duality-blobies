@@ -3,6 +3,7 @@ import {Card, Side} from "/imports/data/card-data";
 import {PlayerID} from "/imports/data/player";
 import {CardComponent} from "/imports/ui/CardComponent";
 import {getPlayedColors} from "/imports/control/game-logic";
+import {CatIcon, DinoIcon} from "/imports/ui/icons";
 
 interface PlayedCardsProps {
     playedCards: Card[],
@@ -51,6 +52,8 @@ export const PlayedCards: React.FC<PlayedCardsProps> = ({playedCards, startPlaye
     ];
 
     const highLightIndex = highLights[startPlayer][playedCards.length];
+    const total = sides.Cat + sides.Dino;
+    const balance = total === 0 ? 0.5 : sides.Cat / total;
 
     return (
         <div>
@@ -84,6 +87,12 @@ export const PlayedCards: React.FC<PlayedCardsProps> = ({playedCards, startPlaye
                     faceDown={cards[3].name === "HIDDEN"}
                     highLight={3 === highLightIndex}
                 />
+            </div>
+            <label htmlFor="customRange1" className="form-label m-0 ps-4 pe-4"><i>Keep the balance!</i></label>
+            <div className={"d-flex ps-4 pe-4 mb-4"}>
+                <div className={"me-2 icon"} ><DinoIcon/></div>
+                <input type="range" className="form-range" id="customRange1" disabled value={balance*100}/>
+                <div className={"ms-2 icon"}><CatIcon/></div>
             </div>
         </div>
     );
