@@ -18,7 +18,7 @@ export interface Game {
     roundNumber: number,
     roundScore: number,
     roundStarter: PlayerID,
-    roundCards: Card[],
+    roundCards: (Card|undefined)[],
     players: {
         "p1": GamePlayerData,
         "p2": GamePlayerData,

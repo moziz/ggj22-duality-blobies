@@ -99,9 +99,8 @@ export const handlePurchase = (game: Game, card: Card, player: PlayerID) => {
 
 
 export const getPlayersPower = (game: Game) => {
-    const c = game.roundCards.length;
-    const startPlayerPower = (c > 0 ? game.roundCards[0].power : 0) + (c > 3 ? game.roundCards[3].power : 0);
-    const secondPlayerPower = (c > 1 ? game.roundCards[1].power : 0) + (c > 2 ? game.roundCards[2].power : 0);
+    const startPlayerPower = (game.roundCards[0]?.power ?? 0) + (game.roundCards[3]?.power ?? 0)
+    const secondPlayerPower = (game.roundCards[1]?.power ?? 0) + (game.roundCards[2]?.power ?? 0)
     return game.roundStarter === "p1" ? {
         "p1": startPlayerPower,
         "p2": secondPlayerPower,
@@ -125,11 +124,11 @@ const nextRound = (game: Game) => {
     game.shop.firstGotOne = false;
     game.shop.secondGotOne = false;
     game.roundNumber += 1;
-    // put round cards back to hands:
-    game.players[game.roundStarter].discard.push(game.roundCards[0]);
-    game.players[game.roundStarter].discard.push(game.roundCards[3]);
-    game.players[getOtherPlayer(game.roundStarter)].discard.push(game.roundCards[1]);
-    game.players[getOtherPlayer(game.roundStarter)].discard.push(game.roundCards[2]);
+    // put round cards back to discard
+    if (game.roundCards[0]) game.players[game.roundStarter].discard.push(game.roundCards[0]);
+    if (game.roundCards[3]) game.players[game.roundStarter].discard.push(game.roundCards[3]);
+    if (game.roundCards[1]) game.players[getOtherPlayer(game.roundStarter)].discard.push(game.roundCards[1]);
+    if (game.roundCards[2]) game.players[getOtherPlayer(game.roundStarter)].discard.push(game.roundCards[2]);
 
     game.roundCards = [];
     game.roundStarter = game.latestWinner;
@@ -162,7 +161,11 @@ export const toShopPhase = (game: Game) => {
 
 
 const getActivePlayer = (game: Game) => {
-    if (game.roundCards.length === 0 || game.roundCards.length === 3) {
+    let active = 0;
+    while (game.roundCards[active]) {
+        active++;
+    }
+    if (active === 0 || active === 3) {
         return game.roundStarter;
     } else {
         return getOtherPlayer(game.roundStarter);
@@ -170,9 +173,12 @@ const getActivePlayer = (game: Game) => {
 }
 
 
-export const getPlayedColors: (cards: Card[]) => Record<Side, number> = (cards) => {
+export const getPlayedColors: (cards: (Card | undefined)[]) => Record<Side, number> = (cards) => {
     const result = {"Dino": 0, "Cat": 0, "Both": 0};
     for (const c of cards) {
+        if (!c) {
+            continue;
+        }
         result[c.side] = result[c.side] ? result[c.side] + 1 : 1;
     }
     return result;
@@ -195,7 +201,6 @@ export const getCannotReason: (game: Game, card: Card, player: PlayerID) => stri
     if (playedColors[card.side] >= 2) {
         return "Balance!";
     }
-
     return undefined;
 }
 
@@ -206,8 +211,13 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
     }
 
     const i = findIndex(game.players[player].hand, c => c.name === card.name && c.power === card.power && c.side === card.side);
-    const removed = game.players[player].hand.splice(i, 1);
-    game.roundCards.push(card);
+    game.players[player].hand.splice(i, 1);
+    for (let i = 0; i < 4; ++i) {
+        if (!game.roundCards[i]) {
+            game.roundCards[i] = card;
+            break;
+        }
+    }
 
     // special effects
     for (const effect of card.effects) {
@@ -227,8 +237,8 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
             const counts = getPlayedColors(game.roundCards);
             const target = effect.effectArgs["target"];
             if ((target === "Cat" && counts.Cat === 2) || (target === "Dino" && counts.Dino === 2)) {
-                const indexA = findIndex(game.roundCards, (c) => c.side === target);
-                const indexB = findIndex(game.roundCards, (c) => c.side === target, indexA + 1);
+                const indexA = findIndex(game.roundCards, (c) => c?.side === target);
+                const indexB = findIndex(game.roundCards, (c) => c?.side === target, indexA + 1);
                 const tmpCard = game.roundCards[indexA];
                 game.roundCards[indexA] = game.roundCards[indexB]
                 game.roundCards[indexB] = tmpCard;
@@ -236,14 +246,33 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
         }
         if (effect.effectType === "Destroy") {
             const target = effect.effectArgs["target"];
+            const power = card.power;
             if (target === "all") {
                 game.roundCards = [];
+            }
+            if (target === "smaller") {
+                for(let i = 0; i < game.roundCards.length; ++i){
+                    if((game.roundCards[i]?.power ?? 0) < power){
+                        game.roundCards[i] = undefined;
+                    }
+                }
+            }
+            if (target === "bigger") {
+                for(let i = 0; i < game.roundCards.length; ++i){
+                    if((game.roundCards[i]?.power ?? 0) > power){
+                        game.roundCards[i] = undefined;
+                    }
+                }
             }
         }
     }
 
     // start new round?
-    if (game.roundCards.length > 3) {
+    let active = 0;
+    while (game.roundCards[active]) {
+        active++;
+    }
+    if (active > 3) {
         roundScore(game);
     } else {
         // check that user has the card needed, if not add 0-power card
