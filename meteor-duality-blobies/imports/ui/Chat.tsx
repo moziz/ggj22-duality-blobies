@@ -50,6 +50,10 @@ export const Chat: React.FC<ChatProps> = ({game, clientPlayer}) => {
                 {chatObject.messages.map((message, idx) =>
                     <div key={idx}>{message.timestamp ? message.timestamp.toLocaleString() : "unknown time"} : {message.playerId ? message.playerId : "unknown player"} : {message.message}</div>
                 )}
+                <form onSubmit={(e) => {
+                    e.preventDefault();
+                    addMessage(clientPlayer, chatMessage)
+                }}>
                 <input value={chatMessage} onChange={(e) => setChatMessage(e.target.value)} type="text"
                        className="form-control"/>
                 <button className="btn btn-success" disabled={!clientPlayer} onClick={(e) => {
@@ -57,6 +61,7 @@ export const Chat: React.FC<ChatProps> = ({game, clientPlayer}) => {
                     addMessage(clientPlayer, chatMessage)
                 }}>Send
                 </button>
+                </form>
             </div>
         );
     }
