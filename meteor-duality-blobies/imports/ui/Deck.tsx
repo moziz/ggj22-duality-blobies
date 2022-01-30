@@ -29,7 +29,7 @@ export const Deck: React.FC<DeckProps> = ({cardsInDeck,cardsInDiscard, cardsInHa
 
     return (
         <OverlayTrigger trigger={"click"} placement={"top"} overlay={deckContent} rootClose>
-            <Button>Deck</Button>
+            <Button>Look Deck</Button>
         </OverlayTrigger>
     );
 }

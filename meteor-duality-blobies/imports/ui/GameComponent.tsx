@@ -29,7 +29,7 @@ export const GameComponent: React.FC<GameProps> = ({game, toDrawState, playCard,
                 backgroundImage: "url('/imgs/cat_backround.jpg')",
                 boxShadow: "inset 0 0 0 1000px rgba(255,255,255,.5)",
             }}>
-                <div className={"col-3 d-flex flex-column"}>
+                <div className={"col-3 d-flex flex-column p-0"}>
                     <h2 className={"text-center"}>Player 1</h2>
                     {game.players["p1"].score ? <h5 className={"text-center"}>Score {game.players["p1"].score}</h5> : null}
                     <HandComponent cards={game.players["p1"].hand}
@@ -62,7 +62,7 @@ export const GameComponent: React.FC<GameProps> = ({game, toDrawState, playCard,
                         }
                     </div>
                 </div>
-                <div className={"col-3 d-flex flex-column"}>
+                <div className={"col-3 d-flex flex-column p-0"}>
                     <h2 className={"text-center"}>Player 2</h2>
                     {game.players["p2"].score ? <h5 className={"text-center"}>Score {game.players["p2"].score} / 20</h5>: null}
                     <HandComponent cards={game.players["p2"].hand}

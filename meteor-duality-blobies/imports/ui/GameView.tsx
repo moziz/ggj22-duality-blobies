@@ -16,7 +16,6 @@ const useGame = (gameId: string = "") => useTracker(() => {
     const subscription = Meteor.subscribe('games', gameId)
     let gameObject = GameCollection.findOne({_id: gameId})
     if (gameObject === undefined && subscription.ready()) {
-        console.log("new game")
         gameObject = startNewGame()
         gameObject.name = gameId;
         AddGameMessage(gameObject.name, "New game has started!")
@@ -32,7 +31,6 @@ const useGame = (gameId: string = "") => useTracker(() => {
 export const GameView: React.FC = () => {
 
     let {gameId} = useParams();
-    console.log("id", gameId);
     const {isLoading, gameObject} = useGame(gameId);
 
     const [clientPlayer, setClientPlayer] = React.useState<PlayerID | undefined>(undefined);

@@ -26,7 +26,6 @@ const useChat = (gameId: string = "", playerId?: PlayerID) => useTracker(() => {
 }, [gameId, playerId])
 
 export const Chat: React.FC<ChatProps> = ({game, clientPlayer}) => {
-    console.log(clientPlayer)
 
     const {isLoading, chatObject} = useChat(game.name, clientPlayer);
     const [chatMessage, setChatMessage] = useState("")

@@ -84,7 +84,6 @@ export const drawPhase = (game: Game) => {
 export const handlePurchase = (game: Game, card: Card, player: PlayerID) => {
     // remove from shop
     const i = findIndex(game.shop.offers, c => c.name === card.name && c.power === c.power && c.side === c.side);
-    console.log("handlePurchase", i);
     game.shop.offers.splice(i, 1);
     game.players[player].discard.push(card);
 
@@ -195,9 +194,21 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
     }
 
     const i = findIndex(game.players[player].hand, c => c.name === card.name && c.power === c.power && c.side === c.side);
-    console.log("playCardInGame", i);
     game.players[player].hand.splice(i, 1);
     game.roundCards.push(card);
+
+    // special effects
+    for(const effect of card.effects){
+        if(effect.effectType === "Draw"){
+            for(let i = 0; i < effect.effectArgs["amount"]; ++i){
+                const c = drawCard(game, player);
+                if(!c){
+                    break;
+                }
+                game.players[player].hand.push(c);
+            }
+        }
+    }
 
     // start new round?
     if (game.roundCards.length > 3) {

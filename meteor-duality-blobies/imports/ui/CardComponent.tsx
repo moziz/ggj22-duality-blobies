@@ -28,10 +28,10 @@ export const CardComponent: React.FC<CardProps> = (
             maxWidth: "128px",
             maxHeight: "180px",
             borderRadius: "10px",
-            border: (highLight ? "5px" : "1px") + " solid " + (card.side === "Dino" ? "#9B0000" : "#00009B"),
+            border: ((highLight || (faceDown && card.name !== "HIDDEN")) ? "5px" : "1px") + " solid " + (card.side === "Dino" ? "#9B0000" : "#00009B"),
             backgroundColor: card.side === "Dino" ? "#FF5733" : "#6495ED",
-            backgroundImage: card.side === "Both" ? "linear-gradient(#FF5733, #FF5733, #6495ED, #6495ED)" : undefined,
-            boxShadow: (faceDown && !highLight) ? "inset 0 0 0 1000px rgba(0,0,0,.5)" : "",
+            backgroundImage: card.side === "Both" ? "linear-gradient(#FF5733, #FF5733, #6495ED, #6495ED)" : ( (faceDown && card.name !== "HIDDEN") ? "url('/imgs/card-back-text.png')": undefined),
+            boxShadow: (faceDown && !highLight) ? "inset 0 0 0 1000px rgba(255,255,255,.25)" : "",
         }}>
             {!faceDown ? <div className={"d-flex justify-content-between"}>
                 <p className={"m-0 card-title"}><b>{card.name}</b></p>
