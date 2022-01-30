@@ -83,7 +83,8 @@ export const drawPhase = (game: Game) => {
 
 export const handlePurchase = (game: Game, card: Card, player: PlayerID) => {
     // remove from shop
-    const i = findIndex(game.shop.offers, c => c.name === card.name);
+    const i = findIndex(game.shop.offers, c => c.name === card.name && c.power === c.power && c.side === c.side);
+    console.log("handlePurchase", i);
     game.shop.offers.splice(i, 1);
     game.players[player].discard.push(card);
 
@@ -193,7 +194,8 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
         return false;
     }
 
-    const i = findIndex(game.players[player].hand, c => c.name === card.name);
+    const i = findIndex(game.players[player].hand, c => c.name === card.name && c.power === c.power && c.side === c.side);
+    console.log("playCardInGame", i);
     game.players[player].hand.splice(i, 1);
     game.roundCards.push(card);
 
@@ -217,7 +219,7 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
 }
 
 
-function shuffle(array: Array<any>) {
+export function shuffle(array: Array<any>) {
     let currentIndex = array.length, randomIndex;
     // While there remain elements to shuffle...
     while (currentIndex != 0) {
