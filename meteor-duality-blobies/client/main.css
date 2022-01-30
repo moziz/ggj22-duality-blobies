@@ -27,7 +27,7 @@ body {
 @keyframes animateBorder {
   to {
     outline-color: #EA3556;
-    box-shadow: 0 0 0 5px yellow;
+    box-shadow: 0 0 0 4px yellow;
   }
 }
 
@@ -46,7 +46,7 @@ body {
 .winner-power{
     border: 0;
     outline: 5px dashed yellow;
-    box-shadow: 0 0 0 5px #EA3556;
+    box-shadow: 0 0 0 4px #EA3556;
     animation: 0.75s animateBorder infinite;
 }
 
@@ -64,3 +64,4 @@ body {
     width: 24px;
     height: 24px;
 }
+
