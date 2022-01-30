@@ -57,7 +57,9 @@ export const effects: ComboEffect[] = [
     {cardName: "Draw 3", text: "Play: Draw 3", trigger: "Play", effectType: "Draw", effectArgs: {"amount": 3}},
     {cardName: "Swap C", text: "Play: Swap Cats", trigger: "Play", effectType: "Swap", effectArgs: {"target": "Cat"}},
     {cardName: "Swap D", text: "Play: Swap Dinos", trigger: "Play", effectType: "Swap", effectArgs: {"target": "Dino"}},
-    {cardName: "Destroy", text: "Play: Destroy all", trigger: "Play", effectType: "Destroy", effectArgs: {}},
+    {cardName: "Eat", text: "Play: Eat all", trigger: "Play", effectType: "Destroy", effectArgs: {"target":"all"}},
+    {cardName: "Eat", text: "Play: Eat Smaller", trigger: "Play", effectType: "Destroy", effectArgs: {"target":"smaller"}},
+    {cardName: "Eat", text: "Play: Eat Stronger", trigger: "Play", effectType: "Destroy", effectArgs: {"target":"bigger"}},
 ];
 
 

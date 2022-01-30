@@ -3,7 +3,7 @@ import {Card} from "/imports/data/card-data";
 import {CardComponent} from "./CardComponent"
 import {PlayerID} from "/imports/data/player";
 import {Game} from "/imports/data/game";
-import {canPlayCard} from "/imports/control/game-logic";
+import {canPlayCard, getCannotReason} from "/imports/control/game-logic";
 
 interface HandProps {
     cards: Card[],
@@ -18,10 +18,16 @@ export const HandComponent: React.FC<HandProps> = ({cards, game, player, playCar
     return (
         <>
             <h4 className={"text-center"}>Hand</h4>
-            <div className={"d-flex flex-wrap justify-content-center"} style={{maxHeight:"650px", overflow: "auto", width:"100%"}}>
+            <div className={"d-flex flex-wrap justify-content-center"}
+                 style={{maxHeight: "650px", overflow: "auto", width: "100%"}}>
                 {cards.map((card, index) =>
-                    <CardComponent key={index} card={card} canPlay={canPlayCard(game, card, player)}
-                                   playCard={playCardFromHand} faceDown={faceDown}/>,
+                    <CardComponent key={index}
+                                   card={card}
+                                   canPlay={canPlayCard(game, card, player)}
+                                   cannotReason={getCannotReason(game, card, player)}
+                                   playCard={playCardFromHand}
+                                   faceDown={faceDown}
+                    />,
                 )}
             </div>
         </>

@@ -26,6 +26,7 @@ export const Shop: React.FC<ShopProps> = ({offers, turn, active, onPurchase, cli
                 <p style={{width:"100%"}}>{infoLabel}</p>
                 {offers.map((card, index) => <CardComponent key={index} card={card} playCard={onPlayerPurchase}
                                                             canPlay={active && turn === clientPlayer}
+                                                            cannotReason={"Not your turn to buy!"}
                                                             playLabel={"Purchace"}/>)}
             </Popover.Body>
         </Popover>

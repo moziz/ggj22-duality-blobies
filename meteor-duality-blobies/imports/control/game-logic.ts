@@ -187,6 +187,18 @@ export const canPlayCard: (game: Game, card: Card, player: PlayerID) => boolean 
     return false;
 }
 
+export const getCannotReason: (game: Game, card: Card, player: PlayerID) => string | undefined = (game: Game, card: Card, player: PlayerID) => {
+    if (getActivePlayer(game) !== player) {
+        return "Not Your Turn";
+    }
+    const playedColors = getPlayedColors(game.roundCards);
+    if (playedColors[card.side] >= 2) {
+        return "Balance!";
+    }
+
+    return undefined;
+}
+
 
 export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boolean = (game, card, player) => {
     if (!canPlayCard(game, card, player)) {
@@ -222,8 +234,11 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
                 game.roundCards[indexB] = tmpCard;
             }
         }
-        if(effect.effectType === "Destroy"){
-            game.roundCards = [];
+        if (effect.effectType === "Destroy") {
+            const target = effect.effectArgs["target"];
+            if (target === "all") {
+                game.roundCards = [];
+            }
         }
     }
 
@@ -241,8 +256,7 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
         if (cards.Dino > 1 && cardsInHand.Cat === 0) {
             game.players[activeP].hand.push(getBadCard("Cat"));
         }
-        if(game.players[activeP].hand.length ===0)
-        {
+        if (game.players[activeP].hand.length === 0) {
             game.players[activeP].hand.push(getBadCard(Math.random() > 0.5 ? "Cat" : "Dino"));
         }
     }

@@ -10,6 +10,7 @@ interface CardProps {
     playLabel?: string,
     faceDown?: boolean,
     highLight?: boolean,
+    cannotReason?: string,
 }
 
 export const CardComponent: React.FC<CardProps> = (
@@ -20,6 +21,7 @@ export const CardComponent: React.FC<CardProps> = (
         playLabel,
         faceDown,
         highLight,
+        cannotReason,
     }) => {
     return (
         <div className={"m-2 p-1 d-flex flex-column justify-content-between"} style={{
@@ -55,15 +57,21 @@ export const CardComponent: React.FC<CardProps> = (
             }
             <div className={"d-flex justify-content-around"}>
                 {(playCard && !faceDown) ?
-                    <Button
-                        disabled={!canPlay}
-                        onClick={() => playCard(card)}
-                        size={"sm"}
-                        title={"moi"}
-                    >
-                        {playLabel ?? "PLAY"}
-                    </Button> : null
+                    (
+                        canPlay ? (
+                                <Button
+                                    disabled={!canPlay}
+                                    onClick={() => playCard(card)}
+                                    size={"sm"}
+                                    title={"moi"}
+                                >
+                                    {playLabel ?? "PLAY"}
+                                </Button>
+                            ) :
+                            <p><small><i>{cannotReason}</i></small></p>
+                    ) : null
                 }
+                {}
             </div>
         </div>
     );
