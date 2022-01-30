@@ -10,3 +10,20 @@ body {
     min-width: 350px;
     margin-right: 10px;        /* to match the other flex items */
 }
+
+.power{
+    font-size: 28px;
+    background: white;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 3px solid black;
+    box-sizing: border-box;
+    border-radius: 50%;
+}
+
+.card-title{
+    font-size: 22px;
+}

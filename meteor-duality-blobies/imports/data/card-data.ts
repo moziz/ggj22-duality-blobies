@@ -48,10 +48,10 @@ const getRandomCard: () => Card = () => {
     const side: Side = Math.random() > 0.5 ? "Dino" : "Cat"
     const effect = effects[Math.floor(Math.random() * (effects.length - 0.01))]
     return {
-        name: side + " " + power + " - " + effect.name,
+        name: effect.name,
         side,
         power,
-        effects: [effect]
+        effects: [effect],
     }
 }
 
@@ -63,4 +63,49 @@ export const getShopPool = (amount: number) => {
     return deck;
 }
 
+export const getImage = (side: Side, power: number) => {
+    if (side === "Cat") {
+        return imageNames.cats[power];
+    }
+    return imageNames.dinos[power];
+}
+
+export const imageNames = {
+    cats: [
+        "cat3.png",
+        "cat2.png",
+        "cat6.jpg",
+        "cat1.png",
+        "cat4.png",
+        "cat5.jpg",
+        "cat9.jpg",
+        "cat14.png",
+        "cat13.jpg",
+        "cat12.jpg",
+        "cat15.jpg",
+        "cat8.jpg",
+        "cat7.jpg",
+        "cat11.jpg",
+        "cat10.jpg",
+    ],
+    dinos: [
+        "dino9.jpg",
+        "dino7.jpg",
+        "dino2.jpg",
+        "dino1.jpg",
+        "dino11.jpg",
+        "dino3.jpg",
+        "dino14.jpg",
+        "dino15.jpg",
+        "dino8.jpg",
+        "dino5.jpg",
+        "dino10.jpg",
+        "dino12.jpg",
+        "dino6.jpg",
+        "dino4.jpg",
+        "dino13.jpg",
+    ],
+}
+
 export const CardsCollection = new Mongo.Collection<Card>('cards');
+
