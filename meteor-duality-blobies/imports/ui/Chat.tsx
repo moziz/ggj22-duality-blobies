@@ -4,7 +4,7 @@ import {useTracker} from "meteor/react-meteor-data";
 import {Meteor} from "meteor/meteor";
 import {AddChatMessage, ChatCollection} from "/imports/data/chat";
 import {PlayerID} from "/imports/data/player";
-import {Button} from "react-bootstrap";
+import {Button, InputGroup} from "react-bootstrap";
 import {Variant} from "/imports/data/utils";
 
 interface ChatProps {
@@ -26,7 +26,6 @@ const useChat = (gameId: string = "", playerId?: PlayerID) => useTracker(() => {
 }, [gameId, playerId])
 
 export const Chat: React.FC<ChatProps> = ({game, clientPlayer}) => {
-    console.log(clientPlayer)
 
     const {isLoading, chatObject} = useChat(game.name, clientPlayer);
     const [chatMessage, setChatMessage] = useState("")
@@ -48,19 +47,21 @@ export const Chat: React.FC<ChatProps> = ({game, clientPlayer}) => {
                           addMessage(clientPlayer, chatMessage)
                       }}
                 >
-                    <Button variant={Variant.success} disabled={!clientPlayer} onClick={(e) => {
-                        e.preventDefault();
-                        addMessage(clientPlayer, chatMessage)
-                    }}>
-                        Send
-                    </Button>
-                    <input
-                        value={chatMessage}
-                        onChange={(e) => setChatMessage(e.target.value)} type="text"
-                        className="form-control"
-                    />
+                    <InputGroup>
+                        <Button variant={Variant.success} disabled={!clientPlayer} onClick={(e) => {
+                            e.preventDefault();
+                            addMessage(clientPlayer, chatMessage)
+                        }}>
+                            Send
+                        </Button>
+                        <input
+                            value={chatMessage}
+                            onChange={(e) => setChatMessage(e.target.value)} type="text"
+                            className="form-control"
+                        />
+                    </InputGroup>
                 </form>
-                {chatObject?.messages.map((message, idx) =>
+                {[...(chatObject?.messages ?? [])].reverse().map((message, idx) =>
                     <div key={idx} style={!message.playerId ? {fontWeight: 'bold'} : undefined}>
                         {message.timestamp ? message.timestamp.toLocaleString() : "unknown time"} : {message.playerId ? message.playerId : "GAME"} : {message.message}
                     </div>,

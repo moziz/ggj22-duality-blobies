@@ -6,7 +6,7 @@ import {getPlayedColors} from "/imports/control/game-logic";
 import {CatIcon, DinoIcon} from "/imports/ui/icons";
 
 interface PlayedCardsProps {
-    playedCards: Card[],
+    playedCards: (Card | undefined)[],
     startPlayer: PlayerID,
     p1Power: number,
     p2Power: number,
@@ -40,27 +40,36 @@ export const PlayedCards: React.FC<PlayedCardsProps> = ({playedCards, startPlaye
     }
     defaultCard.side = defaultSide;
     const cards = startPlayer === "p1" ? [
-        playedCards.length > 0 ? playedCards[0] : defaultCard,
-        playedCards.length > 1 ? playedCards[1] : defaultCard,
-        playedCards.length > 3 ? playedCards[3] : defaultCard,
-        playedCards.length > 2 ? playedCards[2] : defaultCard,
+        playedCards[0] ?? defaultCard,
+        playedCards[1] ?? defaultCard,
+        playedCards[3] ?? defaultCard,
+        playedCards[2] ?? defaultCard,
     ] : [
-        playedCards.length > 1 ? playedCards[1] : defaultCard,
-        playedCards.length > 0 ? playedCards[0] : defaultCard,
-        playedCards.length > 2 ? playedCards[2] : defaultCard,
-        playedCards.length > 3 ? playedCards[3] : defaultCard,
+        playedCards[1] ?? defaultCard,
+        playedCards[0] ?? defaultCard,
+        playedCards[2] ?? defaultCard,
+        playedCards[3] ?? defaultCard,
     ];
-
-    const highLightIndex = highLights[startPlayer][playedCards.length];
+    let active = 0;
+    while (playedCards[active]) {
+        active++;
+    }
+    const highLightIndex = highLights[startPlayer][active];
     const total = sides.Cat + sides.Dino;
     const balance = total === 0 ? 0.5 : sides.Cat / total;
 
     return (
         <div>
             <p className={"text-center h4"}>Played cards</p>
-            <div className={"d-flex justify-content-around"}>
-                <div className={"big-power"}>{p1Power}</div>
-                <div className={"big-power"}>{p2Power}</div>
+            <div className={"d-flex justify-content-between"}>
+                <div/>
+                <div/>
+                <div className={"big-power" + (p1Power > p2Power ? " winner-power" : "")}>{p1Power}</div>
+                <div/>
+                <div/>
+                <div className={"big-power" + (p1Power < p2Power ? " winner-power" : "")}>{p2Power}</div>
+                <div/>
+                <div/>
             </div>
             <div className={"d-flex align-content-around flex-wrap justify-content-center"} style={{
                 width: "400px",
@@ -90,8 +99,8 @@ export const PlayedCards: React.FC<PlayedCardsProps> = ({playedCards, startPlaye
             </div>
             <label htmlFor="customRange1" className="form-label m-0 ps-4 pe-4"><i>Keep the balance!</i></label>
             <div className={"d-flex ps-4 pe-4 mb-4"}>
-                <div className={"me-2 icon"} ><DinoIcon/></div>
-                <input type="range" className="form-range" id="customRange1" disabled value={balance*100}/>
+                <div className={"me-2 icon"}><DinoIcon/></div>
+                <input type="range" className="form-range" id="customRange1" disabled value={balance * 100}/>
                 <div className={"ms-2 icon"}><CatIcon/></div>
             </div>
         </div>

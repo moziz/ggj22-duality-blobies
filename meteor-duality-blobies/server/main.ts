@@ -16,10 +16,10 @@ Meteor.startup(() => {
   }
 });
 
-Meteor.publish('games', function () {
-  return GameCollection.find({})
+Meteor.publish('games', function (gameId: string) {
+  return GameCollection.find({_id: gameId})
 });
 
-Meteor.publish('chat', function () {
-  return ChatCollection.find({})
+Meteor.publish('chat', function (gameId: string) {
+  return ChatCollection.find({_id: gameId})
 });

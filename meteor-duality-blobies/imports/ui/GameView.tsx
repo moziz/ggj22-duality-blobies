@@ -9,17 +9,16 @@ import {drawPhase, handlePurchase, playCardInGame, startNewGame} from "/imports/
 import {Card} from "/imports/data/card-data";
 import {PlayerID} from "/imports/data/player";
 import {cloneDeep} from "lodash";
-import {Button} from "react-bootstrap";
+import {Button, ButtonGroup} from "react-bootstrap";
 import {AddGameMessage} from "/imports/data/chat";
 
 const useGame = (gameId: string = "") => useTracker(() => {
     const subscription = Meteor.subscribe('games', gameId)
     let gameObject = GameCollection.findOne({_id: gameId})
     if (gameObject === undefined && subscription.ready()) {
-        console.log("new game")
         gameObject = startNewGame()
         gameObject.name = gameId;
-        AddGameMessage(gameObject.name, "New game has started!")
+        AddGameMessage(gameObject.name, "The game has started!")
         GameCollection.upsert({_id: gameId}, gameObject)
     }
     return {
@@ -32,7 +31,6 @@ const useGame = (gameId: string = "") => useTracker(() => {
 export const GameView: React.FC = () => {
 
     let {gameId} = useParams();
-    console.log("id", gameId);
     const {isLoading, gameObject} = useGame(gameId);
 
     const [clientPlayer, setClientPlayer] = React.useState<PlayerID | undefined>(undefined);
@@ -68,13 +66,16 @@ export const GameView: React.FC = () => {
                 <div className={"container"}>
                     <h1>Cattosaurus</h1>
                     {(!clientPlayer) ? (
-                        <><p><b>Select side:</b></p>
-                            <Button onClick={() => setClientPlayer("p1")}>
-                                Player 1
-                            </Button>
-                            <Button onClick={() => setClientPlayer("p2")}>
-                                Player 2
-                            </Button>
+                        <>
+                            <p className={"mb-0"}><b>Select side:</b></p>
+                            <ButtonGroup className={"mb-2"}>
+                                <Button onClick={() => setClientPlayer("p1")}>
+                                    Player 1
+                                </Button>
+                                <Button onClick={() => setClientPlayer("p2")}>
+                                    Player 2
+                                </Button>
+                            </ButtonGroup>
                         </>
                     ) : null}
                     <GameComponent game={gameObject}
@@ -83,6 +84,10 @@ export const GameView: React.FC = () => {
                                    purchaseCard={(c, p) => onPurchase(c, p, gameObject)}
                                    clientPlayer={clientPlayer}
                     />
+                    <div className={"row d-flex justify-content-between"}>
+                        <p className={"text-center mb-0"}><small>v1.0</small></p>
+                        <a href={"https://globalgamejam.org/2022/games/cattosaurus-4"} className={"text-center"}>More info</a>
+                    </div>
                 </div>
             );
         } else {

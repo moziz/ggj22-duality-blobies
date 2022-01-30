@@ -23,17 +23,31 @@ body {
     box-sizing: border-box;
     border-radius: 50%;
 }
+
+@keyframes animateBorder {
+  to {
+    outline-color: #EA3556;
+    box-shadow: 0 0 0 4px yellow;
+  }
+}
+
 .big-power{
     font-size: 28px;
     background: white;
-    width: 45px;
-    height: 45px;
+    width: 52px;
+    height: 52px;
     display: flex;
     justify-content: center;
     align-items: center;
     border: 3px solid black;
     box-sizing: border-box;
     border-radius: 50%;
+}
+.winner-power{
+    border: 0;
+    outline: 5px dashed yellow;
+    box-shadow: 0 0 0 4px #EA3556;
+    animation: 0.75s animateBorder infinite;
 }
 
 .card-title{
@@ -50,3 +64,4 @@ body {
     width: 24px;
     height: 24px;
 }
+
