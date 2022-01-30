@@ -24,3 +24,21 @@ Icons:
 Font Awesome
 https://fontawesome.com/license
 Creative Commons Attribution 4.0
+
+
+Sound
+
+Cat
+https://commons.wikimedia.org/wiki/File:Meow.ogg
+CC
+
+Roar
+"Free Sounds Library"
+Free Sound Effects Site.
+Licence: License: Attribution 4.0 International (CC BY 4.0). You are allowed to use sound effects free of charge and royalty free in your multimedia projects for commercial or non-commercial purposes.
+http://www.freesoundslibrary.com
+
+Cash
+CC0
+Sound effects from https://www.free-stock-music.com
+https://www.free-stock-music.com/sound-effects-library-cash-register-sound.html

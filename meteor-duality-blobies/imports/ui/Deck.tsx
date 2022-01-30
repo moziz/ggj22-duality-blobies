@@ -16,7 +16,7 @@ export const Deck: React.FC<DeckProps> = ({cardsInDeck,cardsInDiscard, cardsInHa
     const cardsInHandOrDeck = shuffle(concat(cardsInDeck, cardsInHand));
 
     const deckContent = (
-        <Popover style={{minWidth:"500px", maxHeight:"500px", overflow:"auto"}}>
+        <Popover style={{minWidth:"600px", maxHeight:"500px", overflow:"auto"}}>
             <Popover.Header>{title}</Popover.Header>
             <Popover.Body className={"d-flex align-content-around flex-wrap justify-content-center"}>
             <h2 className={"text-center mt-2 mb-1"} style={{width:"100%"}}>Cards in deck and hand</h2>

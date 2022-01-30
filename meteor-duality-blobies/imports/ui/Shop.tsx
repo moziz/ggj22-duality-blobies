@@ -20,20 +20,25 @@ export const Shop: React.FC<ShopProps> = ({offers, turn, active, onPurchase, cli
     //TODO get active player from client, and not from who's turn it is
     const onPlayerPurchase = useCallback((c: Card) => onPurchase(c, turn), [turn, onPurchase]);
     const shopContent = (
-        <Popover style={{minWidth: "500px"}}>
+        <Popover style={{minWidth: "600px"}}>
             <Popover.Header>SHOP</Popover.Header>
             <Popover.Body className={"d-flex align-content-around flex-wrap justify-content-center"}>
-                <p style={{width:"100%"}}>{infoLabel}</p>
-                {offers.map((card, index) => <CardComponent key={index} card={card} playCard={onPlayerPurchase}
-                                                            canPlay={active && turn === clientPlayer}
-                                                            cannotReason={"Not your turn to buy!"}
-                                                            playLabel={"Purchace"}/>)}
+                <p style={{width: "100%"}}>{infoLabel}</p>
+                {offers.map((card, index) => <CardComponent
+                    key={index}
+                    card={card}
+                    playCard={onPlayerPurchase}
+                    canPlay={active && turn === clientPlayer}
+                    cannotReason={"Not your turn to buy!"}
+                    playLabel={"Purchace"}
+                />)}
             </Popover.Body>
         </Popover>
     )
 
     return (
-        <OverlayTrigger show={active ? true : undefined} defaultShow={active ? true : undefined} trigger={"click"} placement={"top"} overlay={shopContent}
+        <OverlayTrigger show={active ? true : undefined} defaultShow={active ? true : undefined} trigger={"click"}
+                        placement={"top"} overlay={shopContent}
                         rootClose>
             <Button>SHOP</Button>
         </OverlayTrigger>

@@ -66,6 +66,7 @@ export const PlayedCards: React.FC<PlayedCardsProps> = ({playedCards, startPlaye
                 <div/>
                 <div className={"big-power" + (p1Power > p2Power ? " winner-power" : "")}>{p1Power}</div>
                 <div/>
+                <div/>
                 <div className={"big-power" + (p1Power < p2Power ? " winner-power" : "")}>{p2Power}</div>
                 <div/>
                 <div/>
