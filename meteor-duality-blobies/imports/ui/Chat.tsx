@@ -47,13 +47,12 @@ export const Chat: React.FC<ChatProps> = ({game, clientPlayer}) => {
     if(!isLoading) {
         return (
             <div>
-                <h2>{game.name}</h2>
                 {chatObject.messages.map((message, idx) =>
                     <div key={idx}>{message.timestamp ? message.timestamp.toLocaleString() : "unknown time"} : {message.playerId ? message.playerId : "unknown player"} : {message.message}</div>
                 )}
                 <input value={chatMessage} onChange={(e) => setChatMessage(e.target.value)} type="text"
                        className="form-control"/>
-                <button className="btn btn-success" onClick={(e) => {
+                <button className="btn btn-success" disabled={!clientPlayer} onClick={(e) => {
                     e.preventDefault();
                     addMessage(clientPlayer, chatMessage)
                 }}>Send
