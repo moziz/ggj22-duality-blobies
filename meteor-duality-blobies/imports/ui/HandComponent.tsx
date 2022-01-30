@@ -13,7 +13,7 @@ interface HandProps {
 }
 
 export const HandComponent: React.FC<HandProps> = ({cards, game, player, playCard}) => {
-    const playCardFromHand = React.useCallback((card:Card)=> playCard(card,player), [player]);
+    const playCardFromHand = React.useCallback((card:Card)=> playCard(card,player), [player, playCard]);
     return (
         <div>
             {cards.map((card) =>

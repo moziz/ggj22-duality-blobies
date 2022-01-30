@@ -8,7 +8,7 @@ import {GameComponent} from "/imports/ui/GameComponent";
 import {drawPhase, handlePurchase, playCardInGame, startNewGame} from "/imports/control/game-logic";
 import {Card} from "/imports/data/card-data";
 import {PlayerID} from "/imports/data/player";
-import {cloneDeep, isEqual} from "lodash";
+import {cloneDeep} from "lodash";
 
 const useGame = (gameId: string = "") => useTracker(() => {
     const subscription = Meteor.subscribe('games', gameId)
@@ -32,46 +32,39 @@ export const GameView: React.FC = () => {
     console.log("id", gameId);
     const {isLoading, gameObject} = useGame(gameId);
 
-    const [tmpGame, setTMPGame] = React.useState(gameObject);
-
-    if (!isEqual(gameObject, tmpGame)) {
-        setTMPGame(gameObject);
-    }
-
     const setGame = React.useCallback((game: Game) => {
+        debugger;
         GameCollection.upsert({_id: gameId}, game)
-        setTMPGame(game);
     }, [gameId])
 
-    const playCard = React.useCallback((c: Card, p: PlayerID) => {
-        if (!tmpGame) return;
+    const playCard = React.useCallback((c: Card, p: PlayerID, tmpGame: Game) => {
         const game = cloneDeep(tmpGame);
         playCardInGame(game, c, p);
         setGame(game);
-    }, [setGame, tmpGame])
+    }, [setGame])
 
-    const toDrawState = React.useCallback(() => {
-        if (!tmpGame) return;
+    const toDrawState = React.useCallback((tmpGame: Game) => {
         const game = cloneDeep(tmpGame);
         drawPhase(game);
         setGame(game);
-    }, [setGame, tmpGame, setTMPGame])
+    }, [setGame])
 
-    const onPurchase = React.useCallback((c: Card, p: PlayerID) => {
-        if (!tmpGame) return;
+    const onPurchase = React.useCallback((c: Card, p: PlayerID, tmpGame: Game) => {
         const game = cloneDeep(tmpGame);
         handlePurchase(game, c, p);
         setGame(game);
-    }, [setGame, tmpGame])
+    }, [setGame])
 
 
     if (!isLoading) {
-        if (gameObject && tmpGame) {
+        if (gameObject) {
             return (
                 <div className={"container-fluid"}>
                     <h1>Doality Blobies</h1>
-                    <GameComponent game={tmpGame} toDrawState={toDrawState} playCard={playCard}
-                                   purchaseCard={onPurchase}/>
+                    <GameComponent game={gameObject}
+                                   toDrawState={() => toDrawState(gameObject)}
+                                   playCard={(c, p) => playCard(c, p, gameObject)}
+                                   purchaseCard={(c, p) => onPurchase(c, p, gameObject)}/>
                 </div>
             );
         } else {

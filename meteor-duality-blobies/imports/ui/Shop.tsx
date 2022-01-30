@@ -17,7 +17,7 @@ export const Shop: React.FC<ShopProps> = ({offers, turn, active, onPurchase}) =>
         : "Play 4 cards to finish round and open the shop. Loser selects first.";
 
     //TODO get active player from client, and not from who's turn it is
-    const onPlayerPurchase = useCallback((c: Card) => onPurchase(c, turn), [turn]);
+    const onPlayerPurchase = useCallback((c: Card) => onPurchase(c, turn), [turn, onPurchase]);
     const shopContent = (
         <Popover>
             <Popover.Header>SHOP</Popover.Header>
