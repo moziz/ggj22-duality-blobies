@@ -7,56 +7,31 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		B1B8AE7725C49BDE00B4CBA8 /* Resources.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B1B8AE7625C49BDE00B4CBA8 /* Resources.cpp */; };
 		B1B8AE8625C49FE800B4CBA8 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = B1B8AE8525C49FE800B4CBA8 /* assets */; };
-		B1B8AE8C25C5A40100B4CBA8 /* Players.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B1B8AE8A25C5A40100B4CBA8 /* Players.cpp */; };
-		B1B8AE9525C5A4D400B4CBA8 /* Mankka.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B1B8AE9125C5A4D400B4CBA8 /* Mankka.cpp */; };
 		B1B8AE9625C5A4D400B4CBA8 /* Global.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B1B8AE9325C5A4D400B4CBA8 /* Global.cpp */; };
 		B1B8AE9C25C5C05300B4CBA8 /* Map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B1B8AE9B25C5C05300B4CBA8 /* Map.cpp */; };
-		B1B8AEA325C5E0F400B4CBA8 /* GameClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B1B8AE9F25C5E0F400B4CBA8 /* GameClient.cpp */; };
-		B1B8AEA425C5E0F400B4CBA8 /* Camera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B1B8AEA025C5E0F400B4CBA8 /* Camera.cpp */; };
 		B1E67D7025C499FA0071EC58 /* ResourcePath.mm in Sources */ = {isa = PBXBuildFile; fileRef = B1E67D6F25C499FA0071EC58 /* ResourcePath.mm */; };
-		B1E67D9225C49A090071EC58 /* GuIRenderingState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B1E67D8425C49A090071EC58 /* GuIRenderingState.cpp */; };
-		B1E67D9425C49A090071EC58 /* SfmlGuiRendering.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B1E67D8725C49A090071EC58 /* SfmlGuiRendering.cpp */; };
-		B1E67D9525C49A090071EC58 /* GuiRendering.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B1E67D8825C49A090071EC58 /* GuiRendering.cpp */; };
 		B1E67D9625C49A090071EC58 /* workingdir.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B1E67D8A25C49A090071EC58 /* workingdir.cpp */; };
 		B1E67D9725C49A090071EC58 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B1E67D8F25C49A090071EC58 /* main.cpp */; };
 		B1E67D9825C49A090071EC58 /* Game.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B1E67D9025C49A090071EC58 /* Game.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		B1B8AE7525C49BDE00B4CBA8 /* Resources.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Resources.h; sourceTree = "<group>"; };
-		B1B8AE7625C49BDE00B4CBA8 /* Resources.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Resources.cpp; sourceTree = "<group>"; };
 		B1B8AE8525C49FE800B4CBA8 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../../assets; sourceTree = "<group>"; };
-		B1B8AE8A25C5A40100B4CBA8 /* Players.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Players.cpp; sourceTree = "<group>"; };
-		B1B8AE8B25C5A40100B4CBA8 /* Players.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Players.hpp; sourceTree = "<group>"; };
-		B1B8AE9125C5A4D400B4CBA8 /* Mankka.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Mankka.cpp; sourceTree = "<group>"; };
-		B1B8AE9225C5A4D400B4CBA8 /* Mankka.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Mankka.h; sourceTree = "<group>"; };
 		B1B8AE9325C5A4D400B4CBA8 /* Global.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Global.cpp; sourceTree = "<group>"; };
 		B1B8AE9425C5A4D400B4CBA8 /* Global.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Global.h; sourceTree = "<group>"; };
 		B1B8AE9A25C5C05300B4CBA8 /* Map.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Map.h; sourceTree = "<group>"; };
 		B1B8AE9B25C5C05300B4CBA8 /* Map.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Map.cpp; sourceTree = "<group>"; };
-		B1B8AE9F25C5E0F400B4CBA8 /* GameClient.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GameClient.cpp; sourceTree = "<group>"; };
-		B1B8AEA025C5E0F400B4CBA8 /* Camera.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Camera.cpp; sourceTree = "<group>"; };
-		B1B8AEA125C5E0F400B4CBA8 /* Camera.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Camera.h; sourceTree = "<group>"; };
-		B1B8AEA225C5E0F400B4CBA8 /* GameClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GameClient.h; sourceTree = "<group>"; };
-		B1E67D6A25C499FA0071EC58 /* fgj2021-lost-and-found.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "fgj2021-lost-and-found.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		B1E67D6E25C499FA0071EC58 /* fgj2021-lost-and-found-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "fgj2021-lost-and-found-Info.plist"; path = "../fgj2021-lost-and-found-Info.plist"; sourceTree = "<group>"; };
+		B1E67D6A25C499FA0071EC58 /* fgj2022-lost-and-found.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "fgj2022-lost-and-found.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B1E67D6E25C499FA0071EC58 /* fgj2022-lost-and-found-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "fgj2022-lost-and-found-Info.plist"; path = "../fgj2022-lost-and-found-Info.plist"; sourceTree = "<group>"; };
 		B1E67D6F25C499FA0071EC58 /* ResourcePath.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ResourcePath.mm; sourceTree = "<group>"; };
 		B1E67D7125C499FA0071EC58 /* ResourcePath.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ResourcePath.hpp; sourceTree = "<group>"; };
-		B1E67D8425C49A090071EC58 /* GuIRenderingState.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GuIRenderingState.cpp; sourceTree = "<group>"; };
-		B1E67D8625C49A090071EC58 /* GuiRendering.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GuiRendering.h; sourceTree = "<group>"; };
-		B1E67D8725C49A090071EC58 /* SfmlGuiRendering.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SfmlGuiRendering.cpp; sourceTree = "<group>"; };
-		B1E67D8825C49A090071EC58 /* GuiRendering.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GuiRendering.cpp; sourceTree = "<group>"; };
-		B1E67D8925C49A090071EC58 /* SfmlGuiRendering.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SfmlGuiRendering.h; sourceTree = "<group>"; };
 		B1E67D8A25C49A090071EC58 /* workingdir.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = workingdir.cpp; sourceTree = "<group>"; };
-		B1E67D8B25C49A090071EC58 /* Game.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Game.h; sourceTree = "<group>"; };
-		B1E67D8C25C49A090071EC58 /* GuiRenderInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GuiRenderInfo.h; sourceTree = "<group>"; };
+		B1E67D8B25C49A090071EC58 /* Game.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Game.h; sourceTree = "<group>"; };ee = "<group>"; };
 		B1E67D8E25C49A090071EC58 /* workingdir.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = workingdir.h; sourceTree = "<group>"; };
 		B1E67D8F25C49A090071EC58 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		B1E67D9025C49A090071EC58 /* Game.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Game.cpp; sourceTree = "<group>"; };
-		B1E67D9125C49A090071EC58 /* GuiRenderingState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GuiRenderingState.h; sourceTree = "<group>"; };
-		B1E67DA525C49A2C0071EC58 /* fgj2021-lost-and-found.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "fgj2021-lost-and-found.entitlements"; sourceTree = "<group>"; };
+		B1E67DA525C49A2C0071EC58 /* fgj2022-lost-and-found.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "fgj2022-lost-and-found.entitlements"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,7 +50,7 @@
 			children = (
 				B1B8AE8525C49FE800B4CBA8 /* assets */,
 				B1E67D8325C49A090071EC58 /* src */,
-				B1E67D6C25C499FA0071EC58 /* fgj2021-lost-and-found */,
+				B1E67D6C25C499FA0071EC58 /* fgj2022-lost-and-found */,
 				B1E67D6B25C499FA0071EC58 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -83,26 +58,26 @@
 		B1E67D6B25C499FA0071EC58 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				B1E67D6A25C499FA0071EC58 /* fgj2021-lost-and-found.app */,
+				B1E67D6A25C499FA0071EC58 /* fgj2022-lost-and-found.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		B1E67D6C25C499FA0071EC58 /* fgj2021-lost-and-found */ = {
+		B1E67D6C25C499FA0071EC58 /* fgj2022-lost-and-found */ = {
 			isa = PBXGroup;
 			children = (
-				B1E67DA525C49A2C0071EC58 /* fgj2021-lost-and-found.entitlements */,
+				B1E67DA525C49A2C0071EC58 /* fgj2022-lost-and-found.entitlements */,
 				B1E67D6F25C499FA0071EC58 /* ResourcePath.mm */,
 				B1E67D7125C499FA0071EC58 /* ResourcePath.hpp */,
 				B1E67D6D25C499FA0071EC58 /* Supporting Files */,
 			);
-			path = "fgj2021-lost-and-found";
+			path = "fgj2022-lost-and-found";
 			sourceTree = "<group>";
 		};
 		B1E67D6D25C499FA0071EC58 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				B1E67D6E25C499FA0071EC58 /* fgj2021-lost-and-found-Info.plist */,
+				B1E67D6E25C499FA0071EC58 /* fgj2022-lost-and-found-Info.plist */,
 			);
 			path = "Supporting Files";
 			sourceTree = "<group>";
@@ -110,30 +85,13 @@
 		B1E67D8325C49A090071EC58 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				B1B8AEA025C5E0F400B4CBA8 /* Camera.cpp */,
-				B1B8AEA125C5E0F400B4CBA8 /* Camera.h */,
 				B1E67D9025C49A090071EC58 /* Game.cpp */,
 				B1E67D8B25C49A090071EC58 /* Game.h */,
-				B1B8AE9F25C5E0F400B4CBA8 /* GameClient.cpp */,
-				B1B8AEA225C5E0F400B4CBA8 /* GameClient.h */,
 				B1B8AE9325C5A4D400B4CBA8 /* Global.cpp */,
 				B1B8AE9425C5A4D400B4CBA8 /* Global.h */,
-				B1E67D8C25C49A090071EC58 /* GuiRenderInfo.h */,
-				B1E67D8825C49A090071EC58 /* GuiRendering.cpp */,
-				B1E67D8625C49A090071EC58 /* GuiRendering.h */,
-				B1E67D8425C49A090071EC58 /* GuIRenderingState.cpp */,
-				B1E67D9125C49A090071EC58 /* GuiRenderingState.h */,
 				B1E67D8F25C49A090071EC58 /* main.cpp */,
-				B1B8AE9125C5A4D400B4CBA8 /* Mankka.cpp */,
-				B1B8AE9225C5A4D400B4CBA8 /* Mankka.h */,
 				B1B8AE9B25C5C05300B4CBA8 /* Map.cpp */,
 				B1B8AE9A25C5C05300B4CBA8 /* Map.h */,
-				B1B8AE8A25C5A40100B4CBA8 /* Players.cpp */,
-				B1B8AE8B25C5A40100B4CBA8 /* Players.hpp */,
-				B1B8AE7625C49BDE00B4CBA8 /* Resources.cpp */,
-				B1B8AE7525C49BDE00B4CBA8 /* Resources.h */,
-				B1E67D8725C49A090071EC58 /* SfmlGuiRendering.cpp */,
-				B1E67D8925C49A090071EC58 /* SfmlGuiRendering.h */,
 				B1E67D8A25C49A090071EC58 /* workingdir.cpp */,
 				B1E67D8E25C49A090071EC58 /* workingdir.h */,
 			);
@@ -144,9 +102,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		B1E67D6925C499FA0071EC58 /* fgj2021-lost-and-found */ = {
+		B1E67D6925C499FA0071EC58 /* fgj2022-lost-and-found */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = B1E67D7F25C499FA0071EC58 /* Build configuration list for PBXNativeTarget "fgj2021-lost-and-found" */;
+			buildConfigurationList = B1E67D7F25C499FA0071EC58 /* Build configuration list for PBXNativeTarget "fgj2022-lost-and-found" */;
 			buildPhases = (
 				B1E67D6525C499FA0071EC58 /* Sources */,
 				B1E67D6625C499FA0071EC58 /* Frameworks */,
@@ -157,9 +115,9 @@
 			);
 			dependencies = (
 			);
-			name = "fgj2021-lost-and-found";
-			productName = "fgj2021-lost-and-found";
-			productReference = B1E67D6A25C499FA0071EC58 /* fgj2021-lost-and-found.app */;
+			name = "fgj2022-lost-and-found";
+			productName = "fgj2022-lost-and-found";
+			productReference = B1E67D6A25C499FA0071EC58 /* fgj2022-lost-and-found.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -176,7 +134,7 @@
 					};
 				};
 			};
-			buildConfigurationList = B1E67D6425C499FA0071EC58 /* Build configuration list for PBXProject "fgj2021-lost-and-found" */;
+			buildConfigurationList = B1E67D6425C499FA0071EC58 /* Build configuration list for PBXProject "fgj2022-lost-and-found" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -189,7 +147,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				B1E67D6925C499FA0071EC58 /* fgj2021-lost-and-found */,
+				B1E67D6925C499FA0071EC58 /* fgj2022-lost-and-found */,
 			);
 		};
 /* End PBXProject section */
@@ -231,19 +189,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				B1E67D9825C49A090071EC58 /* Game.cpp in Sources */,
-				B1E67D9225C49A090071EC58 /* GuIRenderingState.cpp in Sources */,
-				B1B8AEA425C5E0F400B4CBA8 /* Camera.cpp in Sources */,
-				B1B8AEA325C5E0F400B4CBA8 /* GameClient.cpp in Sources */,
-				B1E67D9425C49A090071EC58 /* SfmlGuiRendering.cpp in Sources */,
 				B1B8AE9625C5A4D400B4CBA8 /* Global.cpp in Sources */,
-				B1B8AE7725C49BDE00B4CBA8 /* Resources.cpp in Sources */,
-				B1B8AE9525C5A4D400B4CBA8 /* Mankka.cpp in Sources */,
 				B1B8AE9C25C5C05300B4CBA8 /* Map.cpp in Sources */,
-				B1E67D9525C49A090071EC58 /* GuiRendering.cpp in Sources */,
 				B1E67D9625C49A090071EC58 /* workingdir.cpp in Sources */,
 				B1E67D9725C49A090071EC58 /* main.cpp in Sources */,
-				B1B8AE8C25C5A40100B4CBA8 /* Players.cpp in Sources */,
-				B1E67D7025C499FA0071EC58 /* ResourcePath.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -342,12 +291,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
-				CODE_SIGN_ENTITLEMENTS = "fgj2021-lost-and-found/fgj2021-lost-and-found.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "fgj2022-lost-and-found/fgj2022-lost-and-found.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = B5S4X95PR8;
 				ENABLE_HARDENED_RUNTIME = YES;
-				INFOPLIST_FILE = "fgj2021-lost-and-found/fgj2021-lost-and-found-Info.plist";
+				INFOPLIST_FILE = "fgj2022-lost-and-found/fgj2022-lost-and-found-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -358,12 +307,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
-				CODE_SIGN_ENTITLEMENTS = "fgj2021-lost-and-found/fgj2021-lost-and-found.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "fgj2022-lost-and-found/fgj2022-lost-and-found.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = B5S4X95PR8;
 				ENABLE_HARDENED_RUNTIME = YES;
-				INFOPLIST_FILE = "fgj2021-lost-and-found/fgj2021-lost-and-found-Info.plist";
+				INFOPLIST_FILE = "fgj2022-lost-and-found/fgj2022-lost-and-found-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -373,7 +322,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		B1E67D6425C499FA0071EC58 /* Build configuration list for PBXProject "fgj2021-lost-and-found" */ = {
+		B1E67D6425C499FA0071EC58 /* Build configuration list for PBXProject "fgj2022-lost-and-found" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B1E67D7D25C499FA0071EC58 /* Debug */,
@@ -382,7 +331,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		B1E67D7F25C499FA0071EC58 /* Build configuration list for PBXNativeTarget "fgj2021-lost-and-found" */ = {
+		B1E67D7F25C499FA0071EC58 /* Build configuration list for PBXNativeTarget "fgj2022-lost-and-found" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B1E67D8025C499FA0071EC58 /* Debug */,

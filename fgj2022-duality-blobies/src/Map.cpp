@@ -1,14 +1,20 @@
 #include "Map.h"
 
 #include <cmath>
-#include "Resources.h"
 #include <SFML/Window/Keyboard.hpp>
 #include <random>
 #include <assert.h>
-#include <iostream>
 #include <SFML/Graphics.hpp>
 #include <SFML/System/Clock.hpp>
-#include "GuiRendering.h"
+
+#ifdef TARGET_OS_MAC
+#include "ResourcePath.hpp"
+#else
+std::string resourcePath(void)
+{
+	return "";
+}
+#endif
 
 extern float g_deltaTime;
 
@@ -16,6 +22,11 @@ static bool initialized = false;
 static sf::Texture* texture = nullptr;
 static sf::Shader* mapVisShader = nullptr;
 extern sf::Clock timeFromStart;
+
+static std::string getResourcePath(const char* assetPath)
+{
+	return resourcePath() + assetPath;
+}
 
 
 Map::Map()
@@ -30,7 +41,7 @@ Map::Map()
 
 		mapVisShader = new sf::Shader();
 		mapVisShader->loadFromFile(
-			Resources::getResourcePath("assets/shader/2d.glsl"),
+			getResourcePath("assets/shader/2d.glsl"),
 			sf::Shader::Type::Fragment
 		);
 	}
@@ -123,13 +134,7 @@ void Map::draw()
 	if (hotloading)
 	{
 		bool success = mapVisShader->loadFromFile(
-			//Resources::getResourcePath("assets/shader/mapvis.frag.glsl"),
-			//Resources::getResourcePath("assets/shader/lelu_sdf.glsl"),
-			//Resources::getResourcePath("assets/shader/fps_sdf.glsl"),
-			//Resources::getResourcePath("assets/shader/doom_sdf.glsl"),
-			//Resources::getResourcePath("assets/shader/sextic.glsl"),
-			//Resources::getResourcePath("assets/shader/mandelbulb.glsl"),
-			Resources::getResourcePath("assets/shader/2d.glsl"),
+			getResourcePath("assets/shader/2d.glsl"),
 			sf::Shader::Type::Fragment
 		);
 
@@ -213,11 +218,22 @@ void Map::draw()
 			playerSpawningDone = true;
 	}
 
-	if (g_window->hasFocus() && playerSpawningDone)
+	
+	if (playerSpawningDone)
 	{
 		sf::Vector2f xMovement = sf::Vector2f(-1.0f, 0.0f) * xInput;
 		sf::Vector2f yMovement = sf::Vector2f(0.0f, -1.0f) * yInput;
-		playerPos += (yMovement + xMovement) * 0.01f * g_deltaTime * 60.0f;;
+		sf::Vector2f acc;
+		if (g_window->hasFocus())
+		{
+			acc = (yMovement + xMovement);
+			float speed = length(acc);
+			if (speed > 1.0)
+				acc /= speed;
+		}
+
+		playerSpeed = lerpVector2f(playerSpeed, acc, fminf(1.0f, 10.0f * fminf(0.033f, g_deltaTime)));
+		playerPos += playerSpeed * 0.01f * fminf(0.033f, g_deltaTime) * 60.0f;
 	}
 
 	float spawnDelay = 1.01f - fmaxf(0.0f, fminf(1.0f, score / 10000.0f));
@@ -259,6 +275,23 @@ void Map::draw()
 		}
 	}
 
+	if (playerPos.x < 0 || playerPos.y < 0 || playerPos.x > 1 || playerPos.y > 1)
+	{
+		// Player out of bounds
+		playerBeingDamaged = true;
+		if (playerShield > 0)
+		{
+			playerShield -= g_deltaTime / shieldDamageDuration;
+		}
+
+		if (playerShield <= 0)
+		{
+			playerShield = 0;
+			playerHealth -= g_deltaTime / healthDamageDuration;
+		}
+	}
+
+
 	if (!playerBeingDamaged && playerShield >= 1 && playerHealth < 1)
 	{
 		playerHealth = fminf(1.0f, playerHealth + g_deltaTime / healthRegenDuration);
@@ -270,6 +303,7 @@ void Map::draw()
 	}
 
 	const float lazerCooldown = 0.5f;
+	const float lazerMissedCooldown = 2.0f;
 	const float lazerDuration = 0.51f;
 	const float lazerLength = 0.3f;
 	const float lazerWidth = 0.02f;
@@ -292,7 +326,7 @@ void Map::draw()
 		}
 	}
 
-	if (lazerClock.getElapsedTime().asSeconds() > lazerCooldown)
+	if (lazerClock.getElapsedTime().asSeconds() > currentLazerCooldownCurrent)
 	{
 		static bool wasPressed = false;
 		if (!sf::Mouse::isButtonPressed(sf::Mouse::Right))
@@ -333,11 +367,13 @@ void Map::draw()
 			if (hitCount == 0)
 			{
 				combo = 0;
+				currentLazerCooldownCurrent = lazerMissedCooldown;
 			}
 			else
 			{
 				score += combo * hitCount;
 				combo += hitCount;
+				currentLazerCooldownCurrent = lazerCooldown;
 			}
 		}
 	}
@@ -401,7 +437,7 @@ void Map::draw()
 	mapVisShader->setUniform("playerBeingDamaged", playerBeingDamaged);
 
 	float lazerProgress = lazerClock.getElapsedTime() / sf::seconds(lazerDuration);
-	float lazerCooldownProgress = lazerClock.getElapsedTime() / sf::seconds(lazerCooldown);
+	float lazerCooldownProgress = lazerClock.getElapsedTime() / sf::seconds(currentLazerCooldownCurrent);
 	if (lazerProgress >= 0.0 && lazerProgress <= 1.0)
 	{
 		mapVisShader->setUniform("lazer_start", lazerStart);
@@ -493,16 +529,5 @@ void Map::draw()
 
 /*
 // TODO:
-
- 1. Damage
-   * Vihollisessa oleminen alkaa tehd‰ damagea hetken j‰lkeen
-   * Regenaroiva heltti?
- 2. Combo counter & score multiplier
-   * kranaatti nollaa kombon
-   * huti laaseri nollaa kombon
- 3. Hutiampuminen laaserilla antaa pidemm‰n cooldownin
- 4. Hahmo muuttuu valkoiseksi, kun laaseri on latautunut
-   * muuten siniseksi muuten
- 5. Combo numero
- 6. Score numero
+ * kranaatti nollaa/v‰hent‰‰ komboa?
 */

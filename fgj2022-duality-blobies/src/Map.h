@@ -53,6 +53,7 @@ struct Map
 	sf::Vector2f lazerStart;
 	sf::Vector2f lazerEnd;
 	sf::Clock lazerClock;
+	float currentLazerCooldownCurrent = 0.5f;
 
 	std::vector<sf::Vector2f> enemyDeath;
 	std::vector<sf::Clock> enemyDeathClock;
@@ -63,6 +64,7 @@ struct Map
 	bool playerSpawningDone = false;
 
 	sf::Vector2f playerPos = sf::Vector2f(0.5f, 0.5f);
+	sf::Vector2f playerSpeed = sf::Vector2f(0.0f, 0.0f);
 	float playerHealth = 1.0f;
 	float playerShield = 1.0f;
 	int score = 0;

@@ -1,14 +1,5 @@
 #include "Game.h"
 
-#include "GuiRendering.h"
-#include "GuiRenderingState.h"
-#include "SfmlGuiRendering.h"
-#include "GuiRenderInfo.h"
-#include "Mankka.h"
-#include "Resources.h"
-#include <algorithm>
-#include <cmath>
-#include <SFML/Window/Mouse.hpp>
 #include "Map.h"
 
 std::string g_currentTextInput;
