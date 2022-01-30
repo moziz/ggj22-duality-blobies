@@ -199,6 +199,9 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
 
     // special effects
     for(const effect of card.effects){
+        if(effect.trigger!=="Play"){
+            continue;
+        }
         if(effect.effectType === "Draw"){
             for(let i = 0; i < effect.effectArgs["amount"]; ++i){
                 const c = drawCard(game, player);

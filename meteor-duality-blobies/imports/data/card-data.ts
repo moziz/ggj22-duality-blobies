@@ -1,4 +1,5 @@
 import {Mongo} from "meteor/mongo";
+import {cloneDeep} from "lodash";
 
 export type Side = "Dino" | "Cat" | "Both";
 
@@ -9,21 +10,21 @@ type EffectType = "None" | "Draw" | "AddPower";
 type EffectArgKey = string;
 
 export interface ComboEffect {
-    name: string
-    trigger: EffectTriggerPhase,
-    activeInHand?: boolean,
-    effectType: EffectType,
-    effectArgs: Record<EffectArgKey, any>,
-    comboNeed?: "NoNeed" | "OtherSame" | "OtherDifferent",
-    text?: string,
+    cardName: string;
+    trigger: EffectTriggerPhase;
+    activeInHand?: boolean;
+    effectType: EffectType;
+    effectArgs: Record<EffectArgKey, any>;
+    comboNeed?: "NoNeed" | "OtherSame" | "OtherDifferent";
+    text: string;
 }
 
 export interface Card {
-    name: string,
-    power: number,
-    side: Side,
-    effects: ComboEffect[],
-    visuals: number,
+    name: string;
+    power: number;
+    side: Side;
+    effects: ComboEffect[];
+    visuals: number;
 }
 
 export const getBadCard: (side: Side) => Card = (side) => {
@@ -51,18 +52,19 @@ export const startDeck: Card[] = [
 ]
 
 export const effects: ComboEffect[] = [
-    {name: "Draw 1", trigger: "Play", effectType: "Draw", effectArgs: {"amount": 1}},
-    {name: "Draw 2", trigger: "Play", effectType: "Draw", effectArgs: {"amount": 2}},
-    {name: "Draw 3", trigger: "Play", effectType: "Draw", effectArgs: {"amount": 3}},
-]
+    {cardName: "Draw 1", text: "Play: Draw 1", trigger: "Play", effectType: "Draw", effectArgs: {"amount": 1}},
+    {cardName: "Draw 2", text: "Play: Draw 2", trigger: "Play", effectType: "Draw", effectArgs: {"amount": 2}},
+    {cardName: "Draw 3", text: "Play: Draw 3", trigger: "Play", effectType: "Draw", effectArgs: {"amount": 3}},
+];
+
 
 const getRandomCard: () => Card = () => {
-    const power: number = Math.ceil(Math.random() * 5)
-    const side: Side = Math.random() > 0.5 ? "Dino" : "Cat"
-    const effect = effects[Math.floor(Math.random() * (effects.length - 0.01))]
-    const visuals = 5 + Math.floor(Math.random() * (9 - 0.01))
+    const power: number = Math.ceil(Math.random() * 5);
+    const side: Side = Math.random() > 0.5 ? "Dino" : "Cat";
+    const effect = cloneDeep(effects[Math.floor(Math.random() * (effects.length - 0.01))]);
+    const visuals = 5 + Math.floor(Math.random() * (9 - 0.01));
     return {
-        name: effect.name,
+        name: effect.cardName,
         side,
         power,
         effects: [effect],

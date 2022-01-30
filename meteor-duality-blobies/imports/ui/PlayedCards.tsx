@@ -58,9 +58,14 @@ export const PlayedCards: React.FC<PlayedCardsProps> = ({playedCards, startPlaye
     return (
         <div>
             <p className={"text-center h4"}>Played cards</p>
-            <div className={"d-flex justify-content-around"}>
+            <div className={"d-flex justify-content-between"}>
+                <div/>
+                <div/>
                 <div className={"big-power"}>{p1Power}</div>
+                <div/>
                 <div className={"big-power"}>{p2Power}</div>
+                <div/>
+                <div/>
             </div>
             <div className={"d-flex align-content-around flex-wrap justify-content-center"} style={{
                 width: "400px",

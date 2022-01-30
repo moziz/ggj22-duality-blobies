@@ -30,7 +30,7 @@ export const CardComponent: React.FC<CardProps> = (
             borderRadius: "10px",
             border: ((highLight || (faceDown && card.name !== "HIDDEN")) ? "5px" : "1px") + " solid " + (card.side === "Dino" ? "#9B0000" : "#00009B"),
             backgroundColor: card.side === "Dino" ? "#FF5733" : "#6495ED",
-            backgroundImage: card.side === "Both" ? "linear-gradient(#FF5733, #FF5733, #6495ED, #6495ED)" : ( (faceDown && card.name !== "HIDDEN") ? "url('/imgs/card-back-text.png')": undefined),
+            backgroundImage: card.side === "Both" ? "linear-gradient(#FF5733, #FF5733, #6495ED, #6495ED)" : ((faceDown && card.name !== "HIDDEN") ? "url('/imgs/card-back-text.png')" : undefined),
             boxShadow: (faceDown && !highLight) ? "inset 0 0 0 1000px rgba(255,255,255,.25)" : "",
         }}>
             {!faceDown ? <div className={"d-flex justify-content-between"}>
@@ -49,8 +49,8 @@ export const CardComponent: React.FC<CardProps> = (
             }}>
             </div> : null}
             {card.effects.length > 0 ? card.effects.map(
-                effect => {
-                    return <p key={effect.name} className={"m-0"}>{faceDown ? "" : (effect.text ?? effect.name)}</p>
+                (effect, index) => {
+                    return <p key={effect.cardName + index} className={"m-0"}>{faceDown ? "" : (effect.text)}</p>
                 }) : <p/>
             }
             <div className={"d-flex justify-content-around"}>
