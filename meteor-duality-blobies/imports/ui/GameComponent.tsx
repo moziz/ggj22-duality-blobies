@@ -9,7 +9,7 @@ import {Shop} from "/imports/ui/Shop";
 import {getPlayersPower, getShopTurn} from "/imports/control/game-logic";
 import {Chat} from "/imports/ui/Chat";
 import {Deck} from "/imports/ui/Deck";
-import {useAudio} from "/imports/ui/useAudio";
+import {useAudio, useMultiAudio} from "/imports/ui/useAudio";
 
 interface GameProps {
     game: Game,
@@ -19,10 +19,22 @@ interface GameProps {
     clientPlayer?: PlayerID,
 }
 
+const catAudios = [
+    "/sounds/Meow.ogg",
+    "/sounds/miau.wav",
+    "/sounds/mikko_miau.mp3",
+];
+
+const dinoAudios =[
+    "/sounds/roar-sound-effect.mp3",
+    "/sounds/rauh.wav",
+    "/sounds/mikko_rauh.mp3",
+];
+
 export const GameComponent: React.FC<GameProps> = ({game, toDrawState, playCard, purchaseCard, clientPlayer}) => {
     const gameStarted = game.players.p1.hand.length && game.roundNumber !== 0;
-    const [playingCat, toggleCat] = useAudio("/sounds/Meow.ogg", 0.3);
-    const [playingDino, toggleDino] = useAudio("/sounds/roar-sound-effect.mp3", 0.2);
+    const [playingCat, toggleCat] = useMultiAudio(catAudios, 0.3);
+    const [playingDino, toggleDino] = useMultiAudio(dinoAudios, 0.2);
     const [playingBuy, toggleBuy] = useAudio("/sounds/cash.mp3", 0.2);
     const playCardWithSound = React.useCallback((c: Card, p: PlayerID) => {
             if (c.side === "Dino") {
@@ -88,7 +100,7 @@ export const GameComponent: React.FC<GameProps> = ({game, toDrawState, playCard,
                                 turn={getShopTurn(game)}
                                 active={game.shop.active}
                                 onPurchase={purchaseCardWithSound}
-                                clientPlayer={clientPlayer ?? "p1"}
+                                clientPlayer={clientPlayer}
                             /> : null
                         }
                     </div>

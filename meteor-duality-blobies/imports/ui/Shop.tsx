@@ -9,7 +9,7 @@ interface ShopProps {
     turn: PlayerID,
     active: boolean,
     onPurchase: (c: Card, p: PlayerID) => void,
-    clientPlayer: PlayerID,
+    clientPlayer?: PlayerID,
 }
 
 export const Shop: React.FC<ShopProps> = ({offers, turn, active, onPurchase, clientPlayer}) => {
