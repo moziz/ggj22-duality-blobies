@@ -9,12 +9,12 @@ interface HandProps {
     cards: Card[],
     game: Game,
     player: PlayerID,
-    playCard: (c: Card, player: PlayerID) => void,
+    playCard?: (c: Card, player: PlayerID) => void,
     faceDown: boolean,
 }
 
 export const HandComponent: React.FC<HandProps> = ({cards, game, player, playCard, faceDown}) => {
-    const playCardFromHand = React.useCallback((card: Card) => playCard(card, player), [player, playCard]);
+    const playCardFromHand = React.useCallback((card: Card) => playCard?.(card, player), [player, playCard]);
     return (
         <>
             <h4 className={"text-center"}>Hand</h4>
@@ -23,8 +23,8 @@ export const HandComponent: React.FC<HandProps> = ({cards, game, player, playCar
                 {cards.map((card, index) =>
                     <CardComponent key={index}
                                    card={card}
-                                   canPlay={canPlayCard(game, card, player)}
-                                   cannotReason={getCannotReason(game, card, player)}
+                                   canPlay={playCard ? canPlayCard(game, card, player) : undefined}
+                                   cannotReason={playCard ? getCannotReason(game, card, player) : "Game ended"}
                                    playCard={playCardFromHand}
                                    faceDown={faceDown}
                     />,

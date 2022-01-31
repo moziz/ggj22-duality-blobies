@@ -69,6 +69,17 @@ const drawCard: (game: Game, player: PlayerID) => Card | undefined = (game: Game
 
 export const drawPhase = (game: Game) => {
     for (let player of ["p1", "p2"] as PlayerID[]) {
+        // check draw phase effects
+        for(const c of game.players[player].hand){
+            for (const effect of c.effects) {
+                if(effect.trigger==="StartOfDrawPhase"){
+                    if(effect.effectType === "Grow"){
+                        c.power += effect.effectArgs["amount"];
+                    }
+                }
+            }
+        }
+
         while (game.players[player].hand.length < 5) {
             const c = drawCard(game, player);
             if (!c) {
@@ -270,6 +281,9 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
                     }
                 }
             }
+        }
+        if(effect.effectType === "Grow"){
+            card.power += effect.effectArgs["amount"];
         }
     }
 

@@ -1,6 +1,6 @@
 body {
-  padding: 10px;
-  font-family: sans-serif;
+    padding: 10px;
+    font-family: sans-serif;
 }
 
 .flex-container::after {
@@ -8,10 +8,10 @@ body {
     flex-grow: 1;
     max-width: 450px;
     min-width: 350px;
-    margin-right: 10px;        /* to match the other flex items */
+    margin-right: 10px; /* to match the other flex items */
 }
 
-.power{
+.power {
     font-size: 24px;
     background: white;
     width: 34px;
@@ -25,13 +25,13 @@ body {
 }
 
 @keyframes animateBorder {
-  to {
-    outline-color: #EA3556;
-    box-shadow: 0 0 0 4px yellow;
-  }
+    to {
+        outline-color: #EA3556;
+        box-shadow: 0 0 0 4px yellow;
+    }
 }
 
-.big-power{
+.big-power {
     font-size: 28px;
     background: white;
     width: 52px;
@@ -43,25 +43,44 @@ body {
     box-sizing: border-box;
     border-radius: 50%;
 }
-.winner-power{
+
+.winner-power {
     border: 0;
     outline: 5px dashed yellow;
     box-shadow: 0 0 0 4px #EA3556;
     animation: 0.75s animateBorder infinite;
 }
 
-.card-title{
+.card-title {
     font-size: 22px;
 }
 
-.splitter{
+.splitter {
     margin-left: 4px;
     margin-right: 4px;
     border: 2px dashed rebeccapurple;
 }
 
-.icon{
+.icon {
     width: 24px;
     height: 24px;
 }
 
+@keyframes pulse {
+    0% {
+        transform: scale(1, 1);
+    }
+
+    50% {
+        transform: scale(1.2, 1.2);
+    }
+
+    100% {
+        transform: scale(1, 1);
+    }
+}
+
+.pulse {
+    animation: pulse 1s linear infinite;
+    text-shadow: #FC0 1px 1px 10px, #FC0 -1px 1px 10px, #FC0 -1px -1px 10px, #FC0 1px -1px 10px;
+}
