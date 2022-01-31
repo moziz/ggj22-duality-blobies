@@ -86,7 +86,7 @@ export const GameView: React.FC = () => {
                                    clientPlayer={clientPlayer}
                     />
                     <div className={"row d-flex justify-content-between"}>
-                        <p className={"text-center mb-0"}><small>v1.0</small></p>
+                        <p className={"text-center mb-0"}><small>v1.0.1</small></p>
                         <a href={"https://globalgamejam.org/2022/games/cattosaurus-4"} className={"text-center"}>More info</a>
                     </div>
                 </div>
