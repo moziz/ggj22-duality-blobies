@@ -3,20 +3,25 @@ import {cloneDeep} from "lodash";
 
 export type Side = "Dino" | "Cat" | "Both";
 
-type EffectTriggerPhase = "PlayFirst" | "Play" | "Resolve" | "Discard";
+type EffectTriggerPhase = "None" | "PlayFirst" | "Play" | "Resolve" | "Discard" | "StartOfDrawPhase";
 
-type EffectType = "None" | "Draw" | "Swap" | "Destroy";
+type EffectType = "None" | "Draw" | "Swap" | "Destroy" | "Grow";
 
 type EffectArgKey = string;
 
 export interface ComboEffect {
-    cardName: string;
     trigger: EffectTriggerPhase;
     activeInHand?: boolean;
     effectType: EffectType;
     effectArgs: Record<EffectArgKey, any>;
     comboNeed?: "NoNeed" | "OtherSame" | "OtherDifferent";
     text: string;
+}
+
+export interface ComboEffectCardFactoryData extends ComboEffect {
+    minPower?: number;
+    maxPower?: number;
+    cardName: string;
 }
 
 export interface Card {
@@ -28,11 +33,18 @@ export interface Card {
 }
 
 export const getBadCard: (side: Side) => Card = (side) => {
+    const effect: ComboEffect = {
+        effectType: "None",
+        text: "For the balance",
+        effectArgs: {},
+        trigger: "None",
+    };
+
     return {
-        name: side,
+        name: "Bad " + side,
         side,
         power: 0,
-        effects: [],
+        effects: [effect],
         visuals: 0,
     }
 }
@@ -51,22 +63,38 @@ export const startDeck: Card[] = [
     {name: "Cat", power: 5, side: "Cat", effects: [], visuals: 5},
 ]
 
-export const effects: ComboEffect[] = [
+export const effects: ComboEffectCardFactoryData[] = [
     {cardName: "Draw 1", text: "Play: Draw 1", trigger: "Play", effectType: "Draw", effectArgs: {"amount": 1}},
     {cardName: "Draw 2", text: "Play: Draw 2", trigger: "Play", effectType: "Draw", effectArgs: {"amount": 2}},
     {cardName: "Draw 3", text: "Play: Draw 3", trigger: "Play", effectType: "Draw", effectArgs: {"amount": 3}},
     {cardName: "Swap C", text: "Play: Swap Cats", trigger: "Play", effectType: "Swap", effectArgs: {"target": "Cat"}},
     {cardName: "Swap D", text: "Play: Swap Dinos", trigger: "Play", effectType: "Swap", effectArgs: {"target": "Dino"}},
-    {cardName: "Eat", text: "Play: Eat all", trigger: "Play", effectType: "Destroy", effectArgs: {"target":"all"}},
-    {cardName: "Eat", text: "Play: Eat Smaller", trigger: "Play", effectType: "Destroy", effectArgs: {"target":"smaller"}},
-    {cardName: "Eat", text: "Play: Eat Stronger", trigger: "Play", effectType: "Destroy", effectArgs: {"target":"bigger"}},
+    {cardName: "Grow", text: "In hand: grow stronger", trigger: "StartOfDrawPhase", effectType: "Grow", effectArgs: {"amount": 1}, minPower:1, maxPower:1},
+    {cardName: "Huge", text: "Play: lose 2 power", trigger: "Play", effectType: "Grow", effectArgs: {"amount": -2}, minPower: 7, maxPower: 12},
+    {cardName: "Eat", text: "Play: Eat all", trigger: "Play", effectType: "Destroy", effectArgs: {"target": "all"}},
+    {
+        cardName: "Eat",
+        text: "Play: Eat Smaller",
+        trigger: "Play",
+        effectType: "Destroy",
+        effectArgs: {"target": "smaller"},
+    },
+    {
+        cardName: "Eat",
+        text: "Play: Eat Stronger",
+        trigger: "Play",
+        effectType: "Destroy",
+        effectArgs: {"target": "bigger"},
+    },
 ];
 
 
 const getRandomCard: () => Card = () => {
-    const power: number = Math.ceil(Math.random() * 5);
     const side: Side = Math.random() > 0.5 ? "Dino" : "Cat";
-    const effect = cloneDeep(effects[Math.floor(Math.random() * (effects.length - 0.01))]);
+    const effect = cloneDeep(effects[Math.floor(Math.random() * effects.length)]);
+    const power: number = (effect.minPower ?? 1) + Math.floor(Math.random() * ((effect.maxPower ?? 5) - (effect.minPower ?? 1)));
+    delete effect.maxPower;
+    delete effect.minPower;
     const visuals = 5 + Math.floor(Math.random() * (9 - 0.01));
     return {
         name: effect.cardName,

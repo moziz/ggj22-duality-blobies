@@ -19,7 +19,7 @@ const useGame = (gameId: string = "") => useTracker(() => {
         gameObject = startNewGame()
         gameObject.name = gameId;
         AddGameMessage(gameObject.name, "The game has started!")
-        GameCollection.upsert({_id: gameId}, gameObject)
+        Meteor.call("upsertGame", gameId, gameObject)
     }
     return {
         gameObject: gameObject,
@@ -36,7 +36,8 @@ export const GameView: React.FC = () => {
     const [clientPlayer, setClientPlayer] = React.useState<PlayerID | undefined>(undefined);
 
     const setGame = React.useCallback((game: Game) => {
-        GameCollection.upsert({_id: gameId}, game)
+        if(gameId)
+            Meteor.call("upsertGame", gameId, game)
     }, [gameId])
 
     const playCard = React.useCallback((c: Card, p: PlayerID, tmpGame: Game) => {
@@ -85,7 +86,7 @@ export const GameView: React.FC = () => {
                                    clientPlayer={clientPlayer}
                     />
                     <div className={"row d-flex justify-content-between"}>
-                        <p className={"text-center mb-0"}><small>v1.0</small></p>
+                        <p className={"text-center mb-0"}><small>v1.0.1</small></p>
                         <a href={"https://globalgamejam.org/2022/games/cattosaurus-4"} className={"text-center"}>More info</a>
                     </div>
                 </div>

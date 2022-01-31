@@ -17,7 +17,7 @@ const useChat = (gameId: string = "", playerId?: PlayerID) => useTracker(() => {
     let chatObject = ChatCollection.findOne({_id: gameId})
     if (chatObject === undefined && subscription.ready()) {
         chatObject = {_id: gameId, messages: []}
-        ChatCollection.upsert({_id: gameId}, chatObject)
+        Meteor.call("upsertChatMessage", gameId, chatObject)
     }
     return {
         chatObject: chatObject,
