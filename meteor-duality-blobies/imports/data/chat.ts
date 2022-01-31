@@ -1,6 +1,7 @@
 import {Mongo} from "meteor/mongo";
 import {Chat} from "/imports/ui/Chat";
 import {PlayerID} from "/imports/data/player";
+import {Meteor} from "meteor/meteor";
 
 interface Message {
     message: string;
@@ -16,26 +17,11 @@ export interface Chat {
 
 
 export const AddChatMessage = (gameId: string, message: string, playerId: PlayerID) => {
-    ChatCollection.upsert({_id: gameId}, {
-        $push: {
-            messages: {
-                message: message,
-                playerId: playerId ? playerId : undefined,
-                timestamp: new Date(),
-            },
-        },
-    })
+    Meteor.call("upsertChatMessage", gameId, message, playerId)
 }
 
 export const AddGameMessage = (gameId: string, message: string) => {
-    ChatCollection.upsert({_id: gameId}, {
-        $push: {
-            messages: {
-                message: message,
-                timestamp: new Date(),
-            },
-        },
-    })
+    Meteor.call("upsertGameMessage", gameId, message)
 }
 
 export const ChatCollection = new Mongo.Collection<Chat>('chat');

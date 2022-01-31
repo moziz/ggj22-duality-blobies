@@ -19,7 +19,7 @@ const useGame = (gameId: string = "") => useTracker(() => {
         gameObject = startNewGame()
         gameObject.name = gameId;
         AddGameMessage(gameObject.name, "The game has started!")
-        GameCollection.upsert({_id: gameId}, gameObject)
+        Meteor.call("upsertGame", gameId, gameObject)
     }
     return {
         gameObject: gameObject,
@@ -36,7 +36,8 @@ export const GameView: React.FC = () => {
     const [clientPlayer, setClientPlayer] = React.useState<PlayerID | undefined>(undefined);
 
     const setGame = React.useCallback((game: Game) => {
-        GameCollection.upsert({_id: gameId}, game)
+        if(gameId)
+            Meteor.call("upsertGame", gameId, game)
     }, [gameId])
 
     const playCard = React.useCallback((c: Card, p: PlayerID, tmpGame: Game) => {
