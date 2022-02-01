@@ -1,7 +1,12 @@
 <!doctype html><html><head><script>"use strict";
 const fragment_glsl_src_func = () => { return `#version 300 es
 
-precision mediump float;
+//precision highp float;
+//precision highp int;
+//precision mediump float;
+//precision mediump int;
+precision lowp float;
+precision lowp int;
 
 uniform float time;
 uniform vec2 screen;
@@ -21,30 +26,31 @@ uniform float lazer_progress;
 uniform float lazer_cooldown;
 
 
-//const int enemy_max = 2;
-//const vec2[2] enemies = vec2[enemy_max]( vec2(0.2, 0.2), vec2(0.8, 0.8) );
+//const int enemies_count = 2;
+//const vec2[2] enemies = vec2[2]( vec2(0.2, 0.2), vec2(0.8, 0.8) );
 uniform int enemies_count;
 uniform vec2[40] enemies;
 
 //const int blobies_count= 2;
-//const vec2[2] blobies = vec2[blobies_count]( vec2(0.25, 0.2), vec2(0.77, 0.8) );
+//const vec2[2] blobies = vec2[2]( vec2(0.25, 0.2), vec2(0.77, 0.8) );
 uniform int blobies_count;
 uniform vec2[40] blobies;
 
 uniform int deaths_count;
-uniform vec2[40] deaths;
-uniform float[40] deaths_progress;
+uniform vec2 deaths[40];
+uniform float deaths_progress[40];
 
 //const int splosions_count = 3;
-//const vec2[3] splosions = vec2[splosions_max]( vec2(0.255, 0.2), vec2(0.74, 0.8), vec2(0.2, 0.21) );
-//const float[3] splosions_progress = float[splosions_max](0.0f, 0.33f, 0.66f);
+//const vec2[3] splosions = vec2[3]( vec2(0.255, 0.2), vec2(0.74, 0.8), vec2(0.2, 0.21) );
+//const float[3] splosions_progress = float[3](0.0f, 0.33f, 0.66f);
 uniform int splosions_count;
 uniform vec2[40] splosions;
 uniform float[40] splosions_progress;
 
-//const vec2[2] grenades = vec2[grenades_max](vec2(0.4,0.4), vec2(0.6, 0.45));
+//const int grenades_count = 2;
+//const vec2[2] grenades = vec2[2](vec2(0.4,0.4), vec2(0.6, 0.45));
 uniform int grenades_count;
-uniform vec2[40] grenades;
+uniform vec2 grenades[40];
 
 const vec4 pParam = vec4( 17.0*17.0, 34.0, 1.0, 7.0);
 const float pi = 3.14159;
@@ -54,7 +60,7 @@ float s(float a, float b, float x)
 {
 	return a + (b - a) * smoothstep(-1., 1., sin(x));
 }
-
+///*
 #define REPEAT_10(X, i) \
 	X(int(i * 10 + 0));\
 	X(int(i * 10 + 1));\
@@ -72,14 +78,16 @@ float s(float a, float b, float x)
 	REPEAT_10(X, 1) \
 	REPEAT_10(X, 2) \
 	REPEAT_10(X, 3) \
+//*/
+
 /*
 #define REPEAT_40(X) \
 	X(0) \
 	X(1) \
-	X(2) \
-	X(3) \
+//	X(2) \
+//	X(3) \
 
-*/
+//*/
 
 vec4 drawBlobies(vec2 pos)
 {
@@ -196,6 +204,9 @@ vec4 drawAim(vec2 pos)
 
 vec4 drawLazer(vec2 pos)
 {
+	if (lazer_progress >= 1.)
+		return vec4(0,0,0,0);
+	
 	vec2 a = lazer_start;
 	vec2 d = lazer_end - lazer_start;
 	float t = ((pos.x - a.x) * d.x + (pos.y - a.y) * d.y) / (d.x * d.x + d.y * d.y);
@@ -498,6 +509,7 @@ void main()
 	
 	//gl_FragColor = colorOut;
 	v_FragColor = colorOut;
+	//v_FragColor = vec4(enemies[0], 0, 1);
 }`; };
 const fragment_glsl_src = fragment_glsl_src_func();
 
@@ -580,52 +592,36 @@ const setUniformVec2 = (name, value) => {
 
 const setUniformArrayFloat = (name, value, count) => {
 	
-	gl.useProgram(program);
-	const location = gl.getUniformLocation(program, name);
-	if (!location)
-		fatal_error("no uniform with name: " + name);
-	
-	let i = 0;
-	let arr = [];
-	while (arr.length < 40) {
-		if (i < value.length) {
-			arr.push(value[i]);
-		} else {
-			arr.push(0);
-		}
-		++i;
+	for (let i = 0; i < value.length; ++i)
+	{
+		gl.useProgram(program);
+		const location = gl.getUniformLocation(program, name + '['+i+']');
+		if (!location)
+			fatal_error("no uniform with name: " + name + '['+i+']');
+		
+		gl.uniform1f(location, value[i]);
+		
+		const error = gl.getError();
+		if (error !== gl.NO_ERROR)
+			fatal_error('setUniformArrayFloat("' + name + '['+i+']): ' + error);
 	}
-	
-	gl.uniform1fv(location, arr);
-	
-	const error = gl.getError();
-	if (error !== gl.NO_ERROR)
-		fatal_error('setUniformArrayFloat("' + name + '"): ' + error);
 }
 
-const setUniformArrayVec2 = (name, value, count) => {
+const setUniformArrayVec2 = (name, value) => {
 	
-	gl.useProgram(program);
-	const location = gl.getUniformLocation(program, name);
-	if (!location)
-		fatal_error("no uniform with name: " + name);
-	
-	let i = 0;
-	let arr = [];
-	while (arr.length < 40) {
-		if (i < value.length) {
-			arr.push([value[i].x, value[i].y]);
-		} else {
-			arr.push([0, 0]);
-		}
-		++i;
+	for (let i = 0; i < value.length; ++i)
+	{
+		gl.useProgram(program);
+		const location = gl.getUniformLocation(program, name + '['+i+']');
+		if (!location)
+			fatal_error("no uniform with name: " + name + '['+i+']');
+		
+		gl.uniform2f(location, value[i].x, value[i].y);
+		
+		const error = gl.getError();
+		if (error !== gl.NO_ERROR)
+			fatal_error('setUniformArrayVec2("' + name + '['+i+']): ' + error);
 	}
-	
-	gl.uniform2fv(location, arr);
-	
-	const error = gl.getError();
-	if (error !== gl.NO_ERROR)
-		fatal_error('setUniformArrayVec2("' + name + '"): ' + error);
 }
 
 class Clock {
@@ -649,6 +645,10 @@ class vec2 {
 	constructor(x, y) {
 		this.x = x;
 		this.y = y;
+	}
+	
+	toString() {
+		return "(" + this.x + ", " + this.y + ")";
 	}
 	
 	plus(o) {
@@ -707,9 +707,9 @@ let screenShake = false;
 let scoreBlend = 0.0;
 let comboBlend = 0.0;
 
-const random01 = () => { return 0.5; }
+const random01 = () => { return Math.random(); }
 
-let mousePixelPos = new vec2(0, 0);
+let aimPos = new vec2(0, 0);
 let mouseButton1 = false;
 let mouseButton2 = false;
 let heldKeys = [];
@@ -735,6 +735,8 @@ const hasFocus = () => {
 
 const min = Math.min;
 const max = Math.max;
+
+let output = null;
 
 class Map {
 	constructor() {
@@ -764,10 +766,6 @@ class Map {
 		
 	draw()
 	{
-		const windowSize = new vec2(canvas.width, canvas.height);
-		const windowCenter  = windowSize.div(2);
-		const aimPos = new vec2((mousePixelPos.x - windowCenter.x) / windowSize.y + 0.5, mousePixelPos.y / windowSize.y);
-
 		//setMouseCursorVisible(false);
 
 		let playerBeingDamaged = false;
@@ -829,37 +827,34 @@ class Map {
 			this.enemySpawnCounter.restart();
 			const r = random01() * pi * 2.0;
 			this.enemyPoss.push(new vec2(Math.sin(r), Math.cos(r)).mult(0.75).plus(new vec2(0.5, 0.5)));
-			const rx = random01() - 0.5;
-			const ry = random01() - 0.5;
-			this.enemyBlobs.push(this.enemyPoss[this.enemyPoss.length-1].plus(new vec2(rx, ry)).mult(0.1));
+			const rx = (random01() - 0.5) * 0.1;
+			const ry = (random01() - 0.5) * 0.1;
+			this.enemyBlobs.push(this.enemyPoss[this.enemyPoss.length-1].plus(new vec2(rx, ry)));
 		}
 		
 		const enemySpeed = 1.0 + this.score / 10000.0;
 
+		for (let i = 0; i < this.enemyPoss.length; ++i)
 		{
-			let i = -1;
-			while (++i < this.enemyPoss.length)
+			let dir = this.playerPos.minus(this.enemyBlobs[i]);
+			dir = dir.div(max(0.001, length(dir)));
+			dir = dir.mult(0.001 * 60.0 * dt * enemySpeed);
+
+			this.enemyPoss[i].inc(dir);
+			this.enemyBlobs[i].inc(dir);
+
+			if (length(this.playerPos.minus(this.enemyBlobs[i])) < enemyDamageRadius)
 			{
-				let dir = this.playerPos.minus(this.enemyBlobs[i]);
-				dir = dir.div(max(0.001, length(dir)));
-				dir = dir.mult(0.001 * 60.0 * dt * enemySpeed);
-
-				this.enemyPoss[i].inc(dir);
-				this.enemyBlobs[i].inc(dir);
-
-				if (length(this.playerPos.minus(this.enemyBlobs[i])) < enemyDamageRadius)
+				playerBeingDamaged = true;
+				if (this.playerShield > 0)
 				{
-					playerBeingDamaged = true;
-					if (this.playerShield > 0)
-					{
-						this.playerShield -= dt / shieldDamageDuration;
-					}
+					this.playerShield -= dt / shieldDamageDuration;
+				}
 
-					if (this.playerShield <= 0)
-					{
-						this.playerShield = 0;
-						this.playerHealth -= dt / healthDamageDuration;
-					}
+				if (this.playerShield <= 0)
+				{
+					this.playerShield = 0;
+					this.playerHealth -= dt / healthDamageDuration;
 				}
 			}
 		}
@@ -903,10 +898,8 @@ class Map {
 
 			const grenadeDirection = aimPos.minus(this.playerPos);
 			this.grenadePoss.push(new vec2(this.playerPos.x, this.playerPos.y));
-			this.grenadeFacings.push(grenadeDirection.div(length(grenadeDirection) * grenadeFlightSpeed));
+			this.grenadeFacings.push(grenadeDirection.div(length(grenadeDirection) / grenadeFlightSpeed));
 			this.grenadeClocks.push(new Clock());
-			
-			console.log("grenade!", this.grenadeClocks.length);
 		}
 
 		if (this.lazerClock.getElapsedTime() > this.currentLazerCooldownCurrent)
@@ -919,11 +912,9 @@ class Map {
 				this.lazerStart = this.playerPos;
 				this.lazerEnd = this.playerPos.plus(lazerDirection.mult(length(lazerDirection)).mult(lazerLength));
 
-				console.log("laser!");
-				
 				let hitCount = 0;
-
-				for (i = 0; i < this.enemyPoss.length; i++)
+				
+				for (let i = 0; i < this.enemyPoss.length; ++i)
 				{
 					const dist = distanceFromLine(this.lazerStart, this.lazerEnd, this.enemyPoss[i]);
 					if (dist < lazerWidth)
@@ -934,8 +925,8 @@ class Map {
 						this.splosionPoss.push(this.enemyPoss[i].mult(1));
 						this.splosionClocks.push(new Clock());
 
-						this.enemyPoss = this.enemyPoss.splice(i, 1);
-						this.enemyBlobs = this.enemyBlobs.splice(i, 1);
+						this.enemyPoss.splice(i, 1);
+						this.enemyBlobs.splice(i, 1);
 						--i;
 
 						hitCount += 1;
@@ -957,62 +948,53 @@ class Map {
 		}
 
 		const enemyDeathProgress = [];
+		const enemyDeathDuration = 1.0;
+		for (let i = 0; i < this.enemyDeath.length; ++i)
 		{
-			const enemyDeathDuration = 1.0;
-			let i = -1;
-			while (++i < this.enemyDeath.length)
+			if (this.enemyDeathClock[i].getElapsedTime() > enemyDeathDuration)
 			{
-				if (this.enemyDeathClock[i].getElapsedTime() > enemyDeathDuration)
-				{
-					this.enemyDeath.splice(i, 1);
-					this.enemyDeathClock.splice(i, 1);
-					--i;
-					continue;
-				}
-
-				enemyDeathProgress.push(this.enemyDeathClock[i].getElapsedTime() / enemyDeathDuration);
+				this.enemyDeath.splice(i, 1);
+				this.enemyDeathClock.splice(i, 1);
+				--i;
+				continue;
 			}
+			
+			enemyDeathProgress.push(this.enemyDeathClock[i].getElapsedTime() / enemyDeathDuration);
 		}
 		
 		
+		const grenadeFlightDuration = 0.3;
+		for (let i = 0; i < this.grenadePoss.length; ++i)
 		{
-			const grenadeFlightDuration = 0.3;
-			let i = -1;
-			while (++i < this.grenadePoss.length)
+			if (this.grenadeClocks[i].getElapsedTime() > grenadeFlightDuration)
 			{
-				if (this.grenadeClocks[i].getElapsedTime() > grenadeFlightDuration)
-				{
-					this.splosionPoss.push(this.grenadePoss[i]);
-					this.splosionClocks.push(new Clock());
+				this.splosionPoss.push(this.grenadePoss[i]);
+				this.splosionClocks.push(new Clock());
 
-					this.grenadePoss.splice(i, 1);
-					this.grenadeFacings.splice(i, 1);
-					this.grenadeClocks.splice(i, 1);
-					--i;
+				this.grenadePoss.splice(i, 1);
+				this.grenadeFacings.splice(i, 1);
+				this.grenadeClocks.splice(i, 1);
+				--i;
 
-					continue;
-				}
-
-				this.grenadePoss[i] = this.grenadePoss[i].plus(this.grenadeFacings[i].mult(dt * 60.0));
+				continue;
 			}
+
+			this.grenadePoss[i] = this.grenadePoss[i].plus(this.grenadeFacings[i].mult(dt * 60.0));
 		}
 		
 		const splosionTimes = [];
+		const splosionDuration = 4.0;
+		for (let i = 0; i < this.splosionPoss.length; ++i)
 		{
-			const splosionDuration = 4.0;
-			let i = -1;
-			while (++i < this.splosionPoss.length)
+			if (this.splosionClocks[i].getElapsedTime() > splosionDuration)
 			{
-				if (this.splosionClocks[i].getElapsedTime() > splosionDuration)
-				{
-					this.splosionPoss.splice(i, 1);
-					this.splosionClocks.splice(i, 1);
-					--i;
-					continue;
-				}
-
-				splosionTimes.push(this.splosionClocks[i].getElapsedTime() / splosionDuration);
+				this.splosionPoss.splice(i, 1);
+				this.splosionClocks.splice(i, 1);
+				--i;
+				continue;
 			}
+
+			splosionTimes.push(this.splosionClocks[i].getElapsedTime() / splosionDuration);
 		}
 		
 		setUniformVec2("playerPos", this.playerPos);
@@ -1022,48 +1004,28 @@ class Map {
 		setUniformFloat("playerShield", this.playerShield);
 		setUniformBool("playerBeingDamaged", playerBeingDamaged);
 
-		const lazerProgress = this.lazerClock.getElapsedTime() / lazerDuration;
+		const lazerProgress = min(1, this.lazerClock.getElapsedTime() / lazerDuration);
 		const lazerCooldownProgress = this.lazerClock.getElapsedTime() / this.currentLazerCooldownCurrent;
-		if (lazerProgress >= 0.0 && lazerProgress <= 1.0)
 		{
+			setUniformFloat("lazer_cooldown", lazerCooldownProgress);
+			setUniformFloat("lazer_progress", max(0, lazerProgress));
 			setUniformVec2("lazer_start", this.lazerStart);
 			setUniformVec2("lazer_end", this.lazerEnd);
-			setUniformFloat("lazer_progress", lazerProgress);
-		}
-		setUniformFloat("lazer_cooldown", lazerCooldownProgress);
-
-		if (this.grenadePoss.length > 0)
-		{
-			setUniformInt("grenades_count", this.grenadePoss.length);
-			setUniformArrayVec2("grenades", this.grenadePoss, this.grenadePoss.length);
 		}
 
-		if (this.splosionPoss.length > 0)
-		{
-			setUniformInt("splosions_count", this.splosionPoss.length);
-			setUniformArrayVec2("splosions", this.splosionPoss, this.splosionPoss.length);
-			setUniformArrayFloat("splosions_progress", splosionTimes, splosionTimes.length);
-		}
-
-		if (this.enemyPoss.length > 0)
-		{
-			setUniformInt("enemies_count", this.enemyPoss.length);
-			setUniformArrayVec2("enemies", this.enemyPoss, this.enemyPoss.length);
-		}
-
-		if (this.enemyBlobs.length > 0)
-		{
-			setUniformInt("blobies_count", this.enemyBlobs.length);
-			setUniformArrayVec2("blobies", this.enemyBlobs, this.enemyBlobs.length);
-		}
-
-		if (enemyDeathProgress.length > 0)
-		{
-			setUniformInt("deaths_count", this.enemyDeath.length);
-			setUniformArrayVec2("deaths", this.enemyDeath, this.enemyDeath.length);
-			setUniformArrayFloat("deaths_progress", enemyDeathProgress, enemyDeathProgress.length);
-		}
-
+		setUniformInt("grenades_count", this.grenadePoss.length);
+		setUniformArrayVec2("grenades", this.grenadePoss, this.grenadePoss.length);
+		setUniformInt("splosions_count", this.splosionPoss.length);
+		setUniformArrayVec2("splosions", this.splosionPoss, this.splosionPoss.length);
+		setUniformArrayFloat("splosions_progress", splosionTimes, splosionTimes.length);
+		setUniformInt("enemies_count", this.enemyPoss.length);
+		setUniformArrayVec2("enemies", this.enemyPoss, this.enemyPoss.length);
+		setUniformInt("blobies_count", this.enemyBlobs.length);
+		setUniformArrayVec2("blobies", this.enemyBlobs, this.enemyBlobs.length);
+		setUniformInt("deaths_count", this.enemyDeath.length);
+		setUniformArrayVec2("deaths", this.enemyDeath, this.enemyDeath.length);
+		setUniformArrayFloat("deaths_progress", enemyDeathProgress, enemyDeathProgress.length);
+		
 		setUniformFloat("time", timeFromStart.getElapsedTime());
 
 		const lerp = (a, b) => {
@@ -1135,17 +1097,25 @@ const game = () => {
 	}
 };
 
-let show_fatal_errors = [];
+let shown_fatal_errors = [];
+let fatal_output = null;
+let frame_output = null;
+let permanent_output = null;
 
 const fatal_error = (msg) => {
-	if (show_fatal_errors.findIndex(x => x === msg) !== -1)
+	if (shown_fatal_errors.findIndex(x => x === msg) !== -1)
 		return;
 		
-	show_fatal_errors.push(msg);
+	shown_fatal_errors.push(msg);
 	
 	console.error(msg);
 	const log_msg = document.createElement('p');
-	document.body.appendChild(log_msg);
+	
+	if (fatal_output) {
+		fatal_output.appendChild(log_msg);
+	} else {
+		document.body.appendChild(log_msg);
+	}
 	
 	if (msg.startsWith('ERROR: 0:')) {
 		const [col, row] = msg.match(/[0-9]+/g);
@@ -1156,11 +1126,21 @@ const fatal_error = (msg) => {
 	log_msg.innerHTML = msg;
 };
 
+const frame_log = (msg) => {
+	frame_output.innerHTML += msg.toString() + '<br />';
+}
+
+const permanent_log = (msg) => {
+	permanent_output.innerHTML += msg + '<br />';
+}
+
 window.addEventListener("load", ev => {
     // webgl setup
     canvas = document.createElement("canvas");
-    canvas.width = 512, canvas.height = 512;
-    canvas.style.border = "solid";
+	document.body.style = "margin:0px;text-align:center;background-color:darkgreen;";
+    canvas.width = min(window.screen.width, window.screen.height);
+	canvas.height = min(window.screen.width, window.screen.height);
+	canvas.style = "cursor:none";
     document.body.appendChild(canvas);
     // webgl2 enabled default from: firefox-51, chrome-56
     gl = canvas.getContext("webgl2");
@@ -1169,10 +1149,30 @@ window.addEventListener("load", ev => {
 		return;
 	}
 	
-	canvas.onmousemove = (e) => { mousePixelPos.x = e.pageX; mousePixelPos.y = e.pageY; };
-	document.onclick = (e) => {
+	//document.oncontextmenu = (e) => { return false; }; 
+	canvas.oncontextmenu = (e) => { return false; }; 
+	
+	fatal_output = document.createElement('div');
+	document.body.appendChild(fatal_output);
+	fatal_output.style.color = "red;";
+	
+	permanent_output = document.createElement('p');
+	document.body.appendChild(permanent_output);
+	
+	frame_output = document.createElement('p');
+	document.body.appendChild(frame_output);
+	frame_output.style = "color:darkgrey;";
+	
+	canvas.onmousemove = (e) => {
+      var rect = e.target.getBoundingClientRect();
+      var x = e.clientX - rect.left;
+      var y = e.clientY - rect.top;
+	  aimPos = new vec2(x / rect.width, y / rect.height);
+    }
+	
+	document.onmousedown = (e) => {
 		if (e.button === 0) { mouseButton1 = true; }
-		if (e.button === 1 || e.button === 2) { mouseButton2 = true; }
+		if (e.button === 2) { mouseButton2 = true; }
 	};
 	document.onkeydown = (e) => { if (heldKeys.find(x => x === e.code)) { return; } heldKeys.push(e.code); pressedKeys.push(e.code); }
 	document.onkeyup = (e) => { heldKeys = heldKeys.filter(x => x !== e.code); }
@@ -1250,6 +1250,7 @@ window.addEventListener("load", ev => {
 
     const render = (program, count) => {
 		
+		frame_output.innerHTML = "";
 		game();
 		
         // draw the buffer with VAO
@@ -1269,7 +1270,7 @@ window.addEventListener("load", ev => {
         (function loop(count) {
             requestAnimationFrame(() => {
                 render(program, count);
-                setTimeout(loop, 30, (count + 1) & 0x7fffffff);
+                setTimeout(loop, 16, (count + 1) & 0x7fffffff);
             });
         })(0);
     };
