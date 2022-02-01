@@ -592,7 +592,7 @@ const setUniformVec2 = (name, value) => {
 
 const setUniformArrayFloat = (name, value, count) => {
 	
-	for (let i = 0; i < value.length; ++i)
+	for (let i = 0; i < min(40, value.length); ++i)
 	{
 		gl.useProgram(program);
 		const location = gl.getUniformLocation(program, name + '['+i+']');
@@ -609,7 +609,7 @@ const setUniformArrayFloat = (name, value, count) => {
 
 const setUniformArrayVec2 = (name, value) => {
 	
-	for (let i = 0; i < value.length; ++i)
+	for (let i = 0; i < min(40, value.length); ++i)
 	{
 		gl.useProgram(program);
 		const location = gl.getUniformLocation(program, name + '['+i+']');
@@ -626,15 +626,15 @@ const setUniformArrayVec2 = (name, value) => {
 
 class Clock {
 	constructor() {
-		this.startTime = Date.now();
+		this.startTime = window.performance.now();
 	}
 
 	getElapsedTime() {
-		return (Date.now() - this.startTime) / 1000.0;
+		return (window.performance.now() - this.startTime) / 1000.0;
 	}
 	
 	restart() {
-		this.startTime = Date.now();
+		this.startTime = window.performance.now();
 	}
 }
 
@@ -785,6 +785,22 @@ class Map {
 			++yInput;
 		if (isHeld("ArrowDown") || isHeld("KeyS"))
 			--yInput;
+			
+		if (isHeld("KeyQ"))
+		{
+			canvas.height *= 0.98;
+			canvas.width = canvas.height;
+			
+			canvas.style = "cursor:none;width:100vh;height:100vh";
+		}
+	
+		if (isHeld("KeyE"))
+		{
+			canvas.height = min(window.screen.height, canvas.height / 0.98);
+			canvas.width = canvas.height;
+			
+			canvas.style = "cursor:none;width:100vh;height:100vh";
+		}
 
 		if (wasPressed("KeyH")) {
 			screenShake = !screenShake;
@@ -1127,57 +1143,74 @@ const fatal_error = (msg) => {
 };
 
 const frame_log = (msg) => {
+	var ctx = canvas.getContext("2d");
+	ctx.font = "30px Arial";
+	ctx.fillText("Hello World", 10, 50); 
 	frame_output.innerHTML += msg.toString() + '<br />';
 }
 
-const permanent_log = (msg) => {
-	permanent_output.innerHTML += msg + '<br />';
-}
-
 window.addEventListener("load", ev => {
-    // webgl setup
-    canvas = document.createElement("canvas");
-	document.body.style = "margin:0px;text-align:center;background-color:darkgreen;";
-    canvas.width = min(window.screen.width, window.screen.height);
-	canvas.height = min(window.screen.width, window.screen.height);
-	canvas.style = "cursor:none";
-    document.body.appendChild(canvas);
-    // webgl2 enabled default from: firefox-51, chrome-56
-    gl = canvas.getContext("webgl2");
-	if (!gl) {
-		fatal_error("webgl2 required. Try a newer browser.");
-		return;
+	
+	console.log(credits);
+	
+	{
+		// logging setup
+		fatal_output = document.createElement('div');
+		document.body.appendChild(fatal_output);
+		fatal_output.style.color = "red;";
+		
+		frame_output = document.createElement('p');
+		document.body.appendChild(frame_output);
+		frame_output.style = "color:darkgrey;";
 	}
 	
-	//document.oncontextmenu = (e) => { return false; }; 
-	canvas.oncontextmenu = (e) => { return false; }; 
+	{
+		// webgl setup
+		canvas = document.createElement("canvas");
+		document.body.style = "margin:0px;text-align:center;background-color:darkgreen;";
+		canvas.width = min(window.screen.width, window.screen.height);// * 0.5;
+		canvas.height = min(window.screen.width, window.screen.height);// * 0.5;
+		canvas.style = "cursor:none;width:100vh;height:100vh";
+		document.body.appendChild(canvas);
+		// webgl2 enabled default from: firefox-51, chrome-56
+		gl = canvas.getContext("webgl2");
+		if (!gl) {
+			fatal_error("webgl2 required. Try a newer browser.");
+			return;
+		}
+		
+	}
 	
-	fatal_output = document.createElement('div');
-	document.body.appendChild(fatal_output);
-	fatal_output.style.color = "red;";
-	
-	permanent_output = document.createElement('p');
-	document.body.appendChild(permanent_output);
-	
-	frame_output = document.createElement('p');
-	document.body.appendChild(frame_output);
-	frame_output.style = "color:darkgrey;";
-	
-	canvas.onmousemove = (e) => {
-      var rect = e.target.getBoundingClientRect();
-      var x = e.clientX - rect.left;
-      var y = e.clientY - rect.top;
-	  aimPos = new vec2(x / rect.width, y / rect.height);
-    }
-	
-	document.onmousedown = (e) => {
-		if (e.button === 0) { mouseButton1 = true; }
-		if (e.button === 2) { mouseButton2 = true; }
-	};
-	document.onkeydown = (e) => { if (heldKeys.find(x => x === e.code)) { return; } heldKeys.push(e.code); pressedKeys.push(e.code); }
-	document.onkeyup = (e) => { heldKeys = heldKeys.filter(x => x !== e.code); }
+	{
+		// input capturing
+		
+		canvas.oncontextmenu = (e) => { return false; }; 
+		
+		canvas.onmousemove = (e) => {
+		  var rect = e.target.getBoundingClientRect();
+		  var x = e.clientX - rect.left;
+		  var y = e.clientY - rect.top;
+		  aimPos = new vec2(x / rect.width, y / rect.height);
+		};
+		
+		canvas.onmousedown = (e) => {
+			if (e.button === 0) { mouseButton1 = true; }
+			if (e.button === 2) { mouseButton2 = true; }
+		};
+		
+		document.onkeydown = (e) => {
+			if (heldKeys.find(x => x === e.code)) {
+				return;
+			}
+			heldKeys.push(e.code); pressedKeys.push(e.code);
+		};
+		
+		document.onkeyup = (e) => {
+			heldKeys = heldKeys.filter(x => x !== e.code);
+		};
+		
+	}
 
-	
     // drawing data (as viewport square)
     const vert2d = [[1, 1], [-1, 1], [1, -1], [-1, -1]];
     const vert2dData = new Float32Array([].concat(...vert2d));
@@ -1186,8 +1219,7 @@ window.addEventListener("load", ev => {
     gl.bufferData(gl.ARRAY_BUFFER, vert2dData, gl.STATIC_DRAW);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
-    const index = [[0, 1, 2], [3, 2, 1]];
-    const indexData = new Uint16Array([].concat(...index));
+    const indexData = new Uint16Array([0, 1, 2, 3, 2, 1]);
     const indexBuf = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuf);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indexData, gl.STATIC_DRAW);
@@ -1195,7 +1227,34 @@ window.addEventListener("load", ev => {
 
     // opengl3 VAO
     const vertexArray = gl.createVertexArray();
-    const setupVAO = (program) => {
+    
+    {
+		// compile & link shaders & program
+		const loadShader = (src, type) => {
+			const shader = gl.createShader(type);
+			gl.shaderSource(shader, src);
+			gl.compileShader(shader);
+			if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+				const msg = gl.getShaderInfoLog(shader);
+				fatal_error(msg);
+			}
+			return shader;
+		};
+		
+		const vs = loadShader(vertex_glsl_src, gl.VERTEX_SHADER);
+		const fs = loadShader(fragment_glsl_src, gl.FRAGMENT_SHADER);
+		program = gl.createProgram();
+		gl.attachShader(program, vs)
+		gl.attachShader(program, fs)
+		gl.linkProgram(program);
+		
+		if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+			fatal_error(gl.getProgramInfoLog(program));
+			return;
+		};
+	}
+	
+	{
         // setup buffers and attributes to the VAO
         gl.bindVertexArray(vertexArray);
         // bind buffer data
@@ -1210,84 +1269,36 @@ window.addEventListener("load", ev => {
         gl.vertexAttribPointer(
             vert2dId, count, elem, normalize, stride, offset);
         gl.bindVertexArray(null);
-        //NOTE: these unbound buffers is not required; works fine if unbound
-        //gl.bindBuffer(gl.ARRAY_BUFFER, null);
-        //gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-    };
-    
-    
-    // shader loader
-    const loadShader = (src, type) => {
-        const shader = gl.createShader(type);
-        gl.shaderSource(shader, src);
-        gl.compileShader(shader);
-        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-			const msg = gl.getShaderInfoLog(shader);
-            fatal_error(msg);
-        }
-        return shader;
-    };
-    const loadProgram = () => {
-		const shaders = [
-			loadShader(vertex_glsl_src, gl.VERTEX_SHADER),
-			loadShader(fragment_glsl_src, gl.FRAGMENT_SHADER)
-		];
-
-		const program = gl.createProgram();
-		shaders.forEach(shader => gl.attachShader(program, shader));
-		gl.linkProgram(program);
-		if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-			fatal_error(gl.getProgramInfoLog(program));
-		};
-		return program;
-	}
-
-    // initialize data variables for the shader program
-    const initVariables = (program) => {
-        setupVAO(program);
-        return program;
-    };
-
-    const render = (program, count) => {
-		
-		frame_output.innerHTML = "";
-		game();
-		
-        // draw the buffer with VAO
-        // NOTE: binding vert and index buffer is not required
-		gl.useProgram(program);
-        gl.bindVertexArray(vertexArray);
-        const indexOffset = 0 * index[0].length;
-        gl.drawElements(gl.TRIANGLES, indexData.length,
-                        gl.UNSIGNED_SHORT, indexOffset);
-        const error = gl.getError();
-        if (error !== gl.NO_ERROR)
-			fatal_error('gl.ERROR: ' + error);
-        gl.bindVertexArray(null);
-        gl.useProgram(null);
-    };
-    const startRendering = (program) => {
-        (function loop(count) {
-            requestAnimationFrame(() => {
-                render(program, count);
-                setTimeout(loop, 16, (count + 1) & 0x7fffffff);
-            });
-        })(0);
-    };
-
-    // (not used because of it runs forever)
-    const cleanupResources = (program) => {
-        gl.deleteBuffer(vertBuf);
-        gl.deleteBuffer(indexBuf);
-        gl.deleteBuffer(screenBuf);
-        gl.deleteBuffer(timerBuf);
-        gl.deleteVertexArray(vertexArray);
-        gl.deleteProgram(program);
-    };
-    
-	console.log(credits);
+    }
 	
-    program = loadProgram();
-	program = initVariables(program);
-	startRendering(program);
+	timeFromStart.restart();
+	
+	{
+		const render = (program, count) => {
+			frame_output.innerHTML = "";
+			
+			game();
+			
+			// draw the buffer with VAO
+			// NOTE: binding vert and index buffer is not required
+			gl.useProgram(program);
+			gl.bindVertexArray(vertexArray);
+			gl.drawElements(gl.TRIANGLES, indexData.length,
+							gl.UNSIGNED_SHORT, 0);
+			const error = gl.getError();
+			if (error !== gl.NO_ERROR)
+				fatal_error('gl.ERROR: ' + error);
+			gl.bindVertexArray(null);
+			gl.useProgram(null);
+		};
+		
+		// start render loop
+        (function loop() {
+            requestAnimationFrame(() => {
+                render(program);
+				setTimeout(loop, 16.67);
+            });
+        })();
+    }
+	
 }, false);</script></head><body></body></html>
