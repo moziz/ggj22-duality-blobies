@@ -1143,10 +1143,13 @@ const fatal_error = (msg) => {
 };
 
 const frame_log = (msg) => {
-	var ctx = canvas.getContext("2d");
-	ctx.font = "30px Arial";
-	ctx.fillText("Hello World", 10, 50); 
-	frame_output.innerHTML += msg.toString() + '<br />';
+	console.log(msg);
+	const log_msg = document.createElement('p');
+	if (frame_output) {
+		frame_output.appendChild(log_msg);
+	}
+	
+	log_msg.innerHTML = msg.toString();
 }
 
 window.addEventListener("load", ev => {
@@ -1156,12 +1159,13 @@ window.addEventListener("load", ev => {
 	{
 		// logging setup
 		fatal_output = document.createElement('div');
+		fatal_output.style = "position:absolute;text-align:left;bottom:0;left:5px;color:pink";
 		document.body.appendChild(fatal_output);
-		fatal_output.style.color = "red;";
 		
-		frame_output = document.createElement('p');
+		frame_output = document.createElement('div');
+		frame_output.style = "position:absolute;text-align:left;top:0vh;left:5px;color:white;";
+		frame_output.innerHTML = "HHHHHHHHHHHHHHHHHHHH";
 		document.body.appendChild(frame_output);
-		frame_output.style = "color:darkgrey;";
 	}
 	
 	{
@@ -1170,7 +1174,7 @@ window.addEventListener("load", ev => {
 		document.body.style = "margin:0px;text-align:center;background-color:darkgreen;";
 		canvas.width = min(window.screen.width, window.screen.height);// * 0.5;
 		canvas.height = min(window.screen.width, window.screen.height);// * 0.5;
-		canvas.style = "cursor:none;width:100vh;height:100vh";
+		canvas.style = "cursor:none;width:99vh;height:99vh";
 		document.body.appendChild(canvas);
 		// webgl2 enabled default from: firefox-51, chrome-56
 		gl = canvas.getContext("webgl2");
