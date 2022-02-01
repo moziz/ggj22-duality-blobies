@@ -535,92 +535,122 @@ evilryu - background mandelbulb shadertoy - https://www.shadertoy.com/view/MdXSW
 bellbind - basis for this web implementation - https://gist.github.com/bellbind/8c98bb86cfd064d944312b09b98af1b9
 `;
 
+let enable_errors = true;
+
 let canvas = null;
 let gl = null;
 let program = null;
+let locationCache = {};
+let locationArrayCache = {};
+
+const getLocation = (name) => {
+	let location = locationCache[name];
+	if (location) {
+		return location;
+	} else {
+		location = gl.getUniformLocation(program, name);
+		if (!location) {
+			fatal_error("no uniform with name: " + name);
+		}
+		locationCache[name] = location;
+		return location;
+	}
+}
+
+const getLocationArray = (name) => {
+	let arr = locationArrayCache[name];
+	if (arr)
+		return arr;
+
+	arr = [];
+	for (let i = 0; i < 40; ++i)
+	{
+		const locName = name + '[' + i + ']';
+		const location = gl.getUniformLocation(program, locName);
+		if (!location) {
+			fatal_error("no uniform with name: " + locName);
+		} else {
+			arr.push(location);
+		}
+	}
+	
+	locationArrayCache[name] = arr;
+	return arr;
+}
+
 const setUniformFloat = (name, value) => {
-	gl.useProgram(program);
-	const location = gl.getUniformLocation(program, name);
-	if (!location)
-		fatal_error("no uniform with name: " + name);
+	const location = getLocation(name);
 	
 	gl.uniform1f(location, value);
 	
-	const error = gl.getError();
-	if (error !== gl.NO_ERROR)
-		fatal_error('setUniformFloat("' + name + '"): ' + error);
+	if (enable_errors) {
+		const error = gl.getError();
+		if (error !== gl.NO_ERROR)
+			fatal_error('setUniformFloat("' + name + '"): ' + error);
+	}
 };
 
 const setUniformBool = (name, value) => {
-	gl.useProgram(program);
-	const location = gl.getUniformLocation(program, name);
-	if (!location)
-		fatal_error("no uniform with name: " + name);
+	let location = locationCache[name];
 	
 	gl.uniform1i(location, value);
 	
-	const error = gl.getError();
-	if (error !== gl.NO_ERROR)
-		fatal_error('setUniformBool("' + name + '"): ' + error);
+	if (enable_errors) {
+		const error = gl.getError();
+		if (error !== gl.NO_ERROR)
+			fatal_error('setUniformBool("' + name + '"): ' + error);
+	}
 }
 
 const setUniformInt = (name, value) => {
-	gl.useProgram(program);
-	const location = gl.getUniformLocation(program, name);
-	if (!location)
-		fatal_error("no uniform with name: " + name);
+	const location = getLocation(name);
 	
 	gl.uniform1i(location, value);
 	
-	const error = gl.getError();
-	if (error !== gl.NO_ERROR)
-		fatal_error('setUniformInt("' + name + '"): ' + error);
+	if (enable_errors) {
+		const error = gl.getError();
+		if (error !== gl.NO_ERROR)
+			fatal_error('setUniformInt("' + name + '"): ' + error);
+	}
 }
 
 const setUniformVec2 = (name, value) => {
-	gl.useProgram(program);
-	const location = gl.getUniformLocation(program, name);
-	if (!location)
-		fatal_error("no uniform with name: " + name);
+	const location = getLocation(name);
 	
 	gl.uniform2f(location, value.x, value.y);
 	
-	const error = gl.getError();
-	if (error !== gl.NO_ERROR)
-		fatal_error('setUniformVec2("' + name + '"): ' + error);
+	if (enable_errors) {
+		const error = gl.getError();
+		if (error !== gl.NO_ERROR)
+			fatal_error('setUniformVec2("' + name + '"): ' + error);
+	}
 };
 
 const setUniformArrayFloat = (name, value, count) => {
-	
+	const locations = getLocationArray(name);
 	for (let i = 0; i < min(40, value.length); ++i)
 	{
-		gl.useProgram(program);
-		const location = gl.getUniformLocation(program, name + '['+i+']');
-		if (!location)
-			fatal_error("no uniform with name: " + name + '['+i+']');
-		
-		gl.uniform1f(location, value[i]);
-		
+		gl.uniform1f(locations[i], value[i]);
+	}
+	
+	if (enable_errors) {
 		const error = gl.getError();
 		if (error !== gl.NO_ERROR)
-			fatal_error('setUniformArrayFloat("' + name + '['+i+']): ' + error);
+			fatal_error('setUniformArrayFloat("' + name + '"): ' + error);
 	}
 }
 
 const setUniformArrayVec2 = (name, value) => {
-	
+	const locations = getLocationArray(name);
 	for (let i = 0; i < min(40, value.length); ++i)
 	{
-		gl.useProgram(program);
-		const location = gl.getUniformLocation(program, name + '['+i+']');
-		if (!location)
-			fatal_error("no uniform with name: " + name + '['+i+']');
-		
-		gl.uniform2f(location, value[i].x, value[i].y);
-		
+		gl.uniform2f(locations[i], value[i].x, value[i].y);
+	}
+	
+	if (enable_errors) {
 		const error = gl.getError();
 		if (error !== gl.NO_ERROR)
-			fatal_error('setUniformArrayVec2("' + name + '['+i+']): ' + error);
+			fatal_error('setUniformArrayVec2("' + name + '"): ' + error);
 	}
 }
 
@@ -1281,19 +1311,24 @@ window.addEventListener("load", ev => {
 		const render = (program, count) => {
 			frame_output.innerHTML = "";
 			
+			gl.useProgram(program);
 			game();
 			
 			// draw the buffer with VAO
 			// NOTE: binding vert and index buffer is not required
-			gl.useProgram(program);
 			gl.bindVertexArray(vertexArray);
 			gl.drawElements(gl.TRIANGLES, indexData.length,
 							gl.UNSIGNED_SHORT, 0);
-			const error = gl.getError();
-			if (error !== gl.NO_ERROR)
-				fatal_error('gl.ERROR: ' + error);
+							
+			if (enable_errors) {
+				const error = gl.getError();
+				if (error !== gl.NO_ERROR)
+					fatal_error('gl.ERROR: ' + error);
+			}
 			gl.bindVertexArray(null);
 			gl.useProgram(null);
+			
+			enable_errors = false;
 		};
 		
 		// start render loop
