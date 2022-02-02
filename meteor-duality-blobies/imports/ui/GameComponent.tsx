@@ -75,7 +75,7 @@ export const GameComponent: React.FC<GameProps> = ({game, toDrawState, playCard,
             {!gameStarted ? (
                 <div>
                     <Button onClick={toDrawState}>Start game</Button>
-                    <Button onClick={()=>{useDeckVariant(); toDrawState()}} title={"Cats and Dinos separated"}>Start game variant B</Button>
+                    <Button onClick={useDeckVariant} title={"Cats and Dinos separated"}>Start game variant B</Button>
                 </div>) : null}
             <div className={"row"}>
                 {gameStarted ?

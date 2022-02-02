@@ -54,8 +54,9 @@ export const GameView: React.FC = () => {
 
     const useDeckVariant = React.useCallback((tmpGame: Game) => {
         const game = cloneDeep(tmpGame);
-        game.players.p1.deck = cloneDeep(startDeckSplitDino);
-        game.players.p2.deck = cloneDeep(startDeckSplitCat);
+        game.players.p1.discard = cloneDeep(startDeckSplitDino);
+        game.players.p2.discard = cloneDeep(startDeckSplitCat);
+        drawPhase(game);
         setGame(game);
     }, [setGame])
 
