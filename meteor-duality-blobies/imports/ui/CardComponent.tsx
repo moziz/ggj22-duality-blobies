@@ -57,7 +57,7 @@ export const CardComponent: React.FC<CardProps> = (
             </div> : null}
             {card.effects.length > 0 ? card.effects.map(
                 (effect, index) => {
-                    return <p key={effect.cardName + index} className={"m-0"}>{faceDown ? "" : (effect.text)}</p>
+                    return <p key={effect.text + index} className={"m-0"}>{faceDown ? "" : (effect.text)}</p>
                 }) : <p/>
             }
             <div className={"d-flex justify-content-around"}>
