@@ -17,6 +17,7 @@ interface GameProps {
     playCard: (c: Card, p: PlayerID) => void,
     purchaseCard: (c: Card, p: PlayerID) => void,
     clientPlayer?: PlayerID,
+    useDeckVariant: () => void,
 }
 
 const catAudios = [
@@ -71,7 +72,11 @@ export const GameComponent: React.FC<GameProps> = ({game, toDrawState, playCard,
         <div className={"col-4 d-flex flex-column justify-content-between align-items-center"}>
             <h2 className={"text-center"}>{game.name}</h2>
             <p className={"h4"}>{game.message}</p>
-            {!gameStarted ? (<Button onClick={toDrawState}>Start game</Button>) : null}
+            {!gameStarted ? (
+                <div>
+                    <Button onClick={toDrawState}>Start game</Button>
+                    <Button onClick={()=>{useDeckVariant(); toDrawState()}} title={"Cats and Dinos separated"}>Start game variant B</Button>
+                </div>) : null}
             <div className={"row"}>
                 {gameStarted ?
                     <PlayedCards playedCards={game.roundCards}

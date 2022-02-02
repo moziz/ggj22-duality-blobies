@@ -6,7 +6,7 @@ import {Game, GameCollection} from "/imports/data/game";
 import {Meteor} from "meteor/meteor";
 import {GameComponent} from "/imports/ui/GameComponent";
 import {drawPhase, handlePurchase, playCardInGame, startNewGame} from "/imports/control/game-logic";
-import {Card} from "/imports/data/card-data";
+import {Card, startDeckSplitCat, startDeckSplitDino} from "/imports/data/card-data";
 import {PlayerID} from "/imports/data/player";
 import {cloneDeep} from "lodash";
 import {Button, ButtonGroup} from "react-bootstrap";
@@ -52,6 +52,13 @@ export const GameView: React.FC = () => {
         setGame(game);
     }, [setGame])
 
+    const useDeckVariant = React.useCallback((tmpGame: Game) => {
+        const game = cloneDeep(tmpGame);
+        game.players.p1.deck = cloneDeep(startDeckSplitDino);
+        game.players.p2.deck = cloneDeep(startDeckSplitCat);
+        setGame(game);
+    }, [setGame])
+
     const onPurchase = React.useCallback((c: Card, p: PlayerID, tmpGame: Game) => {
         const game = cloneDeep(tmpGame);
         handlePurchase(game, c, p);
@@ -84,6 +91,7 @@ export const GameView: React.FC = () => {
                                    playCard={(c, p) => playCard(c, p, gameObject)}
                                    purchaseCard={(c, p) => onPurchase(c, p, gameObject)}
                                    clientPlayer={clientPlayer}
+                                   useDeckVariant={() => useDeckVariant(gameObject)}
                     />
                     <div className={"row d-flex justify-content-between"}>
                         <p className={"text-center mb-0"}><small>v1.0.1</small></p>
