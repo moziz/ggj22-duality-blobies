@@ -21,6 +21,10 @@ Meteor.publish('games', function (gameId: string) {
   return GameCollection.find({_id: gameId})
 });
 
+Meteor.publish('all-games', function () {
+  return GameCollection.find({})
+});
+
 Meteor.publish('chat', function (gameId: string) {
   return ChatCollection.find({_id: gameId})
 });
