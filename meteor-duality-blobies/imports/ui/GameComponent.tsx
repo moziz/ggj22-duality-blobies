@@ -17,6 +17,7 @@ interface GameProps {
     playCard: (c: Card, p: PlayerID) => void,
     purchaseCard: (c: Card, p: PlayerID) => void,
     clientPlayer?: PlayerID,
+    useDeckVariant: () => void,
 }
 
 const catAudios = [
@@ -31,8 +32,8 @@ const dinoAudios = [
     "/sounds/mikko_rauh.mp3",
 ];
 
-export const GameComponent: React.FC<GameProps> = ({game, toDrawState, playCard, purchaseCard, clientPlayer}) => {
-    const gameStarted = game.players.p1.hand.length && game.roundNumber !== 0;
+export const GameComponent: React.FC<GameProps> = ({game, toDrawState, playCard, purchaseCard, clientPlayer,useDeckVariant}) => {
+    const gameStarted = game.players.p1.hand.length > 0 || game.roundNumber > 1;
     const [playingCat, toggleCat] = useMultiAudio(catAudios, 0.3);
     const [playingDino, toggleDino] = useMultiAudio(dinoAudios, 0.2);
     const [playingBuy, toggleBuy] = useAudio("/sounds/cash.mp3", 0.2);
@@ -71,7 +72,11 @@ export const GameComponent: React.FC<GameProps> = ({game, toDrawState, playCard,
         <div className={"col-4 d-flex flex-column justify-content-between align-items-center"}>
             <h2 className={"text-center"}>{game.name}</h2>
             <p className={"h4"}>{game.message}</p>
-            {!gameStarted ? (<Button onClick={toDrawState}>Start game</Button>) : null}
+            {!gameStarted ? (
+                <div>
+                    <Button onClick={toDrawState}>Start game</Button>
+                    <Button onClick={()=>{useDeckVariant(); toDrawState()}} title={"Cats and Dinos separated"}>Start game variant B</Button>
+                </div>) : null}
             <div className={"row"}>
                 {gameStarted ?
                     <PlayedCards playedCards={game.roundCards}
@@ -114,7 +119,7 @@ export const GameComponent: React.FC<GameProps> = ({game, toDrawState, playCard,
                                    playCard={gameEnded ? undefined : playCardWithSound}
                                    faceDown={!gameEnded && clientPlayer !== "p1"}
                     />
-                    {gameStarted ? <Deck cardsInDeck={game.players.p1.deck} cardsInHand={game.players.p1.deck}
+                    {gameStarted ? <Deck cardsInDeck={game.players.p1.deck} cardsInHand={game.players.p1.hand}
                                          cardsInDiscard={game.players.p1.discard} title={"Player 1 cards"}/> : null}
                 </div>
                 {playArea}
@@ -128,7 +133,7 @@ export const GameComponent: React.FC<GameProps> = ({game, toDrawState, playCard,
                                    playCard={gameEnded ? undefined : playCardWithSound}
                                    faceDown={!gameEnded && clientPlayer !== "p2"}
                     />
-                    {gameStarted ? <Deck cardsInDeck={game.players.p2.deck} cardsInHand={game.players.p2.deck}
+                    {gameStarted ? <Deck cardsInDeck={game.players.p2.deck} cardsInHand={game.players.p2.hand}
                                          cardsInDiscard={game.players.p2.discard} title={"Player 2 cards"}/> : null}
                 </div>
             </div>
