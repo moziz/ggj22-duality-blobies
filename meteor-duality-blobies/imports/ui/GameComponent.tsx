@@ -1,7 +1,7 @@
 import React from "react";
-import {Game} from "/imports/data/game";
+import {Game, GameOptions} from "/imports/data/game";
 import {HandComponent} from "/imports/ui/HandComponent";
-import {Button} from "react-bootstrap";
+import {Button, Form, InputGroup} from "react-bootstrap";
 import {PlayerID} from "/imports/data/player";
 import {Card} from "/imports/data/card-data";
 import {PlayedCards} from "/imports/ui/PlayedCards";
@@ -10,14 +10,14 @@ import {getPlayersPower, getShopTurn} from "/imports/control/game-logic";
 import {Chat} from "/imports/ui/Chat";
 import {Deck} from "/imports/ui/Deck";
 import {useAudio, useMultiAudio} from "/imports/ui/useAudio";
+import {RoundEffectsComponent} from "/imports/ui/RoundEffectsComponent";
 
 interface GameProps {
     game: Game,
-    toDrawState: () => void,
     playCard: (c: Card, p: PlayerID) => void,
     purchaseCard: (c: Card, p: PlayerID) => void,
     clientPlayer?: PlayerID,
-    useDeckVariant: () => void,
+    startGame: (gameOptions: GameOptions) => void
 }
 
 const catAudios = [
@@ -32,7 +32,45 @@ const dinoAudios = [
     "/sounds/mikko_rauh.mp3",
 ];
 
-export const GameComponent: React.FC<GameProps> = ({game, toDrawState, playCard, purchaseCard, clientPlayer,useDeckVariant}) => {
+function GameSetupComponent({startGame}: { startGame: (gameOptions: GameOptions) => void }) {
+    const [p1Name, setP1Name] = React.useState("p1");
+    const [p2Name, setP2Name] = React.useState("p2");
+    const [rounds, setRounds] = React.useState<number>(12);
+    const settings: GameOptions = {
+        p1Name,
+        p2Name,
+        rounds,
+        alternativeDeck: false,
+    }
+    return <div>
+        <div>
+            <InputGroup>
+                <InputGroup.Text>Score to win</InputGroup.Text>
+                <Form.Control type={"number"} value={rounds} onChange={event => setRounds(+event.target.value)}/>
+            </InputGroup>
+            <InputGroup>
+                <InputGroup.Text>P1 name</InputGroup.Text>
+                <Form.Control type={"text"} value={p1Name} onChange={event => setP1Name(event.target.value)}/>
+            </InputGroup>
+            <InputGroup>
+                <InputGroup.Text>P2 name</InputGroup.Text>
+                <Form.Control type={"text"} value={p2Name} onChange={event => setP2Name(event.target.value)}/>
+            </InputGroup>
+        </div>
+        <Button onClick={() => startGame(settings)}>Start game</Button>
+        <Button onClick={() => startGame({...settings, alternativeDeck: true})} title={"Cats and Dinos separated"}>Start
+            game variant B</Button>
+    </div>;
+}
+
+export const GameComponent: React.FC<GameProps> = (
+    {
+        game,
+        playCard,
+        purchaseCard,
+        clientPlayer,
+        startGame,
+    }) => {
     const gameStarted = game.players.p1.hand.length > 0 || game.roundNumber > 1;
     const [playingCat, toggleCat] = useMultiAudio(catAudios, 0.3);
     const [playingDino, toggleDino] = useMultiAudio(dinoAudios, 0.2);
@@ -67,16 +105,13 @@ export const GameComponent: React.FC<GameProps> = ({game, toDrawState, playCard,
         <div className={"col-4 d-flex flex-column justify-content-center align-items-center"}>
             <h1 className={"text-center pulse"}>Winner is {scores.p2 >= 20 ? "P2" : "p1"}</h1>
         </div> : undefined;
+    const gameSetupElement = (!gameStarted ? <GameSetupComponent startGame={startGame}/> : null);
 
     const playArea = gameEndedElement || (
-        <div className={"col-4 d-flex flex-column justify-content-between align-items-center"}>
+        <div className={"col-4 d-flex flex-column justify-content-start align-items-center"}>
             <h2 className={"text-center"}>{game.name}</h2>
             <p className={"h4"}>{game.message}</p>
-            {!gameStarted ? (
-                <div>
-                    <Button onClick={toDrawState}>Start game</Button>
-                    <Button onClick={useDeckVariant} title={"Cats and Dinos separated"}>Start game variant B</Button>
-                </div>) : null}
+            {gameSetupElement}
             <div className={"row"}>
                 {gameStarted ?
                     <PlayedCards playedCards={game.roundCards}
@@ -85,8 +120,8 @@ export const GameComponent: React.FC<GameProps> = ({game, toDrawState, playCard,
                                  p2Power={powers.p2}/>
                     : null
                 }
+                {gameStarted ? <RoundEffectsComponent effects={game.roundEffects}/> : null}
             </div>
-            <div className={"flex-grow-1"}></div>
             <div className={"mb-4 row"}>
                 {gameStarted ?
                     <Shop

@@ -1,7 +1,7 @@
 import React from "react";
 import {useParams} from "react-router-dom";
 import {useTracker} from 'meteor/react-meteor-data'
-import {Game, GameCollection} from "/imports/data/game";
+import {Game, GameCollection, GameOptions} from "/imports/data/game";
 
 import {Meteor} from "meteor/meteor";
 import {GameComponent} from "/imports/ui/GameComponent";
@@ -36,7 +36,7 @@ export const GameView: React.FC = () => {
     const [clientPlayer, setClientPlayer] = React.useState<PlayerID | undefined>(undefined);
 
     const setGame = React.useCallback((game: Game) => {
-        if(gameId)
+        if (gameId)
             Meteor.call("upsertGame", gameId, game)
     }, [gameId])
 
@@ -46,16 +46,16 @@ export const GameView: React.FC = () => {
         setGame(game);
     }, [setGame])
 
-    const toDrawState = React.useCallback((tmpGame: Game) => {
-        const game = cloneDeep(tmpGame);
-        drawPhase(game);
-        setGame(game);
-    }, [setGame])
 
-    const useDeckVariant = React.useCallback((tmpGame: Game) => {
+    const startGame = React.useCallback((gameOptions: GameOptions, tmpGame: Game) => {
         const game = cloneDeep(tmpGame);
-        game.players.p1.discard = cloneDeep(startDeckSplitDino);
-        game.players.p2.discard = cloneDeep(startDeckSplitCat);
+        if(gameOptions.alternativeDeck) {
+            game.players.p1.discard = cloneDeep(startDeckSplitDino);
+            game.players.p2.discard = cloneDeep(startDeckSplitCat);
+        }
+        game.roundsToWin = gameOptions.rounds;
+        game.players.p1.name = gameOptions.p1Name;
+        game.players.p2.name = gameOptions.p2Name;
         drawPhase(game);
         setGame(game);
     }, [setGame])
@@ -88,15 +88,15 @@ export const GameView: React.FC = () => {
                         </>
                     ) : null}
                     <GameComponent game={gameObject}
-                                   toDrawState={() => toDrawState(gameObject)}
+                                   startGame={(gameOptions) => startGame(gameOptions, gameObject)}
                                    playCard={(c, p) => playCard(c, p, gameObject)}
                                    purchaseCard={(c, p) => onPurchase(c, p, gameObject)}
                                    clientPlayer={clientPlayer}
-                                   useDeckVariant={() => useDeckVariant(gameObject)}
                     />
                     <div className={"row d-flex justify-content-between"}>
-                        <p className={"text-center mb-0"}><small>v1.1.0</small></p>
-                        <a href={"https://globalgamejam.org/2022/games/cattosaurus-4"} className={"text-center"}>More info</a>
+                        <p className={"text-center mb-0"}><small>v1.1.1</small></p>
+                        <a href={"https://globalgamejam.org/2022/games/cattosaurus-4"} className={"text-center"}>More
+                            info</a>
                     </div>
                 </div>
             );

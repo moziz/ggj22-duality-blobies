@@ -1,5 +1,5 @@
 import React from 'react';
-import {Card as CardData, getImage} from "/imports/data/card-data";
+import {Card as CardData, getEffectHelp, getImage} from "/imports/data/card-data";
 import {Button} from "react-bootstrap";
 
 
@@ -11,6 +11,8 @@ interface CardProps {
     faceDown?: boolean,
     highLight?: boolean,
     cannotReason?: string,
+    message?: string,
+    hidePower?: boolean
 }
 
 export const CardComponent: React.FC<CardProps> = (
@@ -22,6 +24,8 @@ export const CardComponent: React.FC<CardProps> = (
         faceDown,
         highLight,
         cannotReason,
+        message,
+        hidePower,
     }) => {
     return (
         <div className={"m-2 p-1 d-flex flex-column justify-content-between"} style={{
@@ -41,43 +45,48 @@ export const CardComponent: React.FC<CardProps> = (
         }}>
             {!faceDown ? <div className={"d-flex justify-content-between"}>
                 <p className={"m-0 card-title"}><b>{card.name}</b></p>
-                <p className={"m-0 power"}>{card.power}</p>
+                <p className={"m-0 power"}>{hidePower ? "?" : card.power}</p>
             </div> : null}
-            {!faceDown ? <div className={"d-flex flex-column justify-content-around align-items-center"} style={{
-                height: "90px",
-                backgroundImage: "url('/imgs/" + getImage(card.side, card.visuals) + "')",
-                backgroundRepeat: "no-repeat",
-                backgroundOrigin: "center",
-                backgroundSize: "cover",
-                backgroundColor: "white",
-                backgroundPosition: "center",
-                borderRadius: "5px",
-                border: "2px solid " + (card.side === "Dino" ? "#9B0000" : "#00009B"),
-            }}>
-            </div> : null}
+            {!faceDown ?
+                <div className={"d-flex flex-column justify-content-around align-items-center"} style={{
+                    height: "90px",
+                    backgroundImage: "url('/imgs/" + getImage(card.side, card.visuals) + "')",
+                    backgroundRepeat: "no-repeat",
+                    backgroundOrigin: "center",
+                    backgroundSize: "cover",
+                    backgroundColor: "white",
+                    backgroundPosition: "center",
+                    borderRadius: "5px",
+                    border: "2px solid " + (card.side === "Dino" ? "#9B0000" : "#00009B"),
+                }}>
+                </div> :
+                <div className={"d-flex flex-column justify-content-center align-items-center flex-grow-1"}>
+                    <h4 className={"text-center"}>{message}</h4>
+                </div>
+            }
             {card.effects.length > 0 ? card.effects.map(
                 (effect, index) => {
-                    return <p key={effect.text + index} className={"m-0"}>{faceDown ? "" : (effect.text)}</p>
-                }) : <p/>
+                return <p key={effect.text + index} className={"m-0"} title={getEffectHelp(effect)}>{faceDown ? "" : (effect.text)}</p>
+            }) : <p/>
             }
-            <div className={"d-flex justify-content-around"}>
-                {(playCard && !faceDown) ?
-                    (
-                        canPlay ? (
-                                <Button
-                                    disabled={!canPlay}
-                                    onClick={() => playCard(card)}
-                                    size={"sm"}
-                                    title={"moi"}
-                                >
-                                    {playLabel ?? "PLAY"}
-                                </Button>
-                            ) :
-                            <p><small><i>{cannotReason}</i></small></p>
-                    ) : null
-                }
-                {}
-            </div>
-        </div>
-    );
-};
+                <div className={"d-flex justify-content-around"}>
+            {(playCard && !faceDown) ?
+                (
+                canPlay ? (
+                <Button
+                disabled={!canPlay}
+                onClick={() => playCard(card)}
+                size={"sm"}
+                title={"moi"}
+                >
+            {playLabel ?? "PLAY"}
+                </Button>
+                ) :
+                <p><small><i>{cannotReason}</i></small></p>
+                ) : null
+            }
+            {}
+                </div>
+                </div>
+                );
+            };

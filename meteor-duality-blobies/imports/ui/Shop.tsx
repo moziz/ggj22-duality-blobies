@@ -15,15 +15,14 @@ interface ShopProps {
 export const Shop: React.FC<ShopProps> = ({offers, turn, active, onPurchase, clientPlayer}) => {
 
     const infoLabel = active ? "Player " + turn + " should select a new card!"
-        : "Play 4 cards to finish round and open the shop. Loser selects first.";
+        : "Play 4 cards to finish the round first then the Loser of the round will buy first.";
 
-    //TODO get active player from client, and not from who's turn it is
     const onPlayerPurchase = useCallback((c: Card) => onPurchase(c, turn), [turn, onPurchase]);
     const shopContent = (
         <Popover style={{minWidth: "600px"}}>
             <Popover.Header>SHOP</Popover.Header>
             <Popover.Body className={"d-flex align-content-around flex-wrap justify-content-center"}>
-                <p style={{width: "100%"}}>{infoLabel}</p>
+                <h5 style={{width: "100%"}}>{infoLabel}</h5>
                 {offers.map((card, index) => <CardComponent
                     key={index}
                     card={card}
@@ -37,8 +36,11 @@ export const Shop: React.FC<ShopProps> = ({offers, turn, active, onPurchase, cli
     )
 
     return (
-        <OverlayTrigger show={active ? true : undefined} defaultShow={active ? true : undefined} trigger={"click"}
-                        placement={"top"} overlay={shopContent}
+        <OverlayTrigger show={active ? true : undefined}
+                        defaultShow={active ? true : undefined}
+                        trigger={"click"}
+                        placement={"bottom"}
+                        overlay={shopContent}
                         rootClose>
             <Button>SHOP</Button>
         </OverlayTrigger>
