@@ -49,7 +49,7 @@ export const GameView: React.FC = () => {
 
     const startGame = React.useCallback((gameOptions: GameOptions, tmpGame: Game) => {
         const game = cloneDeep(tmpGame);
-        if(gameOptions.alternativeDeck) {
+        if (gameOptions.alternativeDeck) {
             game.players.p1.discard = cloneDeep(startDeckSplitDino);
             game.players.p2.discard = cloneDeep(startDeckSplitCat);
         }
@@ -92,9 +92,14 @@ export const GameView: React.FC = () => {
                                    clientPlayer={clientPlayer}
                     />
                     <div className={"row d-flex justify-content-between"}>
-                        <p className={"text-center mb-0"}><small>v1.1.1</small></p>
-                        <a href={"https://globalgamejam.org/2022/games/cattosaurus-4"} className={"text-center"}>More
-                            info</a>
+                        <p className={"text-center mb-0"}>
+                            <small>
+                                v1.1.2
+                            </small>
+                        </p>
+                        <a href={"https://globalgamejam.org/2022/games/cattosaurus-4"} className={"text-center"}>
+                            More info
+                        </a>
                     </div>
                 </div>
             );
