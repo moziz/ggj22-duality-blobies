@@ -104,7 +104,7 @@ export const GameComponent: React.FC<GameProps> = (
     const gameEnded = (scores.p2 >= game.roundsToWin || scores.p1 >= game.roundsToWin)
     const gameEndedElement = gameEnded ?
         <div className={"col-4 d-flex flex-column justify-content-center align-items-center"}>
-            <h1 className={"text-center pulse"}>Winner is {scores.p2 >= game.roundsToWin ? "P2" : "p1"}</h1>
+            <h1 className={"text-center pulse"}>Winner is {scores.p2 >= game.roundsToWin ? game.players.p2.name : game.players.p1.name}</h1>
         </div> : undefined;
     const gameSetupElement = (!gameStarted ? <GameSetupComponent startGame={startGame}/> : null);
 
@@ -115,8 +115,7 @@ export const GameComponent: React.FC<GameProps> = (
             {gameSetupElement}
             <div className={"row"}>
                 {gameStarted ?
-                    <PlayedCards playedCards={game.roundCards}
-                                 startPlayer={game.roundStarter}
+                    <PlayedCards game={game}
                                  p1Power={powers.p1}
                                  p2Power={powers.p2}/>
                     : null
