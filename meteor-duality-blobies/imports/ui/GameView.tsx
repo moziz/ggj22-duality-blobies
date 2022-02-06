@@ -77,10 +77,10 @@ export const GameView: React.FC = () => {
                             <p className={"mb-0"}><b>Select side:</b></p>
                             <ButtonGroup className={"mb-2"}>
                                 <Button onClick={() => setClientPlayer("p1")}>
-                                    Player 1
+                                    {gameObject.players.p1.name}
                                 </Button>
                                 <Button onClick={() => setClientPlayer("p2")}>
-                                    Player 2
+                                    {gameObject.players.p2.name}
                                 </Button>
                             </ButtonGroup>
                         </>

@@ -167,7 +167,7 @@ export const roundScore = (game: Game) => {
     }
     const winner: PlayerID = powers.p1 > powers.p2 ? "p1" : "p2";
     game.latestWinner = winner;
-    game.message = "Player " + winner + " is winner of the round! Score +" + game.roundScore + ".";
+    game.message = "" + game.players[winner].name + " is winner of the round! Scoring " + game.roundScore + " points.";
     game.players[winner].score += game.roundScore;
     game.roundScore = 1;
     toShopPhase(game);
@@ -281,7 +281,7 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
                 }
                 game.players[player].hand.push(c);
             }
-            AddGameMessage(game.name, "" + player + " draws " + effect.effectArgs["amount"] + " cards!");
+            AddGameMessage(game.name, "" + game.players[player].name + " draws " + effect.effectArgs["amount"] + " cards!");
         }
         if (effect.effectType === "Swap") {
             const counts = getPlayedColors(game.roundCards);
@@ -299,11 +299,11 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
             const target = effect.effectArgs["target"];
             const power = card.power;
             if (target === "all") {
-                AddGameMessage(game.name, "" + player + " destroys them all!");
+                AddGameMessage(game.name, "" + game.players[player].name + " destroys them all!");
                 game.roundCards = [];
             }
             if (target === "Cat") {
-                AddGameMessage(game.name, "" + player + " destroys cats!");
+                AddGameMessage(game.name, "" + game.players[player].name + " destroys cats!");
                 for (let i = 0; i < game.roundCards.length; ++i) {
                     if ((game.roundCards[i]?.side ?? "Both") === "Cat") {
                         game.roundCards[i] = undefined;
@@ -311,7 +311,7 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
                 }
             }
             if (target === "Dino") {
-                AddGameMessage(game.name, "" + player + " destroys dinos!");
+                AddGameMessage(game.name, "" + game.players[player].name + " destroys dinos!");
                 for (let i = 0; i < game.roundCards.length; ++i) {
                     if ((game.roundCards[i]?.side ?? "Both") === "Dino") {
                         game.roundCards[i] = undefined;
@@ -321,7 +321,7 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
             if (target === "smaller") {
                 for (let i = 0; i < game.roundCards.length; ++i) {
                     if ((game.roundCards[i]?.power ?? 0) < power) {
-                        AddGameMessage(game.name, "" + player + " destroys " + game.roundCards[i]?.name + "!");
+                        AddGameMessage(game.name, "" + game.players[player].name + " destroys " + game.roundCards[i]?.name + "!");
                         game.roundCards[i] = undefined;
                     }
                 }
@@ -329,7 +329,7 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
             if (target === "bigger") {
                 for (let i = 0; i < game.roundCards.length; ++i) {
                     if ((game.roundCards[i]?.power ?? 0) > power) {
-                        AddGameMessage(game.name, "" + player + " destroys " + game.roundCards[i]?.name + "!");
+                        AddGameMessage(game.name, "" + game.players[player].name + " destroys " + game.roundCards[i]?.name + "!");
                         game.roundCards[i] = undefined;
                     }
                 }
@@ -342,7 +342,7 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
             let growPowerAfterEat = 0;
 
             if (target === "all") {
-                AddGameMessage(game.name, "" + player + " eats them all!");
+                AddGameMessage(game.name, "" + game.players[player].name + " eats them all!");
                 for (let i = 0; i < game.roundCards.length; ++i) {
                     let eat = discardFromPlayedCards(game, i);
                     if (eat && grow) {
@@ -351,7 +351,7 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
                 }
             }
             if (target === "Cat") {
-                AddGameMessage(game.name, "" + player + " eats cats!");
+                AddGameMessage(game.name, "" + game.players[player].name + " eats cats!");
                 for (let i = 0; i < game.roundCards.length; ++i) {
                     let eat = discardFromPlayedCards(game, i, c => c.side === "Cat");
                     if (eat && grow) {
@@ -360,7 +360,7 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
                 }
             }
             if (target === "Dino") {
-                AddGameMessage(game.name, "" + player + " eats dinos!");
+                AddGameMessage(game.name, "" + game.players[player].name + " eats dinos!");
                 for (let i = 0; i < game.roundCards.length; ++i) {
                     let eat = discardFromPlayedCards(game, i, c => c.side === "Dino");
                     if (eat && grow) {
@@ -369,7 +369,7 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
                 }
             }
             if (target === "smaller") {
-                AddGameMessage(game.name, "" + player + " eats weaker!");
+                AddGameMessage(game.name, "" + game.players[player].name + " eats weaker!");
                 for (let i = 0; i < game.roundCards.length; ++i) {
                     let eat = discardFromPlayedCards(game, i, c => c.power < power);
                     if (eat && grow) {
@@ -378,7 +378,7 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
                 }
             }
             if (target === "bigger") {
-                AddGameMessage(game.name, "" + player + " eats stronger!");
+                AddGameMessage(game.name, "" + game.players[player].name + " eats stronger!");
                 for (let i = 0; i < game.roundCards.length; ++i) {
                     let eat = discardFromPlayedCards(game, i, c => c.power > power);
                     if (eat && grow) {

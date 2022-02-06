@@ -63,7 +63,7 @@ export const Chat: React.FC<ChatProps> = ({game, clientPlayer}) => {
                 </form>
                 {[...(chatObject?.messages ?? [])].reverse().map((message, idx) =>
                     <div key={idx} style={!message.playerId ? {fontWeight: 'bold'} : undefined}>
-                        {message.timestamp ? message.timestamp.toLocaleString() : "unknown time"} : {message.playerId ? message.playerId : "GAME"} : {message.message}
+                        {message.timestamp ? message.timestamp.toLocaleString() : "unknown time"} : {message.playerId ? game.players[message.playerId].name : "GAME"} : {message.message}
                     </div>,
                 )}
             </div>
