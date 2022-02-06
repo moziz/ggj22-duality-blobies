@@ -7,8 +7,6 @@ import {CatIcon, DinoIcon} from "/imports/ui/icons";
 import {Game} from "/imports/data/game";
 
 interface PlayedCardsProps {
-    playedCards: (Card | undefined)[],
-    startPlayer: PlayerID,
     p1Power: number,
     p2Power: number,
     game: Game,
