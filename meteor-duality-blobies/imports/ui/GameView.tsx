@@ -94,7 +94,7 @@ export const GameView: React.FC = () => {
                     <div className={"row d-flex justify-content-between"}>
                         <p className={"text-center mb-0"}>
                             <small>
-                                v1.1.3
+                                v1.1.4
                             </small>
                         </p>
                         <a href={"https://globalgamejam.org/2022/games/cattosaurus-4"} className={"text-center"}>
