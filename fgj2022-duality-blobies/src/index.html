@@ -1,0 +1,1343 @@
+<!doctype html><html><head><script>"use strict";
+const fragment_glsl_src_func = () => { return `#version 300 es
+
+//precision highp float;
+//precision highp int;
+//precision mediump float;
+//precision mediump int;
+precision lowp float;
+precision lowp int;
+
+uniform float time;
+uniform vec2 screen;
+uniform float score;
+uniform float combo;
+
+uniform vec2 playerPos;
+uniform float playerHealth;
+//const float playerHealth = 1.0;
+uniform float playerShield;
+uniform bool playerBeingDamaged;
+
+uniform vec2 aimDirection;
+uniform vec2 lazer_start;
+uniform vec2 lazer_end;
+uniform float lazer_progress;
+uniform float lazer_cooldown;
+
+
+//const int enemies_count = 2;
+//const vec2[2] enemies = vec2[2]( vec2(0.2, 0.2), vec2(0.8, 0.8) );
+uniform int enemies_count;
+uniform vec2[40] enemies;
+
+//const int blobies_count= 2;
+//const vec2[2] blobies = vec2[2]( vec2(0.25, 0.2), vec2(0.77, 0.8) );
+uniform int blobies_count;
+uniform vec2[40] blobies;
+
+uniform int deaths_count;
+uniform vec2 deaths[40];
+uniform float deaths_progress[40];
+
+//const int splosions_count = 3;
+//const vec2[3] splosions = vec2[3]( vec2(0.255, 0.2), vec2(0.74, 0.8), vec2(0.2, 0.21) );
+//const float[3] splosions_progress = float[3](0.0f, 0.33f, 0.66f);
+uniform int splosions_count;
+uniform vec2[40] splosions;
+uniform float[40] splosions_progress;
+
+//const int grenades_count = 2;
+//const vec2[2] grenades = vec2[2](vec2(0.4,0.4), vec2(0.6, 0.45));
+uniform int grenades_count;
+uniform vec2 grenades[40];
+
+const vec4 pParam = vec4( 17.0*17.0, 34.0, 1.0, 7.0);
+const float pi = 3.14159;
+const float pi2 = pi * 2.;
+
+float s(float a, float b, float x)
+{
+	return a + (b - a) * smoothstep(-1., 1., sin(x));
+}
+///*
+#define REPEAT_10(X, i) \
+	X(int(i * 10 + 0));\
+	X(int(i * 10 + 1));\
+	X(int(i * 10 + 2));\
+	X(int(i * 10 + 3));\
+	X(int(i * 10 + 4));\
+	X(int(i * 10 + 5));\
+	X(int(i * 10 + 6));\
+	X(int(i * 10 + 7));\
+	X(int(i * 10 + 8));\
+	X(int(i * 10 + 9));\
+	
+#define REPEAT_40(X) \
+	REPEAT_10(X, 0) \
+	REPEAT_10(X, 1) \
+	REPEAT_10(X, 2) \
+	REPEAT_10(X, 3) \
+//*/
+
+/*
+#define REPEAT_40(X) \
+	X(0) \
+	X(1) \
+//	X(2) \
+//	X(3) \
+
+//*/
+
+vec4 drawBlobies(vec2 pos)
+{
+	float resultHeight = 0.0;
+
+	#define BLOBIES(i) \
+	if (i < blobies_count) \
+	{ \
+		vec2 obj = blobies[i]; \
+		float radius = 0.1 + s(0.0, 0.03, mod(time, float(i) * 0.5) * s(.0, 1., float(i) + time * mod(float(i), 7.5))); \
+		float dist = length(pos - obj); \
+		float height = smoothstep(0.0, 0.3, 1. - dist / radius); \
+		resultHeight = max(resultHeight, height); \
+	} \
+	
+	REPEAT_40(BLOBIES);
+
+	#define DEATHS(i) \
+	if (i < deaths_count) \
+	{ \
+		vec2 obj = deaths[i]; \
+		float radius = 0.1 + s(0.0, 0.03, mod(time, float(i) * 0.5) * s(.0, 1., float(i) + time * mod(float(i), 7.5))); \
+		radius *= 1. - deaths_progress[i]; \
+		float dist = length(pos - obj); \
+		float height = smoothstep(0.0, 0.3, 1. - dist / radius); \
+		resultHeight = max(resultHeight, height); \
+	} \
+	
+	REPEAT_40(DEATHS);
+
+	return vec4(0.2,1,0.3,resultHeight);
+}
+
+vec4 drawSplosions(vec2 pos)
+{
+	vec3 resultColor = vec3(0,0,0);
+	float resultHeight = 0.0;
+	
+	#define SPLOSION(i) \
+	if (i < splosions_count) \
+	{ \
+		vec2 obj = splosions[i]; \
+		float progress = mod(splosions_progress[i], 1.0); \
+		float depth_mult = 1. - progress; \
+		float radius_mult = 1. -(1.-progress)*(1.-progress)*(1.-progress)*(1.-progress); \
+		float radius = 0.3 * radius_mult; \
+		float dist = length(pos - obj); \
+		float height = smoothstep(0.0, 1.0, 1. - dist / radius) * depth_mult; \
+		vec3 color = vec3(1, 1, 0) * (1. - progress); \
+		resultHeight += height; \
+		resultColor += color;  \
+	} \
+	
+	REPEAT_40(SPLOSION);
+
+	{
+		vec2 obj = playerPos;
+		float progress = 0.15 + s(0.8f, 1.2f, time * 5.);
+		float depth_mult = 1. - progress;
+		float radius_mult = 1. -(1.-progress)*(1.-progress)*(1.-progress)*(1.-progress);
+		float radius = 0.1 * radius_mult;
+		float dist = length(pos - obj);
+		float height = smoothstep(0.0, 0.3, 1. - dist / radius) * depth_mult;
+		resultHeight += height;
+		vec3 color = vec3(1, 1, 0) * (1. - progress);
+		resultColor += color;
+	}
+
+	return vec4(normalize(resultColor),resultHeight);
+}
+
+vec4 drawEnemies(vec2 pos)
+{
+	float resultHeight = 0.0;
+	
+	#define ENEMY(i) \
+	if (i < enemies_count) \
+	{ \
+		vec2 obj = enemies[i]; \
+		float radius = 0.01; \
+		float dist = length(pos - obj); \
+		float height = smoothstep(0.0, 1.0, 1. - dist / radius); \
+		resultHeight = max(resultHeight, height); \
+	} \
+	
+	REPEAT_40(ENEMY);
+
+	return vec4(1,0,0,resultHeight);
+}
+
+vec4 drawPlayer(vec2 pos)
+{
+	vec2 obj = playerPos.xy;
+	float radius = 0.03;
+	float dist = length(pos - obj);
+	float height = smoothstep(0.0, 0.3, 1. - dist / radius);
+	vec3 color = vec3(0.9,2.0,0) * smoothstep(0.3, 1.0, lazer_cooldown) + vec3(0,0,1.2);
+	if (playerBeingDamaged)
+	{
+		color = vec3(0, 0.8, 3);
+		color += vec3(1, -2, -2) * smoothstep(0.,1.,1.-playerShield);
+	}
+	return vec4(color,height);
+}
+
+vec4 drawAim(vec2 pos)
+{
+	vec2 obj = aimDirection;
+	float radius = 0.013;
+	float dist = length(pos - obj);
+	float height = smoothstep(0.0, 0.3, 1. - dist / radius) * 1.2;
+	return vec4(0.8,0.8,0.1,height);
+}
+
+vec4 drawLazer(vec2 pos)
+{
+	if (lazer_progress >= 1.)
+		return vec4(0,0,0,0);
+	
+	vec2 a = lazer_start;
+	vec2 d = lazer_end - lazer_start;
+	float t = ((pos.x - a.x) * d.x + (pos.y - a.y) * d.y) / (d.x * d.x + d.y * d.y);
+	float radius = 0.02 * s(1.0, 0.0, lazer_progress);
+	float dist = length((a + d * t) - pos);
+	float height = smoothstep(0.0, 0.8, 1. - dist / radius) * 1.2;
+	return vec4(1,2,3,height);
+}
+
+vec4 drawGrenades(vec2 pos)
+{
+	float resultHeight = 0.0;
+
+	#define GRENADE(i) \
+	if (i < grenades_count) \
+	{ \
+		vec2 obj = grenades[i]; \
+		float radius = 0.02; \
+		float dist = length(pos - obj); \
+		float height = smoothstep(0.0, 0.9, 1. - dist / radius); \
+		resultHeight = max(resultHeight, height); \
+	} \
+	
+	REPEAT_40(GRENADE);
+
+	return vec4(0.4,0.9,0.7,resultHeight);
+}
+
+vec4 scene(vec2 pos)
+{
+	vec4 blobWeight = drawBlobies(pos);
+	vec4 world = blobWeight;
+	float base = s(0.05, 0.3, s(0., 1., pos.x * s(5., 9., time * 2.) + time * 4.) + s(0., 1., pos.y * s(5.1, 9.4, time*2.5) + time * 3.5) + time*1.4);
+	world.w = max(world.w, base);
+
+	vec4 splosionWeight = drawSplosions(pos);
+	{
+		float mult = splosionWeight.w;
+		world.w -= mult;
+		world.xyz *= world.w;
+		world.xyz += splosionWeight.xyz * mult;
+	}
+
+	vec4 enemyWeight = drawEnemies(pos);
+	if (enemyWeight.w > 0.)
+	{
+		float blend = smoothstep(world.w, world.w + .4, enemyWeight.w);
+		world = vec4(enemyWeight.xyz * blend + world.xyz * (1.-blend), max(world.w, enemyWeight.w));
+	}
+
+	vec4 playerWeight = drawPlayer(pos);
+	if (playerWeight.w > world.w)
+	{
+		float blend = smoothstep(world.w, world.w + 0.1, playerWeight.w);
+		world = vec4(playerWeight.xyz * blend + world.xyz * (1.-blend), playerWeight.w);
+	}
+	
+	vec4 aimWeight = drawAim(pos);
+	if (aimWeight.w > world.w)
+	{
+		float blend = smoothstep(world.w, world.w + 0.1, aimWeight.w);
+		world = vec4(aimWeight.xyz * blend + world.xyz * (1.-blend), aimWeight.w);
+	}
+
+	vec4 lazerWeight = drawLazer(pos);
+	if (lazerWeight.w > world.w)
+	{
+		float blend = smoothstep(world.w, world.w + 0.1, lazerWeight.w);
+		world = vec4(lazerWeight.xyz * blend + world.xyz * (1.-blend), lazerWeight.w);
+	}
+
+	vec4 grenadeWeight = drawGrenades(pos);
+	if (grenadeWeight.w > world.w)
+	{
+		float blend = smoothstep(world.w, world.w + 0.1, grenadeWeight.w);
+		world = vec4(grenadeWeight.xyz * blend + world.xyz * (1.-blend), grenadeWeight.w);
+	}
+
+	//world.w = 1.;
+	return world;
+}
+
+
+// Created by evilryu
+// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+
+
+// whether turn on the animation
+#define phase_shift_on 
+
+float stime, ctime;
+ void ry(inout vec3 p, float a){  
+ 	float c,s;vec3 q=p;  
+  	c = cos(a); s = sin(a);  
+  	p.x = c * q.x + s * q.z;  
+  	p.z = -s * q.x + c * q.z; 
+ }  
+
+float pixel_size = 0.0;
+
+/* 
+
+z = r*(sin(theta)cos(phi) + i cos(theta) + j sin(theta)sin(phi)
+
+zn+1 = zn^8 +c
+
+z^8 = r^8 * (sin(8*theta)*cos(8*phi) + i cos(8*theta) + j sin(8*theta)*sin(8*theta)
+
+zn+1' = 8 * zn^7 * zn' + 1
+
+*/
+
+vec3 mb(vec3 p) {
+	p.xyz = p.xzy;
+	vec3 z = p;
+	vec3 dz=vec3(0.0);
+	float power = 8.0;
+	float r, theta, phi;
+	float dr = 1.0;
+	
+	float t0 = 1.0;
+	for(int i = 0; i < 7; ++i) {
+		r = length(z);
+		if(r > 2.0)
+			break;
+
+		theta = atan(z.y / z.x);
+        #ifdef phase_shift_on
+		phi = asin(z.z / r) + score*0.001 - time*0.01;
+        #else
+        phi = asin(z.z / r);
+        #endif
+		
+		dr = pow(r, power - 1.0) * dr * power + 1.0;
+	
+		r = pow(r, power);
+		theta = theta * power;
+		phi = phi * power;
+		
+		z = r * vec3(cos(theta)*cos(phi), sin(theta)*cos(phi), sin(phi)) + p;
+		
+		t0 = min(t0, r);
+	}
+	return vec3(0.5 * log(r) * r / dr, t0, 0.0);
+}
+
+ vec3 scene(vec3 p){ 
+	 ry(p, time*0.0);
+     return mb(p); 
+ } 
+
+
+ float softshadow(vec3 ro, vec3 rd, float k ){ 
+     float akuma=1.0,h=0.0; 
+	 float t = 0.01;
+     for(int i=0; i < 50; ++i){ 
+         h=scene(ro+rd*t).x; 
+         if(h<0.001)return 0.02; 
+         akuma=min(akuma, k*h/t); 
+ 		 t+=clamp(h,0.01,2.0); 
+     } 
+     return akuma; 
+ } 
+
+vec3 nor( in vec3 pos )
+{
+    vec3 eps = vec3(0.001,0.0,0.0);
+	return normalize( vec3(
+           scene(pos+eps.xyy).x - scene(pos-eps.xyy).x,
+           scene(pos+eps.yxy).x - scene(pos-eps.yxy).x,
+           scene(pos+eps.yyx).x - scene(pos-eps.yyx).x ) );
+}
+
+vec3 intersect( in vec3 ro, in vec3 rd )
+{
+    float t = 1.0;
+    float res_t = 0.0;
+    float res_d = 1000.0;
+    vec3 c, res_c;
+    float max_error = 1000.0;
+	float d = 1.0;
+    float pd = 100.0;
+    float os = 0.0;
+    float step = 0.0;
+    float error = 1000.0;
+    
+    for( int i=0; i < 80; i++ )
+    {
+        if( error < pixel_size*0.5 || t > 20.0 )
+        {
+			break;
+        }
+        else{  // avoid broken shader on windows
+        
+            c = scene(ro + rd*t);
+            d = c.x;
+
+            if(d > os)
+            {
+                os = 0.4 * d*d/pd;
+                step = d + os;
+                pd = d;
+            }
+            else
+            {
+                step =-os; os = 0.0; pd = 100.0; d = 1.0;
+            }
+
+            error = d / t;
+
+            if(error < max_error) 
+            {
+                max_error = error;
+                res_t = t;
+                res_c = c;
+            }
+        
+            t += step;
+        }
+
+    }
+	if( t>20.0/* || max_error > pixel_size*/ ) res_t=-1.0;
+    return vec3(res_t, res_c.y, res_c.z);
+}
+
+ vec4 bg(vec2 uv)
+ { 
+	pixel_size = 1.0f / 2000.0f;
+	 
+	vec3 pos = vec3(0.,2.5f,-0.02f) + (playerPos.xyy + aimDirection.xyy * 0.5 - vec3(0.75)) * 0.075;
+	vec3 forward = vec3(0.,-1.0 - smoothstep(0., 20., float(combo)),.02);
+	vec3 right = normalize(cross(vec3(0,1,0), forward));
+	vec3 up = normalize(cross(right, forward));
+	vec3 rd = normalize(right * (uv.x - 0.5) + up * (uv.y - 0.5) + forward);
+	vec3 ro = pos;
+
+    vec3 sundir = normalize(vec3(0.1, 0.8, 0.6)); 
+    vec3 sun = vec3(1.64, 1.27, 0.99); 
+    vec3 skycolor = vec3(0.6, 1.5, 0.1); 
+
+	vec3 bg = exp(uv.y-2.0)*vec3(0.4, 1.6, 0.2);
+
+    float halo=clamp(dot(normalize(vec3(-ro.x, -ro.y, -ro.z)), rd), 0.0, 1.0); 
+    vec3 col=bg+vec3(1.0,0.8,0.4)*pow(halo,17.0); 
+
+
+    float t=0.0;
+    vec3 p=ro; 
+	 
+	vec3 res = intersect(ro, rd);
+	 if(res.x > 0.0){
+		   p = ro + res.x * rd;
+           vec3 n=nor(p); 
+           float shadow = softshadow(p, sundir, 10.0 );
+
+           float dif = max(0.0, dot(n, sundir)); 
+           float sky = 0.6 + 0.4 * max(0.0, dot(n, vec3(0.0, 1.0, 0.0))); 
+ 		   float bac = max(0.3 + 0.7 * dot(vec3(-sundir.x, -1.0, -sundir.z), n), 0.0); 
+           float spe = max(0.0, pow(clamp(dot(sundir, reflect(rd, n)), 0.0, 1.0), 10.0)); 
+
+           vec3 lin = 4.5 * sun * dif * shadow; 
+           lin += 0.8 * bac * sun; 
+           lin += 0.6 * sky * skycolor*shadow; 
+           lin += 3.0 * spe * shadow; 
+
+		   res.y = pow(clamp(res.y, 0.0, 1.0), 0.55);
+		   vec3 tc0 = 0.5 + 0.5 * sin(3.0 + 4.2 * res.y + vec3(0.0, 0.5, 1.0));
+           col = lin *vec3(0.9, 0.8, 0.1) *  0.2 * tc0;
+ 		   col=mix(col,bg, 1.0-exp(-0.001*res.x*res.x)); 
+    } 
+
+    // post
+    col=pow(clamp(col,0.0,1.0),vec3(0.45)); 
+    col=col*0.6+0.4*col*col*(3.0-2.0*col);  // contrast
+    col=mix(col, vec3(dot(col, vec3(0.33))), -0.5);  // satuation
+	//vec2 q = uv;
+    //col*=0.5+0.5*pow(16.0*q.x*q.y*(1.0-q.x)*(1.0-q.y),0.7);  // vigneting
+ 	return vec4(col.xyz, smoothstep(0.55, .76, 1.-res.x/5.)); 
+}
+
+out vec4 v_FragColor;
+void main()
+{
+	//vec2 uv = gl_TexCoord[0].xy;
+	vec2 uv = gl_FragCoord.xy / screen;
+	uv.y = 1. - uv.y;
+
+	vec4 colorOut = scene(uv);
+	colorOut.w *= 0.9;
+	{
+		vec4 bg_color = bg(uv);
+		//vec4 bg_color = vec4(0,0,0,1);
+		colorOut = colorOut * colorOut.w + bg_color * (1.0 - colorOut.w);
+		colorOut.w = 1.0;
+	}
+	
+	vec2 q = uv;
+	colorOut.xyz*=vec3(1,0.3,0.1) + vec3(0,0.7,0.7)*smoothstep(0., 1.0, playerHealth);
+    colorOut*=0.5+0.5*pow(16.0*q.x*q.y*(1.0-q.x)*(1.0-q.y),0.7);  // vigneting
+	
+	//gl_FragColor = colorOut;
+	v_FragColor = colorOut;
+	//v_FragColor = vec4(enemies[0], 0, 1);
+}`; };
+const fragment_glsl_src = fragment_glsl_src_func();
+
+const vertex_glsl_src = `#version 300 es
+
+invariant gl_Position;
+in vec2 vert2d;
+
+void main(void) {
+  gl_Position = vec4(vert2d, 0, 1);
+}`;
+
+
+const credits = `Global Game Jam 2022
+https://globalgamejam.org/2022/games/blob-dive-2
+
+Credits:
+Riku - programming & design
+Olli - design
+Janne - git master, master of gits
+Sami, Tomi, Mika - co-design
+evilryu - background mandelbulb shadertoy - https://www.shadertoy.com/view/MdXSWn
+bellbind - basis for this web implementation - https://gist.github.com/bellbind/8c98bb86cfd064d944312b09b98af1b9
+`;
+
+let enable_errors = true;
+
+let canvas = null;
+let gl = null;
+let program = null;
+let locationCache = {};
+let locationArrayCache = {};
+
+const getLocation = (name) => {
+	let location = locationCache[name];
+	if (location) {
+		return location;
+	} else {
+		location = gl.getUniformLocation(program, name);
+		if (!location) {
+			fatal_error("no uniform with name: " + name);
+		}
+		locationCache[name] = location;
+		return location;
+	}
+}
+
+const getLocationArray = (name) => {
+	let arr = locationArrayCache[name];
+	if (arr)
+		return arr;
+
+	arr = [];
+	for (let i = 0; i < 40; ++i)
+	{
+		const locName = name + '[' + i + ']';
+		const location = gl.getUniformLocation(program, locName);
+		if (!location) {
+			fatal_error("no uniform with name: " + locName);
+		} else {
+			arr.push(location);
+		}
+	}
+	
+	locationArrayCache[name] = arr;
+	return arr;
+}
+
+const setUniformFloat = (name, value) => {
+	const location = getLocation(name);
+	
+	gl.uniform1f(location, value);
+	
+	if (enable_errors) {
+		const error = gl.getError();
+		if (error !== gl.NO_ERROR)
+			fatal_error('setUniformFloat("' + name + '"): ' + error);
+	}
+};
+
+const setUniformBool = (name, value) => {
+	let location = locationCache[name];
+	
+	gl.uniform1i(location, value);
+	
+	if (enable_errors) {
+		const error = gl.getError();
+		if (error !== gl.NO_ERROR)
+			fatal_error('setUniformBool("' + name + '"): ' + error);
+	}
+}
+
+const setUniformInt = (name, value) => {
+	const location = getLocation(name);
+	
+	gl.uniform1i(location, value);
+	
+	if (enable_errors) {
+		const error = gl.getError();
+		if (error !== gl.NO_ERROR)
+			fatal_error('setUniformInt("' + name + '"): ' + error);
+	}
+}
+
+const setUniformVec2 = (name, value) => {
+	const location = getLocation(name);
+	
+	gl.uniform2f(location, value.x, value.y);
+	
+	if (enable_errors) {
+		const error = gl.getError();
+		if (error !== gl.NO_ERROR)
+			fatal_error('setUniformVec2("' + name + '"): ' + error);
+	}
+};
+
+const setUniformArrayFloat = (name, value, count) => {
+	const locations = getLocationArray(name);
+	for (let i = 0; i < min(40, value.length); ++i)
+	{
+		gl.uniform1f(locations[i], value[i]);
+	}
+	
+	if (enable_errors) {
+		const error = gl.getError();
+		if (error !== gl.NO_ERROR)
+			fatal_error('setUniformArrayFloat("' + name + '"): ' + error);
+	}
+}
+
+const setUniformArrayVec2 = (name, value) => {
+	const locations = getLocationArray(name);
+	for (let i = 0; i < min(40, value.length); ++i)
+	{
+		gl.uniform2f(locations[i], value[i].x, value[i].y);
+	}
+	
+	if (enable_errors) {
+		const error = gl.getError();
+		if (error !== gl.NO_ERROR)
+			fatal_error('setUniformArrayVec2("' + name + '"): ' + error);
+	}
+}
+
+class Clock {
+	constructor() {
+		this.startTime = window.performance.now();
+	}
+
+	getElapsedTime() {
+		return (window.performance.now() - this.startTime) / 1000.0;
+	}
+	
+	restart() {
+		this.startTime = window.performance.now();
+	}
+}
+
+const timeFromStart = new Clock();
+const frameTime = new Clock();
+
+class vec2 {
+	constructor(x, y) {
+		this.x = x;
+		this.y = y;
+	}
+	
+	toString() {
+		return "(" + this.x + ", " + this.y + ")";
+	}
+	
+	plus(o) {
+		return new vec2(this.x + o.x, this.y + o.y);
+	}
+	
+	minus(o) {
+		return new vec2(this.x - o.x, this.y - o.y);
+	}
+	
+	mult(o) {
+		if (typeof(o) == typeof(this)) {
+			return new vec2(this.x * o.x, this.y * o.y);
+		} else {
+			return new vec2(this.x * o, this.y * o);
+		}
+	}
+	
+	div(o) {
+		if (typeof(o) == typeof(this)) {
+			return new vec2(this.x / o.x, this.y / o.y);
+		} else {
+			return new vec2(this.x / o, this.y / o);
+		}
+	}
+	
+	inc(o) {
+		this.x += o.x;
+		this.y += o.y;
+	}
+	
+	dec(o) {
+		this.x -= o.x;
+		this.y -= o.y;
+	}
+}
+
+const length = (v) => {
+	return Math.sqrt(v.x * v.x + v.y * v.y);
+}
+
+const distanceFromLine = (a, b, pos) => {
+	const d = b.minus(a);
+	const t = ((pos.x - a.x) * d.x + (pos.y - a.y) * d.y) / (d.x * d.x + d.y * d.y);
+	const dist = length((a.plus(d.mult(t))).minus(pos));
+	return dist;
+}
+
+const lerpVector2f = (a, b, t) => {
+    const x = b.x * t + (1-t) * a.x;
+	const y = b.y * t + (1-t) * a.y;
+	return new vec2(x, y);
+}
+
+let screenShake = false;
+let scoreBlend = 0.0;
+let comboBlend = 0.0;
+
+const random01 = () => { return Math.random(); }
+
+let aimPos = new vec2(0, 0);
+let mouseButton1 = false;
+let mouseButton2 = false;
+let heldKeys = [];
+let pressedKeys = [];
+
+const clearInput = () => {
+	mouseButton1 = false;
+	mouseButton2 = false;
+	pressedKeys = [];
+}
+
+const isHeld = (code) => {
+	return !!heldKeys.find(x => x === code);
+}
+
+const wasPressed = (code) => {
+	return !!pressedKeys.find(x => x === code);
+}
+
+const hasFocus = () => {
+	return true;
+}
+
+const min = Math.min;
+const max = Math.max;
+
+let output = null;
+
+class Map {
+	constructor() {
+		this.grenadePoss = [];
+		this.grenadeFacings = [];
+		this.grenadeClocks = [];
+		this.splosionPoss = [];
+		this.splosionClocks = [];
+		this.lazerStart = new vec2(0,0);
+		this.lazerEnd = new vec2(0,0);
+		this.lazerClock = new Clock();
+		this.currentLazerCooldownCurrent = 0.5;
+		this.enemyDeath = [];
+		this.enemyDeathClock = [];
+		this.enemyPoss = [];
+		this.enemyBlobs = [];
+		this.enemySpawnCounter = new Clock();
+		this.playerSpawningDone = false;
+		this.playerPos = new vec2(0.5, 0.5);
+		this.playerSpeed = new vec2(0.0, 0.0);
+		this.playerHealth = 1.0;
+		this.playerShield = 1.0;
+		this.score = 0;
+		this.combo = 0;
+		this.menuOpen = false;
+	}
+		
+	draw()
+	{
+		//setMouseCursorVisible(false);
+
+		let playerBeingDamaged = false;
+		const healthDamageDuration = 2.0;
+		const shieldDamageDuration = 0.5;
+		const shieldRecoveryDuration = 2.0;
+		const healthRegenDuration = 10.0;
+		const pi = 3.14159;
+
+		let xInput = 0;
+		let yInput = 0;
+		if (isHeld("ArrowLeft") || isHeld("KeyA"))
+			++xInput;
+		if (isHeld("ArrowRight") || isHeld("KeyD"))
+			--xInput;
+		if (isHeld("ArrowUp") || isHeld("KeyW"))
+			++yInput;
+		if (isHeld("ArrowDown") || isHeld("KeyS"))
+			--yInput;
+			
+		if (isHeld("KeyQ"))
+		{
+			canvas.height *= 0.98;
+			canvas.width = canvas.height;
+			
+			canvas.style = "cursor:none;width:100vh;height:100vh";
+		}
+	
+		if (isHeld("KeyE"))
+		{
+			canvas.height = min(window.screen.height, canvas.height / 0.98);
+			canvas.width = canvas.height;
+			
+			canvas.style = "cursor:none;width:100vh;height:100vh";
+		}
+
+		if (wasPressed("KeyH")) {
+			screenShake = !screenShake;
+		}
+
+		const dt = frameTime.getElapsedTime()
+		
+		if (!this.playerSpawningDone)
+		{
+			const target = new vec2(0.5, 0.5);
+			this.playerPos = lerpVector2f(this.playerPos, target, 4.0 * dt);
+			if (length(this.playerPos.minus(target)) < 0.01)
+				this.playerSpawningDone = true;
+		}
+
+		
+		if (this.playerSpawningDone)
+		{
+			const movement = new vec2(-xInput, -yInput);
+			let acc = new vec2(0,0);
+			if (hasFocus())
+			{
+				acc = movement;
+				const speed = length(acc);
+				if (speed > 1.0)
+					acc = acc.div(speed);
+			}
+
+			this.playerSpeed = acc;//lerpVector2f(this.playerSpeed, acc, min(1.0, 10.0 * min(0.033, dt)));
+			
+			
+			this.playerPos = this.playerPos.plus(this.playerSpeed.mult(0.01 * min(0.033, dt) * 60.0));
+		}
+
+		const spawnDelay = 1.01 - max(0.0, min(1.0, this.score / 10000.0));
+
+		const enemyDamageRadius = 0.1;
+		if (this.enemySpawnCounter.getElapsedTime() > spawnDelay && this.enemyPoss.length < 40)
+		{
+			this.enemySpawnCounter.restart();
+			const r = random01() * pi * 2.0;
+			this.enemyPoss.push(new vec2(Math.sin(r), Math.cos(r)).mult(0.75).plus(new vec2(0.5, 0.5)));
+			const rx = (random01() - 0.5) * 0.1;
+			const ry = (random01() - 0.5) * 0.1;
+			this.enemyBlobs.push(this.enemyPoss[this.enemyPoss.length-1].plus(new vec2(rx, ry)));
+		}
+		
+		const enemySpeed = 1.0 + this.score / 10000.0;
+
+		for (let i = 0; i < this.enemyPoss.length; ++i)
+		{
+			let dir = this.playerPos.minus(this.enemyBlobs[i]);
+			dir = dir.div(max(0.001, length(dir)));
+			dir = dir.mult(0.001 * 60.0 * dt * enemySpeed);
+
+			this.enemyPoss[i].inc(dir);
+			this.enemyBlobs[i].inc(dir);
+
+			if (length(this.playerPos.minus(this.enemyBlobs[i])) < enemyDamageRadius)
+			{
+				playerBeingDamaged = true;
+				if (this.playerShield > 0)
+				{
+					this.playerShield -= dt / shieldDamageDuration;
+				}
+
+				if (this.playerShield <= 0)
+				{
+					this.playerShield = 0;
+					this.playerHealth -= dt / healthDamageDuration;
+				}
+			}
+		}
+
+		if (this.playerPos.x < 0 || this.playerPos.y < 0 || this.playerPos.x > 1 || this.playerPos.y > 1)
+		{
+			// Player out of bounds
+			playerBeingDamaged = true;
+			if (this.playerShield > 0)
+			{
+				this.playerShield -= dt / shieldDamageDuration;
+			}
+
+			if (this.playerShield <= 0)
+			{
+				this.playerShield = 0;
+				this.playerHealth -= dt / healthDamageDuration;
+			}
+		}
+
+
+		if (!playerBeingDamaged && this.playerShield >= 1 && this.playerHealth < 1)
+		{
+			this.playerHealth = min(1.0, this.playerHealth + dt / healthRegenDuration);
+		}
+
+		if (!playerBeingDamaged && this.playerShield < 1)
+		{
+			this.playerShield = min(1.0, this.playerShield + dt / shieldRecoveryDuration);
+		}
+
+		const lazerCooldown = 0.5;
+		const lazerMissedCooldown = 2.0;
+		const lazerDuration = 0.51;
+		const lazerLength = 0.3;
+		const lazerWidth = 0.02;
+
+		if (hasFocus() && mouseButton1)
+		{
+			const grenadeFlightSpeed = 0.01;
+
+			const grenadeDirection = aimPos.minus(this.playerPos);
+			this.grenadePoss.push(new vec2(this.playerPos.x, this.playerPos.y));
+			this.grenadeFacings.push(grenadeDirection.div(length(grenadeDirection) / grenadeFlightSpeed));
+			this.grenadeClocks.push(new Clock());
+		}
+
+		if (this.lazerClock.getElapsedTime() > this.currentLazerCooldownCurrent)
+		{
+			if (hasFocus() && mouseButton2)
+			{
+				this.lazerClock.restart();
+
+				const lazerDirection = this.playerPos.minus(aimPos);
+				this.lazerStart = this.playerPos;
+				this.lazerEnd = this.playerPos.plus(lazerDirection.mult(length(lazerDirection)).mult(lazerLength));
+
+				let hitCount = 0;
+				
+				for (let i = 0; i < this.enemyPoss.length; ++i)
+				{
+					const dist = distanceFromLine(this.lazerStart, this.lazerEnd, this.enemyPoss[i]);
+					if (dist < lazerWidth)
+					{
+						this.enemyDeath.push(this.enemyBlobs[i].mult(1));
+						this.enemyDeathClock.push(new Clock());
+
+						this.splosionPoss.push(this.enemyPoss[i].mult(1));
+						this.splosionClocks.push(new Clock());
+
+						this.enemyPoss.splice(i, 1);
+						this.enemyBlobs.splice(i, 1);
+						--i;
+
+						hitCount += 1;
+					}
+				}
+
+				if (hitCount == 0)
+				{
+					this.combo = 0;
+					this.currentLazerCooldownCurrent = lazerMissedCooldown;
+				}
+				else
+				{
+					this.score += this.combo * hitCount;
+					this.combo += hitCount;
+					this.currentLazerCooldownCurrent = lazerCooldown;
+				}
+			}
+		}
+
+		const enemyDeathProgress = [];
+		const enemyDeathDuration = 1.0;
+		for (let i = 0; i < this.enemyDeath.length; ++i)
+		{
+			if (this.enemyDeathClock[i].getElapsedTime() > enemyDeathDuration)
+			{
+				this.enemyDeath.splice(i, 1);
+				this.enemyDeathClock.splice(i, 1);
+				--i;
+				continue;
+			}
+			
+			enemyDeathProgress.push(this.enemyDeathClock[i].getElapsedTime() / enemyDeathDuration);
+		}
+		
+		
+		const grenadeFlightDuration = 0.3;
+		for (let i = 0; i < this.grenadePoss.length; ++i)
+		{
+			if (this.grenadeClocks[i].getElapsedTime() > grenadeFlightDuration)
+			{
+				this.splosionPoss.push(this.grenadePoss[i]);
+				this.splosionClocks.push(new Clock());
+
+				this.grenadePoss.splice(i, 1);
+				this.grenadeFacings.splice(i, 1);
+				this.grenadeClocks.splice(i, 1);
+				--i;
+
+				continue;
+			}
+
+			this.grenadePoss[i] = this.grenadePoss[i].plus(this.grenadeFacings[i].mult(dt * 60.0));
+		}
+		
+		const splosionTimes = [];
+		const splosionDuration = 4.0;
+		for (let i = 0; i < this.splosionPoss.length; ++i)
+		{
+			if (this.splosionClocks[i].getElapsedTime() > splosionDuration)
+			{
+				this.splosionPoss.splice(i, 1);
+				this.splosionClocks.splice(i, 1);
+				--i;
+				continue;
+			}
+
+			splosionTimes.push(this.splosionClocks[i].getElapsedTime() / splosionDuration);
+		}
+		
+		setUniformVec2("playerPos", this.playerPos);
+		setUniformVec2("aimDirection", aimPos);
+
+		setUniformFloat("playerHealth", this.playerHealth);
+		setUniformFloat("playerShield", this.playerShield);
+		setUniformBool("playerBeingDamaged", playerBeingDamaged);
+
+		const lazerProgress = min(1, this.lazerClock.getElapsedTime() / lazerDuration);
+		const lazerCooldownProgress = this.lazerClock.getElapsedTime() / this.currentLazerCooldownCurrent;
+		{
+			setUniformFloat("lazer_cooldown", lazerCooldownProgress);
+			setUniformFloat("lazer_progress", max(0, lazerProgress));
+			setUniformVec2("lazer_start", this.lazerStart);
+			setUniformVec2("lazer_end", this.lazerEnd);
+		}
+
+		setUniformInt("grenades_count", this.grenadePoss.length);
+		setUniformArrayVec2("grenades", this.grenadePoss, this.grenadePoss.length);
+		setUniformInt("splosions_count", this.splosionPoss.length);
+		setUniformArrayVec2("splosions", this.splosionPoss, this.splosionPoss.length);
+		setUniformArrayFloat("splosions_progress", splosionTimes, splosionTimes.length);
+		setUniformInt("enemies_count", this.enemyPoss.length);
+		setUniformArrayVec2("enemies", this.enemyPoss, this.enemyPoss.length);
+		setUniformInt("blobies_count", this.enemyBlobs.length);
+		setUniformArrayVec2("blobies", this.enemyBlobs, this.enemyBlobs.length);
+		setUniformInt("deaths_count", this.enemyDeath.length);
+		setUniformArrayVec2("deaths", this.enemyDeath, this.enemyDeath.length);
+		setUniformArrayFloat("deaths_progress", enemyDeathProgress, enemyDeathProgress.length);
+		
+		setUniformFloat("time", timeFromStart.getElapsedTime());
+
+		const lerp = (a, b) => {
+			let r = a + (b - a) * (1.0 * dt);
+			r = max(min(a, b), min(r, max(a, b)));
+			return r;
+		};
+
+		scoreBlend = lerp(scoreBlend, this.score);
+		comboBlend = lerp(comboBlend, this.combo);
+
+		setUniformFloat("score", scoreBlend);
+		setUniformFloat("combo", comboBlend);
+
+		//{
+		//	const s = new vec2(1, 1).mult(max(windowSize.x / windowSize.y, 1.0));
+		//	let p = s.mult(-0.5);
+		//
+		//	if (screenShake)
+		//	{
+		//		const smoothstep = (a, b, t) => {
+		//			const f = (t - a) / (b - a);
+		//			return min(1.0, max(0.0, f));
+		//		};
+		//
+		//		const normalize = (v) => {
+		//			return v.div(max(0.0001, length(v)));
+		//		};
+		//
+		//		p = p.plus(normalize(lazerEnd.minus(lazerStart)).mult(smoothstep(0.3, 0.0, lazerClock.getElapsedTime()) * 0.006));
+		//
+		//		for (int i = 0; i < grenadePoss.length; ++i)
+		//		{
+		//			p = p.plus(normalize(-grenadeFacings[i]).mult(smoothstep(0.3, 0.0, grenadeClocks[i].getElapsedTime()) * 0.001));
+		//		}
+		//	}
+		//
+		//	render(texture, mapVisShader, p.x, p.y, s.x, s.y);
+		//}
+		
+		frameTime.restart();
+		clearInput();
+	}
+}
+
+let map = new Map();	
+const resetMap = () => {
+	const oldMap = map;
+	map = new Map();
+	
+	map.playerPos = oldMap.playerPos;
+	map.enemyDeath = oldMap.enemyDeath.concat(oldMap.enemyBlobs);
+	map.enemyDeathClock = oldMap.enemyDeathClock;
+	
+	while (map.enemyDeathClock.length < map.enemyDeath.length) {
+		map.enemyDeathClock.push(new Clock());
+	}
+}
+
+const game = () => {
+	
+	const time = timeFromStart.getElapsedTime();
+	setUniformVec2("screen", new vec2(canvas.width, canvas.height));
+	
+	map.draw();
+	
+	if (map.playerHealth <= 0) {
+		resetMap();
+	}
+};
+
+let shown_fatal_errors = [];
+let fatal_output = null;
+let frame_output = null;
+let permanent_output = null;
+
+const fatal_error = (msg) => {
+	if (shown_fatal_errors.findIndex(x => x === msg) !== -1)
+		return;
+		
+	shown_fatal_errors.push(msg);
+	
+	console.error(msg);
+	const log_msg = document.createElement('p');
+	
+	if (fatal_output) {
+		fatal_output.appendChild(log_msg);
+	} else {
+		document.body.appendChild(log_msg);
+	}
+	
+	if (msg.startsWith('ERROR: 0:')) {
+		const [col, row] = msg.match(/[0-9]+/g);
+		const line = fragment_glsl_src.split('\n')[row - 1];
+		msg = msg + '<br />' + line;
+	}
+	
+	log_msg.innerHTML = msg;
+};
+
+const frame_log = (msg) => {
+	console.log(msg);
+	const log_msg = document.createElement('p');
+	if (frame_output) {
+		frame_output.appendChild(log_msg);
+	}
+	
+	log_msg.innerHTML = msg.toString();
+}
+
+window.addEventListener("load", ev => {
+	
+	console.log(credits);
+	
+	{
+		// logging setup
+		fatal_output = document.createElement('div');
+		fatal_output.style = "position:absolute;text-align:left;bottom:0;left:5px;color:pink";
+		document.body.appendChild(fatal_output);
+		
+		frame_output = document.createElement('div');
+		frame_output.style = "position:absolute;text-align:left;top:0vh;left:5px;color:white;";
+		frame_output.innerHTML = "HHHHHHHHHHHHHHHHHHHH";
+		document.body.appendChild(frame_output);
+	}
+	
+	{
+		// webgl setup
+		canvas = document.createElement("canvas");
+		document.body.style = "margin:0px;text-align:center;background-color:darkgreen;";
+		canvas.width = min(window.screen.width, window.screen.height);// * 0.5;
+		canvas.height = min(window.screen.width, window.screen.height);// * 0.5;
+		canvas.style = "cursor:none;width:99vh;height:99vh";
+		document.body.appendChild(canvas);
+		// webgl2 enabled default from: firefox-51, chrome-56
+		gl = canvas.getContext("webgl2");
+		if (!gl) {
+			fatal_error("webgl2 required. Try a newer browser.");
+			return;
+		}
+		
+	}
+	
+	{
+		// input capturing
+		
+		canvas.oncontextmenu = (e) => { return false; }; 
+		
+		canvas.onmousemove = (e) => {
+		  var rect = e.target.getBoundingClientRect();
+		  var x = e.clientX - rect.left;
+		  var y = e.clientY - rect.top;
+		  aimPos = new vec2(x / rect.width, y / rect.height);
+		};
+		
+		canvas.onmousedown = (e) => {
+			if (e.button === 0) { mouseButton1 = true; }
+			if (e.button === 2) { mouseButton2 = true; }
+		};
+		
+		document.onkeydown = (e) => {
+			if (heldKeys.find(x => x === e.code)) {
+				return;
+			}
+			heldKeys.push(e.code); pressedKeys.push(e.code);
+		};
+		
+		document.onkeyup = (e) => {
+			heldKeys = heldKeys.filter(x => x !== e.code);
+		};
+		
+	}
+
+    // drawing data (as viewport square)
+    const vert2d = [[1, 1], [-1, 1], [1, -1], [-1, -1]];
+    const vert2dData = new Float32Array([].concat(...vert2d));
+    const vertBuf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, vert2dData, gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+    const indexData = new Uint16Array([0, 1, 2, 3, 2, 1]);
+    const indexBuf = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuf);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indexData, gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+    // opengl3 VAO
+    const vertexArray = gl.createVertexArray();
+    
+    {
+		// compile & link shaders & program
+		const loadShader = (src, type) => {
+			const shader = gl.createShader(type);
+			gl.shaderSource(shader, src);
+			gl.compileShader(shader);
+			if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+				const msg = gl.getShaderInfoLog(shader);
+				fatal_error(msg);
+			}
+			return shader;
+		};
+		
+		const vs = loadShader(vertex_glsl_src, gl.VERTEX_SHADER);
+		const fs = loadShader(fragment_glsl_src, gl.FRAGMENT_SHADER);
+		program = gl.createProgram();
+		gl.attachShader(program, vs)
+		gl.attachShader(program, fs)
+		gl.linkProgram(program);
+		
+		if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+			fatal_error(gl.getProgramInfoLog(program));
+			return;
+		};
+	}
+	
+	{
+        // setup buffers and attributes to the VAO
+        gl.bindVertexArray(vertexArray);
+        // bind buffer data
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertBuf);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuf);
+
+        // set attribute types
+        const vert2dId = gl.getAttribLocation(program, "vert2d");
+        const elem = gl.FLOAT, count = vert2d[0].length, normalize = false;
+        const offset = 0, stride = count * Float32Array.BYTES_PER_ELEMENT;
+        gl.enableVertexAttribArray(vert2dId);
+        gl.vertexAttribPointer(
+            vert2dId, count, elem, normalize, stride, offset);
+        gl.bindVertexArray(null);
+    }
+	
+	timeFromStart.restart();
+	
+	{
+		const render = (program, count) => {
+			frame_output.innerHTML = "";
+			
+			gl.useProgram(program);
+			game();
+			
+			// draw the buffer with VAO
+			// NOTE: binding vert and index buffer is not required
+			gl.bindVertexArray(vertexArray);
+			gl.drawElements(gl.TRIANGLES, indexData.length,
+							gl.UNSIGNED_SHORT, 0);
+							
+			if (enable_errors) {
+				const error = gl.getError();
+				if (error !== gl.NO_ERROR)
+					fatal_error('gl.ERROR: ' + error);
+			}
+			gl.bindVertexArray(null);
+			gl.useProgram(null);
+			
+			enable_errors = false;
+		};
+		
+		// start render loop
+        (function loop() {
+            requestAnimationFrame(() => {
+                render(program);
+				setTimeout(loop, 16.67);
+            });
+        })();
+    }
+	
+}, false);</script></head><body></body></html>
