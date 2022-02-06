@@ -767,37 +767,37 @@ const min = Math.min;
 const max = Math.max;
 
 let output = null;
+let game = null;
 
-class Map {
-	constructor() {
-		this.grenadePoss = [];
-		this.grenadeFacings = [];
-		this.grenadeClocks = [];
-		this.splosionPoss = [];
-		this.splosionClocks = [];
-		this.lazerStart = new vec2(0,0);
-		this.lazerEnd = new vec2(0,0);
-		this.lazerClock = new Clock();
-		this.currentLazerCooldownCurrent = 0.5;
-		this.enemyDeath = [];
-		this.enemyDeathClock = [];
-		this.enemyPoss = [];
-		this.enemyBlobs = [];
-		this.enemySpawnCounter = new Clock();
-		this.playerSpawningDone = false;
-		this.playerPos = new vec2(0.5, 0.5);
-		this.playerSpeed = new vec2(0.0, 0.0);
-		this.playerHealth = 1.0;
-		this.playerShield = 1.0;
-		this.score = 0;
-		this.combo = 0;
-		this.menuOpen = false;
-	}
-		
-	draw()
+const makeGame = (args) => {
+	let grenadePoss = [];
+	let grenadeFacings = [];
+	let grenadeClocks = [];
+	let splosionPoss = [];
+	let splosionClocks = [];
+	let lazerStart = new vec2(0,0);
+	let lazerEnd = new vec2(0,0);
+	let lazerClock = new Clock();
+	let currentLazerCooldownCurrent = 0.5;
+	let enemyDeath = args?.enemyDeath ?? [];
+	let enemyDeathClock = args?.enemyDeathClock ?? [];
+	let enemyPoss = [];
+	let enemyBlobs = [];
+	let enemySpawnCounter = new Clock();
+	let playerSpawningDone = false;
+	let playerPos = args?.playerPos ?? new vec2(0.5, 0.5);
+	let playerSpeed = new vec2(0.0, 0.0);
+	let playerHealth = 1.0;
+	let playerShield = 1.0;
+	let score = 0;
+	let combo = 0;
+	let menuOpen = false;
+	
+	const draw = () =>
 	{
-		//setMouseCursorVisible(false);
-
+		const time = timeFromStart.getElapsedTime();
+		setUniformVec2("screen", new vec2(canvas.width, canvas.height));
+		
 		let playerBeingDamaged = false;
 		const healthDamageDuration = 2.0;
 		const shieldDamageDuration = 0.5;
@@ -838,16 +838,16 @@ class Map {
 
 		const dt = frameTime.getElapsedTime()
 		
-		if (!this.playerSpawningDone)
+		if (!playerSpawningDone)
 		{
 			const target = new vec2(0.5, 0.5);
-			this.playerPos = lerpVector2f(this.playerPos, target, 4.0 * dt);
-			if (length(this.playerPos.minus(target)) < 0.01)
-				this.playerSpawningDone = true;
+			playerPos = lerpVector2f(playerPos, target, 4.0 * dt);
+			if (length(playerPos.minus(target)) < 0.01)
+				playerSpawningDone = true;
 		}
 
 		
-		if (this.playerSpawningDone)
+		if (playerSpawningDone)
 		{
 			const movement = new vec2(-xInput, -yInput);
 			let acc = new vec2(0,0);
@@ -859,77 +859,77 @@ class Map {
 					acc = acc.div(speed);
 			}
 
-			this.playerSpeed = acc;//lerpVector2f(this.playerSpeed, acc, min(1.0, 10.0 * min(0.033, dt)));
+			playerSpeed = acc;//lerpVector2f(playerSpeed, acc, min(1.0, 10.0 * min(0.033, dt)));
 			
 			
-			this.playerPos = this.playerPos.plus(this.playerSpeed.mult(0.01 * min(0.033, dt) * 60.0));
+			playerPos = playerPos.plus(playerSpeed.mult(0.01 * min(0.033, dt) * 60.0));
 		}
 
-		const spawnDelay = 1.01 - max(0.0, min(1.0, this.score / 10000.0));
+		const spawnDelay = 1.01 - max(0.0, min(1.0, score / 10000.0));
 
 		const enemyDamageRadius = 0.1;
-		if (this.enemySpawnCounter.getElapsedTime() > spawnDelay && this.enemyPoss.length < 40)
+		if (enemySpawnCounter.getElapsedTime() > spawnDelay && enemyPoss.length < 40)
 		{
-			this.enemySpawnCounter.restart();
+			enemySpawnCounter.restart();
 			const r = random01() * pi * 2.0;
-			this.enemyPoss.push(new vec2(Math.sin(r), Math.cos(r)).mult(0.75).plus(new vec2(0.5, 0.5)));
+			enemyPoss.push(new vec2(Math.sin(r), Math.cos(r)).mult(0.75).plus(new vec2(0.5, 0.5)));
 			const rx = (random01() - 0.5) * 0.1;
 			const ry = (random01() - 0.5) * 0.1;
-			this.enemyBlobs.push(this.enemyPoss[this.enemyPoss.length-1].plus(new vec2(rx, ry)));
+			enemyBlobs.push(enemyPoss[enemyPoss.length-1].plus(new vec2(rx, ry)));
 		}
 		
-		const enemySpeed = 1.0 + this.score / 10000.0;
+		const enemySpeed = 1.0 + score / 10000.0;
 
-		for (let i = 0; i < this.enemyPoss.length; ++i)
+		for (let i = 0; i < enemyPoss.length; ++i)
 		{
-			let dir = this.playerPos.minus(this.enemyBlobs[i]);
+			let dir = playerPos.minus(enemyBlobs[i]);
 			dir = dir.div(max(0.001, length(dir)));
 			dir = dir.mult(0.001 * 60.0 * dt * enemySpeed);
 
-			this.enemyPoss[i].inc(dir);
-			this.enemyBlobs[i].inc(dir);
+			enemyPoss[i].inc(dir);
+			enemyBlobs[i].inc(dir);
 
-			if (length(this.playerPos.minus(this.enemyBlobs[i])) < enemyDamageRadius)
+			if (length(playerPos.minus(enemyBlobs[i])) < enemyDamageRadius)
 			{
 				playerBeingDamaged = true;
-				if (this.playerShield > 0)
+				if (playerShield > 0)
 				{
-					this.playerShield -= dt / shieldDamageDuration;
+					playerShield -= dt / shieldDamageDuration;
 				}
 
-				if (this.playerShield <= 0)
+				if (playerShield <= 0)
 				{
-					this.playerShield = 0;
-					this.playerHealth -= dt / healthDamageDuration;
+					playerShield = 0;
+					playerHealth -= dt / healthDamageDuration;
 				}
 			}
 		}
 
-		if (this.playerPos.x < 0 || this.playerPos.y < 0 || this.playerPos.x > 1 || this.playerPos.y > 1)
+		if (playerPos.x < 0 || playerPos.y < 0 || playerPos.x > 1 || playerPos.y > 1)
 		{
 			// Player out of bounds
 			playerBeingDamaged = true;
-			if (this.playerShield > 0)
+			if (playerShield > 0)
 			{
-				this.playerShield -= dt / shieldDamageDuration;
+				playerShield -= dt / shieldDamageDuration;
 			}
 
-			if (this.playerShield <= 0)
+			if (playerShield <= 0)
 			{
-				this.playerShield = 0;
-				this.playerHealth -= dt / healthDamageDuration;
+				playerShield = 0;
+				playerHealth -= dt / healthDamageDuration;
 			}
 		}
 
 
-		if (!playerBeingDamaged && this.playerShield >= 1 && this.playerHealth < 1)
+		if (!playerBeingDamaged && playerShield >= 1 && playerHealth < 1)
 		{
-			this.playerHealth = min(1.0, this.playerHealth + dt / healthRegenDuration);
+			playerHealth = min(1.0, playerHealth + dt / healthRegenDuration);
 		}
 
-		if (!playerBeingDamaged && this.playerShield < 1)
+		if (!playerBeingDamaged && playerShield < 1)
 		{
-			this.playerShield = min(1.0, this.playerShield + dt / shieldRecoveryDuration);
+			playerShield = min(1.0, playerShield + dt / shieldRecoveryDuration);
 		}
 
 		const lazerCooldown = 0.5;
@@ -942,37 +942,37 @@ class Map {
 		{
 			const grenadeFlightSpeed = 0.01;
 
-			const grenadeDirection = aimPos.minus(this.playerPos);
-			this.grenadePoss.push(new vec2(this.playerPos.x, this.playerPos.y));
-			this.grenadeFacings.push(grenadeDirection.div(length(grenadeDirection) / grenadeFlightSpeed));
-			this.grenadeClocks.push(new Clock());
+			const grenadeDirection = aimPos.minus(playerPos);
+			grenadePoss.push(new vec2(playerPos.x, playerPos.y));
+			grenadeFacings.push(grenadeDirection.div(length(grenadeDirection) / grenadeFlightSpeed));
+			grenadeClocks.push(new Clock());
 		}
 
-		if (this.lazerClock.getElapsedTime() > this.currentLazerCooldownCurrent)
+		if (lazerClock.getElapsedTime() > currentLazerCooldownCurrent)
 		{
 			if (hasFocus() && mouseButton2)
 			{
-				this.lazerClock.restart();
+				lazerClock.restart();
 
-				const lazerDirection = this.playerPos.minus(aimPos);
-				this.lazerStart = this.playerPos;
-				this.lazerEnd = this.playerPos.plus(lazerDirection.mult(length(lazerDirection)).mult(lazerLength));
+				const lazerDirection = playerPos.minus(aimPos);
+				lazerStart = playerPos;
+				lazerEnd = playerPos.plus(lazerDirection.mult(length(lazerDirection)).mult(lazerLength));
 
 				let hitCount = 0;
 				
-				for (let i = 0; i < this.enemyPoss.length; ++i)
+				for (let i = 0; i < enemyPoss.length; ++i)
 				{
-					const dist = distanceFromLine(this.lazerStart, this.lazerEnd, this.enemyPoss[i]);
+					const dist = distanceFromLine(lazerStart, lazerEnd, enemyPoss[i]);
 					if (dist < lazerWidth)
 					{
-						this.enemyDeath.push(this.enemyBlobs[i].mult(1));
-						this.enemyDeathClock.push(new Clock());
+						enemyDeath.push(enemyBlobs[i].mult(1));
+						enemyDeathClock.push(new Clock());
 
-						this.splosionPoss.push(this.enemyPoss[i].mult(1));
-						this.splosionClocks.push(new Clock());
+						splosionPoss.push(enemyPoss[i].mult(1));
+						splosionClocks.push(new Clock());
 
-						this.enemyPoss.splice(i, 1);
-						this.enemyBlobs.splice(i, 1);
+						enemyPoss.splice(i, 1);
+						enemyBlobs.splice(i, 1);
 						--i;
 
 						hitCount += 1;
@@ -981,95 +981,95 @@ class Map {
 
 				if (hitCount == 0)
 				{
-					this.combo = 0;
-					this.currentLazerCooldownCurrent = lazerMissedCooldown;
+					combo = 0;
+					currentLazerCooldownCurrent = lazerMissedCooldown;
 				}
 				else
 				{
-					this.score += this.combo * hitCount;
-					this.combo += hitCount;
-					this.currentLazerCooldownCurrent = lazerCooldown;
+					score += combo * hitCount;
+					combo += hitCount;
+					currentLazerCooldownCurrent = lazerCooldown;
 				}
 			}
 		}
 
 		const enemyDeathProgress = [];
 		const enemyDeathDuration = 1.0;
-		for (let i = 0; i < this.enemyDeath.length; ++i)
+		for (let i = 0; i < enemyDeath.length; ++i)
 		{
-			if (this.enemyDeathClock[i].getElapsedTime() > enemyDeathDuration)
+			if (enemyDeathClock[i].getElapsedTime() > enemyDeathDuration)
 			{
-				this.enemyDeath.splice(i, 1);
-				this.enemyDeathClock.splice(i, 1);
+				enemyDeath.splice(i, 1);
+				enemyDeathClock.splice(i, 1);
 				--i;
 				continue;
 			}
 			
-			enemyDeathProgress.push(this.enemyDeathClock[i].getElapsedTime() / enemyDeathDuration);
+			enemyDeathProgress.push(enemyDeathClock[i].getElapsedTime() / enemyDeathDuration);
 		}
 		
 		
 		const grenadeFlightDuration = 0.3;
-		for (let i = 0; i < this.grenadePoss.length; ++i)
+		for (let i = 0; i < grenadePoss.length; ++i)
 		{
-			if (this.grenadeClocks[i].getElapsedTime() > grenadeFlightDuration)
+			if (grenadeClocks[i].getElapsedTime() > grenadeFlightDuration)
 			{
-				this.splosionPoss.push(this.grenadePoss[i]);
-				this.splosionClocks.push(new Clock());
+				splosionPoss.push(grenadePoss[i]);
+				splosionClocks.push(new Clock());
 
-				this.grenadePoss.splice(i, 1);
-				this.grenadeFacings.splice(i, 1);
-				this.grenadeClocks.splice(i, 1);
+				grenadePoss.splice(i, 1);
+				grenadeFacings.splice(i, 1);
+				grenadeClocks.splice(i, 1);
 				--i;
 
 				continue;
 			}
 
-			this.grenadePoss[i] = this.grenadePoss[i].plus(this.grenadeFacings[i].mult(dt * 60.0));
+			grenadePoss[i] = grenadePoss[i].plus(grenadeFacings[i].mult(dt * 60.0));
 		}
 		
 		const splosionTimes = [];
 		const splosionDuration = 4.0;
-		for (let i = 0; i < this.splosionPoss.length; ++i)
+		for (let i = 0; i < splosionPoss.length; ++i)
 		{
-			if (this.splosionClocks[i].getElapsedTime() > splosionDuration)
+			if (splosionClocks[i].getElapsedTime() > splosionDuration)
 			{
-				this.splosionPoss.splice(i, 1);
-				this.splosionClocks.splice(i, 1);
+				splosionPoss.splice(i, 1);
+				splosionClocks.splice(i, 1);
 				--i;
 				continue;
 			}
 
-			splosionTimes.push(this.splosionClocks[i].getElapsedTime() / splosionDuration);
+			splosionTimes.push(splosionClocks[i].getElapsedTime() / splosionDuration);
 		}
 		
-		setUniformVec2("playerPos", this.playerPos);
+		setUniformVec2("playerPos", playerPos);
 		setUniformVec2("aimDirection", aimPos);
 
-		setUniformFloat("playerHealth", this.playerHealth);
-		setUniformFloat("playerShield", this.playerShield);
+		setUniformFloat("playerHealth", playerHealth);
+		setUniformFloat("playerShield", playerShield);
 		setUniformBool("playerBeingDamaged", playerBeingDamaged);
 
-		const lazerProgress = min(1, this.lazerClock.getElapsedTime() / lazerDuration);
-		const lazerCooldownProgress = this.lazerClock.getElapsedTime() / this.currentLazerCooldownCurrent;
+		const lazerProgress = min(1, lazerClock.getElapsedTime() / lazerDuration);
+		const lazerCooldownProgress = lazerClock.getElapsedTime() / currentLazerCooldownCurrent;
 		{
 			setUniformFloat("lazer_cooldown", lazerCooldownProgress);
 			setUniformFloat("lazer_progress", max(0, lazerProgress));
-			setUniformVec2("lazer_start", this.lazerStart);
-			setUniformVec2("lazer_end", this.lazerEnd);
+			setUniformVec2("lazer_start", lazerStart);
+			setUniformVec2("lazer_end", lazerEnd);
 		}
 
-		setUniformInt("grenades_count", this.grenadePoss.length);
-		setUniformArrayVec2("grenades", this.grenadePoss, this.grenadePoss.length);
-		setUniformInt("splosions_count", this.splosionPoss.length);
-		setUniformArrayVec2("splosions", this.splosionPoss, this.splosionPoss.length);
+		setUniformInt("grenades_count", grenadePoss.length);
+		setUniformArrayVec2("grenades", grenadePoss, grenadePoss.length);
+		setUniformInt("splosions_count", splosionPoss.length);
+		setUniformArrayVec2("splosions", splosionPoss, splosionPoss.length);
 		setUniformArrayFloat("splosions_progress", splosionTimes, splosionTimes.length);
-		setUniformInt("enemies_count", this.enemyPoss.length);
-		setUniformArrayVec2("enemies", this.enemyPoss, this.enemyPoss.length);
-		setUniformInt("blobies_count", this.enemyBlobs.length);
-		setUniformArrayVec2("blobies", this.enemyBlobs, this.enemyBlobs.length);
-		setUniformInt("deaths_count", this.enemyDeath.length);
-		setUniformArrayVec2("deaths", this.enemyDeath, this.enemyDeath.length);
+		setUniformInt("enemies_count", enemyPoss.length);
+		setUniformArrayVec2("enemies", enemyPoss, enemyPoss.length);
+		setUniformInt("blobies_count", enemyBlobs.length);
+		setUniformArrayVec2("blobies", enemyBlobs, enemyBlobs.length);
+		setUniformInt("deaths_count", enemyDeath.length);
+		setUniformArrayVec2("deaths", enemyDeath, enemyDeath.length);
 		setUniformArrayFloat("deaths_progress", enemyDeathProgress, enemyDeathProgress.length);
 		
 		setUniformFloat("time", timeFromStart.getElapsedTime());
@@ -1080,8 +1080,8 @@ class Map {
 			return r;
 		};
 
-		scoreBlend = lerp(scoreBlend, this.score);
-		comboBlend = lerp(comboBlend, this.combo);
+		scoreBlend = lerp(scoreBlend, score);
+		comboBlend = lerp(comboBlend, combo);
 
 		setUniformFloat("score", scoreBlend);
 		setUniformFloat("combo", comboBlend);
@@ -1114,34 +1114,26 @@ class Map {
 		
 		frameTime.restart();
 		clearInput();
+		
+		if (playerHealth <= 0) {
+			resetGame();
+		}
 	}
+	
+	const resetGame = () => {
+		enemyDeath = enemyDeath.concat(enemyBlobs);
+		while (enemyDeathClock.length < enemyDeath.length) {
+			enemyDeathClock.push(new Clock());
+		}
+		
+		game = makeGame({ playerPos, enemyDeath, enemyDeathClock });
+		
+	}
+	
+	return { draw:draw };
 }
 
-let map = new Map();	
-const resetMap = () => {
-	const oldMap = map;
-	map = new Map();
-	
-	map.playerPos = oldMap.playerPos;
-	map.enemyDeath = oldMap.enemyDeath.concat(oldMap.enemyBlobs);
-	map.enemyDeathClock = oldMap.enemyDeathClock;
-	
-	while (map.enemyDeathClock.length < map.enemyDeath.length) {
-		map.enemyDeathClock.push(new Clock());
-	}
-}
-
-const game = () => {
-	
-	const time = timeFromStart.getElapsedTime();
-	setUniformVec2("screen", new vec2(canvas.width, canvas.height));
-	
-	map.draw();
-	
-	if (map.playerHealth <= 0) {
-		resetMap();
-	}
-};
+game = makeGame();
 
 let shown_fatal_errors = [];
 let fatal_output = null;
@@ -1312,7 +1304,7 @@ window.addEventListener("load", ev => {
 			frame_output.innerHTML = "";
 			
 			gl.useProgram(program);
-			game();
+			game.draw();
 			
 			// draw the buffer with VAO
 			// NOTE: binding vert and index buffer is not required
