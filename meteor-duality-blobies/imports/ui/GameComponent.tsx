@@ -58,8 +58,9 @@ function GameSetupComponent({startGame}: { startGame: (gameOptions: GameOptions)
             </InputGroup>
         </div>
         <Button onClick={() => startGame(settings)}>Start game</Button>
-        <Button onClick={() => startGame({...settings, alternativeDeck: true})} title={"Cats and Dinos separated"}>Start
-            game variant B</Button>
+        <Button onClick={() => startGame({...settings, alternativeDeck: true})} title={"Cats and Dinos separated"}>
+            Start game variant B
+        </Button>
     </div>;
 }
 
@@ -100,10 +101,10 @@ export const GameComponent: React.FC<GameProps> = (
 
     const powers = getPlayersPower(game);
     const scores = {p1: game.players.p1.score, p2: game.players.p2.score};
-    const gameEnded = (scores.p2 >= 20 || scores.p1 >= 20)
+    const gameEnded = (scores.p2 >= game.roundsToWin || scores.p1 >= game.roundsToWin)
     const gameEndedElement = gameEnded ?
         <div className={"col-4 d-flex flex-column justify-content-center align-items-center"}>
-            <h1 className={"text-center pulse"}>Winner is {scores.p2 >= 20 ? "P2" : "p1"}</h1>
+            <h1 className={"text-center pulse"}>Winner is {scores.p2 >= game.roundsToWin ? "P2" : "p1"}</h1>
         </div> : undefined;
     const gameSetupElement = (!gameStarted ? <GameSetupComponent startGame={startGame}/> : null);
 
@@ -147,7 +148,7 @@ export const GameComponent: React.FC<GameProps> = (
                 <div className={"col-4 d-flex flex-column p-0"}>
                     <h2 className={"text-center"}>Player 1</h2>
                     {game.players["p1"].score ?
-                        <h5 className={"text-center"}>Score {game.players["p1"].score} / 20</h5> : null}
+                        <h5 className={"text-center"}>Score {game.players["p1"].score} / {game.roundsToWin}</h5> : null}
                     <HandComponent cards={game.players["p1"].hand}
                                    game={game}
                                    player={"p1"}
@@ -161,7 +162,7 @@ export const GameComponent: React.FC<GameProps> = (
                 <div className={"col-4 d-flex flex-column p-0"}>
                     <h2 className={"text-center"}>Player 2</h2>
                     {game.players["p2"].score ?
-                        <h5 className={"text-center"}>Score {game.players["p2"].score} / 20</h5> : null}
+                        <h5 className={"text-center"}>Score {game.players["p2"].score} / {game.roundsToWin}</h5> : null}
                     <HandComponent cards={game.players["p2"].hand}
                                    game={game}
                                    player={"p2"}
