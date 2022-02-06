@@ -20,9 +20,9 @@ export const Deck: React.FC<DeckProps> = ({cardsInDeck,cardsInDiscard, cardsInHa
             <Popover.Header>{title}</Popover.Header>
             <Popover.Body className={"d-flex align-content-around flex-wrap justify-content-center"}>
             <h2 className={"text-center mt-2 mb-1"} style={{width:"100%"}}>Cards in deck and hand</h2>
-                {cardsInHandOrDeck.map((card, index) => <CardComponent key={index} card={card}/>)}
+                {cardsInHandOrDeck.map((card, index) => <CardComponent key={index} card={card} hidePower={card.effects[0]?.effectType === "Grow"}/>)}
             <h2 className={"text-center mt-4 mb-1"} style={{width:"100%"}}>Cards in discard</h2>
-                {cardsInDiscard.map((card, index) => <CardComponent key={index} card={card}/>)}
+                {cardsInDiscard.map((card, index) => <CardComponent key={index} card={card} hidePower={card.effects[0]?.effectType === "Grow"}/>)}
             </Popover.Body>
         </Popover>
     )

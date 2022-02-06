@@ -25,6 +25,11 @@ const highLights = {
     p2: [1, 0, 2, 3, 9],
 }
 
+const turnByStarter = {
+    p1: ["p1", "p2", "p2", "p1"],
+    p2: ["p2", "p1", "p1", "p2"],
+}
+
 
 export const PlayedCards: React.FC<PlayedCardsProps> = ({playedCards, startPlayer, p1Power, p2Power}) => {
     const sides = getPlayedColors(playedCards);
@@ -78,23 +83,27 @@ export const PlayedCards: React.FC<PlayedCardsProps> = ({playedCards, startPlaye
                     card={cards[0]}
                     faceDown={cards[0].name === "HIDDEN"}
                     highLight={0 === highLightIndex}
+                    message={0 === highLightIndex ? turnByStarter[startPlayer][0] + " turn to play" : undefined}
                 />
                 <div className={"splitter"}></div>
                 <CardComponent
                     card={cards[1]}
                     faceDown={cards[1].name === "HIDDEN"}
                     highLight={1 === highLightIndex}
+                    message={1 === highLightIndex ? turnByStarter[startPlayer][1] + " turn to play" : undefined}
                 />
                 <CardComponent
                     card={cards[2]}
                     faceDown={cards[2].name === "HIDDEN"}
                     highLight={2 === highLightIndex}
+                    message={2 === highLightIndex ? turnByStarter[startPlayer][2] + " turn to play" : undefined}
                 />
                 <div className={"splitter"}></div>
                 <CardComponent
                     card={cards[3]}
                     faceDown={cards[3].name === "HIDDEN"}
                     highLight={3 === highLightIndex}
+                    message={3 === highLightIndex ? turnByStarter[startPlayer][3] + " turn to play" : undefined}
                 />
             </div>
             <label htmlFor="customRange1" className="form-label m-0 ps-4 pe-4"><i>Keep the balance!</i></label>

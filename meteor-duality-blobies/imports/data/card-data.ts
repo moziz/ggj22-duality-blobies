@@ -1,11 +1,11 @@
-import {Mongo} from "meteor/mongo";
 import {cloneDeep} from "lodash";
+import {RoundEffectName} from "/imports/data/game";
 
 export type Side = "Dino" | "Cat" | "Both";
 
 type EffectTriggerPhase = "None" | "PlayFirst" | "Play" | "Resolve" | "Discard" | "StartOfDrawPhase";
 
-type EffectType = "None" | "Draw" | "Swap" | "Destroy" | "Grow";
+type EffectType = "None" | "Draw" | "Swap" | "Destroy" | "Grow" | "Eat" | "AddRoundEffect";
 
 type EffectArgKey = string;
 
@@ -48,54 +48,198 @@ export const getBadCard: (side: Side) => Card = (side) => {
         visuals: 0,
     }
 }
+export const getErrorCard: (props?: Partial<Card>) => Card = (props = {}) => {
+    const effect: ComboEffect = {
+        effectType: "None",
+        text: "For the balance",
+        effectArgs: {},
+        trigger: "None",
+    };
+    const errorCard: Card = {
+        name: "ERROR CAT",
+        side: "Cat",
+        power: -99,
+        effects: [effect],
+        visuals: 0,
+    }
+    return {...errorCard, ...props}
+}
 
 export const startDeck: Card[] = [
     {name: "Dino", power: 1, side: "Dino", effects: [], visuals: 1},
     {name: "Dino", power: 2, side: "Dino", effects: [], visuals: 2},
     {name: "Dino", power: 3, side: "Dino", effects: [], visuals: 3},
-    {name: "Dino", power: 4, side: "Dino", effects: [], visuals: 4},
-    {name: "Dino", power: 5, side: "Dino", effects: [], visuals: 5},
+    {name: "Dino", power: 2, side: "Dino", effects: [], visuals: 4},
+    {name: "Dino", power: 1, side: "Dino", effects: [], visuals: 5},
 
     {name: "Cat", power: 1, side: "Cat", effects: [], visuals: 1},
     {name: "Cat", power: 2, side: "Cat", effects: [], visuals: 2},
     {name: "Cat", power: 3, side: "Cat", effects: [], visuals: 3},
-    {name: "Cat", power: 4, side: "Cat", effects: [], visuals: 4},
-    {name: "Cat", power: 5, side: "Cat", effects: [], visuals: 5},
+    {name: "Cat", power: 2, side: "Cat", effects: [], visuals: 4},
+    {name: "Cat", power: 1, side: "Cat", effects: [], visuals: 5},
 ]
 
+export const startDeckSplitDino: Card[] = [
+    {name: "Dino", power: 1, side: "Dino", effects: [], visuals: 1},
+    {name: "Dino", power: 2, side: "Dino", effects: [], visuals: 2},
+    {name: "Dino", power: 3, side: "Dino", effects: [], visuals: 3},
+    {name: "Dino", power: 2, side: "Dino", effects: [], visuals: 4},
+    {name: "Dino", power: 1, side: "Dino", effects: [], visuals: 5},
+    {name: "Dino", power: 3, side: "Dino", effects: [], visuals: 3},
+    {name: "Dino", power: 2, side: "Dino", effects: [], visuals: 4},
+    {name: "Dino", power: 1, side: "Dino", effects: [], visuals: 5},
+]
+
+export const startDeckSplitCat: Card[] = [
+    {name: "Cat", power: 1, side: "Cat", effects: [], visuals: 1},
+    {name: "Cat", power: 2, side: "Cat", effects: [], visuals: 2},
+    {name: "Cat", power: 3, side: "Cat", effects: [], visuals: 3},
+    {name: "Cat", power: 2, side: "Cat", effects: [], visuals: 4},
+    {name: "Cat", power: 1, side: "Cat", effects: [], visuals: 5},
+    {name: "Cat", power: 3, side: "Cat", effects: [], visuals: 3},
+    {name: "Cat", power: 2, side: "Cat", effects: [], visuals: 4},
+    {name: "Cat", power: 1, side: "Cat", effects: [], visuals: 5},
+]
+
+const triggerHelpText: Record<EffectTriggerPhase, string> = {
+    Discard: "When the card is discarded",
+    Play:"When the card is played",
+    StartOfDrawPhase: "At the start of round",
+    None: "Never",
+    PlayFirst: "If played as first card of the round",
+    Resolve: "When power is counted",
+}
+
+const roundEffectHelpText: Record<RoundEffectName, string> = {
+    None: "Nothing hapens",
+    Mute: "Disable cards' special effects"
+}
+
+const effectTypeHelpText: Record<EffectType, (effect:ComboEffect)=>string> = {
+    None: () => "Does nothing",
+    Draw: () => "Draw new cards to hand",
+    AddRoundEffect: (effect => "Add " + effect.effectArgs["effectName"] + ":" + roundEffectHelpText[effect.effectArgs["effectName"] as RoundEffectName]),
+    Destroy: () => "Destroy: remove cards from the game",
+    Eat: () => "Eat: discards some cards, +1 power each",
+    Grow: ()=> "Change card's power",
+    Swap: () => "Change positions of played cards",
+}
+
+export const getEffectHelp = (effect:ComboEffect) => {
+    return triggerHelpText[effect.trigger] + ": " + effectTypeHelpText[effect.effectType](effect);
+}
+
 export const effects: ComboEffectCardFactoryData[] = [
-    {cardName: "Draw 1", text: "Play: Draw 1", trigger: "Play", effectType: "Draw", effectArgs: {"amount": 1}},
-    {cardName: "Draw 2", text: "Play: Draw 2", trigger: "Play", effectType: "Draw", effectArgs: {"amount": 2}},
     {cardName: "Draw 3", text: "Play: Draw 3", trigger: "Play", effectType: "Draw", effectArgs: {"amount": 3}},
+    {
+        cardName: "Draw 4",
+        text: "Play: Draw 4",
+        trigger: "Play",
+        effectType: "Draw",
+        effectArgs: {"amount": 4},
+        minPower: 1,
+        maxPower: 2,
+    },
     {cardName: "Swap C", text: "Play: Swap Cats", trigger: "Play", effectType: "Swap", effectArgs: {"target": "Cat"}},
     {cardName: "Swap D", text: "Play: Swap Dinos", trigger: "Play", effectType: "Swap", effectArgs: {"target": "Dino"}},
-    {cardName: "Grow", text: "In hand: grow stronger", trigger: "StartOfDrawPhase", effectType: "Grow", effectArgs: {"amount": 1}, minPower:1, maxPower:1},
-    {cardName: "Huge", text: "Play: lose 2 power", trigger: "Play", effectType: "Grow", effectArgs: {"amount": -2}, minPower: 7, maxPower: 12},
-    {cardName: "Eat", text: "Play: Eat all", trigger: "Play", effectType: "Destroy", effectArgs: {"target": "all"}},
+    {
+        cardName: "Grow fast",
+        text: "In hand: +2 power",
+        trigger: "StartOfDrawPhase",
+        effectType: "Grow",
+        effectArgs: {"amount": 2},
+        minPower: 1,
+        maxPower: 2,
+    },
+    {
+        cardName: "Grow",
+        text: "In hand: +1 power",
+        trigger: "StartOfDrawPhase",
+        effectType: "Grow",
+        effectArgs: {"amount": 1},
+    },
+    {
+        cardName: "Huge",
+        text: "Play: lose 4 power",
+        trigger: "Play",
+        effectType: "Grow",
+        effectArgs: {"amount": -4},
+        minPower: 15,
+        maxPower: 20,
+    },
+    {
+        cardName: "Eat",
+        text: "Play: Eat all",
+        trigger: "Play",
+        effectType: "Eat",
+        effectArgs: {"target": "all", "grow": true},
+        minPower: 0,
+        maxPower: 0,
+    },
+    {
+        cardName: "Dino eater",
+        text: "Play: Eat all dinos",
+        trigger: "Play",
+        effectType: "Eat",
+        effectArgs: {"target": "Dino", "grow": true},
+        minPower: 0,
+        maxPower: 0,
+    },
+    {
+        cardName: "Cat eater",
+        text: "Play: Eat all cats",
+        trigger: "Play",
+        effectType: "Eat",
+        effectArgs: {"target": "Cat", "grow": true},
+        minPower: 0,
+        maxPower: 0,
+    },
     {
         cardName: "Eat",
         text: "Play: Eat Smaller",
         trigger: "Play",
-        effectType: "Destroy",
-        effectArgs: {"target": "smaller"},
+        effectType: "Eat",
+        effectArgs: {"target": "smaller", "grow": true},
     },
     {
         cardName: "Eat",
         text: "Play: Eat Stronger",
         trigger: "Play",
-        effectType: "Destroy",
-        effectArgs: {"target": "bigger"},
+        effectType: "Eat",
+        effectArgs: {"target": "bigger", "grow": true},
+        minPower: 1,
+        maxPower: 1,
+    },
+    {
+        cardName: "Mute",
+        text: "Play: Mute round",
+        trigger: "Play",
+        effectType: "AddRoundEffect",
+        effectArgs: {"effectName": "Mute", "duration": 1},
     },
 ];
 
+const randomPower = (min: number, max: number) => {
+    const r = Math.random() * (max - min);
+    return Math.floor(min + r);
+}
 
-const getRandomCard: () => Card = () => {
+const getRandomCard: (excludeEffectType: string[], excludeVisuals: number[]) => Card = (excludeEffectType, excludeVisuals) => {
     const side: Side = Math.random() > 0.5 ? "Dino" : "Cat";
-    const effect = cloneDeep(effects[Math.floor(Math.random() * effects.length)]);
-    const power: number = (effect.minPower ?? 1) + Math.floor(Math.random() * ((effect.maxPower ?? 5) - (effect.minPower ?? 1)));
+    let effect: ComboEffectCardFactoryData;
+    let counter = 0;
+    do {
+        effect = cloneDeep(effects[Math.floor(Math.random() * effects.length)]);
+    } while (excludeEffectType.includes(effect.effectType) && counter++ < 100);
+    let visuals: number;
+    counter = 0;
+    do {
+        visuals = 5 + Math.floor(Math.random() * (9 - 0.01));
+    } while (excludeVisuals.includes(visuals) && counter++ < 100)
+
+    const power: number = randomPower(effect.minPower ?? 3, effect.maxPower ?? 8);
     delete effect.maxPower;
     delete effect.minPower;
-    const visuals = 5 + Math.floor(Math.random() * (9 - 0.01));
     return {
         name: effect.cardName,
         side,
@@ -106,9 +250,9 @@ const getRandomCard: () => Card = () => {
 }
 
 export const getShopPool = (amount: number) => {
-    const deck = []
+    const deck: Card[] = []
     for (let i = 0; i < amount; ++i) {
-        deck.push(getRandomCard());
+        deck.push(getRandomCard(deck.map(c => c.effects[0].effectType), deck.map(c => c.visuals)));
     }
     return deck;
 }
@@ -156,6 +300,4 @@ export const imageNames = {
         "dino13.jpg",
     ],
 }
-
-export const CardsCollection = new Mongo.Collection<Card>('cards');
 

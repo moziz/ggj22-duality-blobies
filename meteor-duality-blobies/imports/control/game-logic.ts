@@ -1,6 +1,6 @@
-import {Card, startDeck, Side, getShopPool, getBadCard} from "/imports/data/card-data";
+import {Card, startDeck, Side, getShopPool, getBadCard, getErrorCard} from "/imports/data/card-data";
 import {cloneDeep, concat, findIndex} from "lodash";
-import {Game, GamePlayerData} from "/imports/data/game";
+import {Game, GamePlayerData, RoundEffectName} from "/imports/data/game";
 import {PlayerID} from "/imports/data/player";
 import {AddGameMessage} from "/imports/data/chat";
 
@@ -36,10 +36,13 @@ export const startNewGame: () => Game = () => {
         },
         roundNumber: 1,
         roundScore: 1,
+        roundEffects: [],
         roundStarter: Math.random() > 0.5 ? "p1" : "p2",
         roundCards: [],
         message: "",
         latestWinner: Math.random() > 0.5 ? "p1" : "p2",
+        version: 111,
+        roundsToWin: 12,
     }
 
     return newGame;
@@ -70,10 +73,10 @@ const drawCard: (game: Game, player: PlayerID) => Card | undefined = (game: Game
 export const drawPhase = (game: Game) => {
     for (let player of ["p1", "p2"] as PlayerID[]) {
         // check draw phase effects
-        for(const c of game.players[player].hand){
+        for (const c of game.players[player].hand) {
             for (const effect of c.effects) {
-                if(effect.trigger==="StartOfDrawPhase"){
-                    if(effect.effectType === "Grow"){
+                if (effect.trigger === "StartOfDrawPhase") {
+                    if (effect.effectType === "Grow") {
                         c.power += effect.effectArgs["amount"];
                     }
                 }
@@ -143,6 +146,12 @@ const nextRound = (game: Game) => {
 
     game.roundCards = [];
     game.roundStarter = game.latestWinner;
+    // check round effects
+    game.roundEffects = game.roundEffects.map(effect => ({
+        effect: effect.effect,
+        duration: effect.duration - 1,
+    })).filter(effect => effect.duration > 0)
+
     drawPhase(game);
 }
 
@@ -216,6 +225,21 @@ export const getCannotReason: (game: Game, card: Card, player: PlayerID) => stri
     return undefined;
 }
 
+const discardFromPlayedCards = (game: Game, position: number, filter: (c: Card) => boolean = (c => !!c)) => {
+    if (!game.roundCards[position]) {
+        return false;
+    }
+    if (!filter(game.roundCards[position] ?? getErrorCard())) {
+        return false;
+    }
+    if (position === 0) game.players[game.roundStarter].discard.push(game.roundCards[0] ?? getErrorCard());
+    if (position === 1) game.players[getOtherPlayer(game.roundStarter)].discard.push(game.roundCards[1] ?? getErrorCard());
+    if (position === 2) game.players[getOtherPlayer(game.roundStarter)].discard.push(game.roundCards[2] ?? getErrorCard());
+    if (position === 3) game.players[game.roundStarter].discard.push(game.roundCards[3] ?? getErrorCard());
+    game.roundCards[position] = undefined;
+    return true;
+}
+
 
 export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boolean = (game, card, player) => {
     if (!canPlayCard(game, card, player)) {
@@ -233,8 +257,21 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
 
     // special effects
     for (const effect of card.effects) {
+        if (game.roundEffects.find(value => value.effect === "Mute")) {
+            continue;
+        }
         if (effect.trigger !== "Play") {
             continue;
+        }
+        if (effect.effectType === "AddRoundEffect") {
+            const duration: number = effect.effectArgs["duration"];
+            const roundEffectName: RoundEffectName = effect.effectArgs["effectName"];
+            const currentEffect = game.roundEffects.find(value => value.effect === roundEffectName);
+            if (currentEffect) {
+                currentEffect.duration += duration;
+            } else {
+                game.roundEffects.push({effect: roundEffectName, duration})
+            }
         }
         if (effect.effectType === "Draw") {
             for (let i = 0; i < effect.effectArgs["amount"]; ++i) {
@@ -265,6 +302,22 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
                 AddGameMessage(game.name, "" + player + " destroys them all!");
                 game.roundCards = [];
             }
+            if (target === "Cat") {
+                AddGameMessage(game.name, "" + player + " destroys cats!");
+                for (let i = 0; i < game.roundCards.length; ++i) {
+                    if ((game.roundCards[i]?.side ?? "Both") === "Cat") {
+                        game.roundCards[i] = undefined;
+                    }
+                }
+            }
+            if (target === "Dino") {
+                AddGameMessage(game.name, "" + player + " destroys dinos!");
+                for (let i = 0; i < game.roundCards.length; ++i) {
+                    if ((game.roundCards[i]?.side ?? "Both") === "Dino") {
+                        game.roundCards[i] = undefined;
+                    }
+                }
+            }
             if (target === "smaller") {
                 for (let i = 0; i < game.roundCards.length; ++i) {
                     if ((game.roundCards[i]?.power ?? 0) < power) {
@@ -282,7 +335,60 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
                 }
             }
         }
-        if(effect.effectType === "Grow"){
+        if (effect.effectType === "Eat") {
+            const target: string = effect.effectArgs["target"];
+            const grow: boolean = effect.effectArgs["grow"];
+            const power = card.power;
+            let growPowerAfterEat = 0;
+
+            if (target === "all") {
+                AddGameMessage(game.name, "" + player + " eats them all!");
+                for (let i = 0; i < game.roundCards.length; ++i) {
+                    let eat = discardFromPlayedCards(game, i);
+                    if (eat && grow) {
+                        ++growPowerAfterEat;
+                    }
+                }
+            }
+            if (target === "Cat") {
+                AddGameMessage(game.name, "" + player + " eats cats!");
+                for (let i = 0; i < game.roundCards.length; ++i) {
+                    let eat = discardFromPlayedCards(game, i, c => c.side === "Cat");
+                    if (eat && grow) {
+                        ++growPowerAfterEat;
+                    }
+                }
+            }
+            if (target === "Dino") {
+                AddGameMessage(game.name, "" + player + " eats dinos!");
+                for (let i = 0; i < game.roundCards.length; ++i) {
+                    let eat = discardFromPlayedCards(game, i, c => c.side === "Dino");
+                    if (eat && grow) {
+                        ++growPowerAfterEat;
+                    }
+                }
+            }
+            if (target === "smaller") {
+                AddGameMessage(game.name, "" + player + " eats weaker!");
+                for (let i = 0; i < game.roundCards.length; ++i) {
+                    let eat = discardFromPlayedCards(game, i, c => c.power < power);
+                    if (eat && grow) {
+                        ++growPowerAfterEat;
+                    }
+                }
+            }
+            if (target === "bigger") {
+                AddGameMessage(game.name, "" + player + " eats stronger!");
+                for (let i = 0; i < game.roundCards.length; ++i) {
+                    let eat = discardFromPlayedCards(game, i, c => c.power > power);
+                    if (eat && grow) {
+                        ++growPowerAfterEat;
+                    }
+                }
+            }
+            card.power += growPowerAfterEat;
+        }
+        if (effect.effectType === "Grow") {
             card.power += effect.effectArgs["amount"];
         }
     }

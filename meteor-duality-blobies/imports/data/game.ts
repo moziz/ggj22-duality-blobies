@@ -2,12 +2,15 @@ import {Mongo} from "meteor/mongo";
 import {PlayerID} from "/imports/data/player";
 import {Card} from "/imports/data/card-data";
 
+export type RoundEffectName = "None" | "Mute";
 
-// round states:
-// Draw to 5 cards
-// Get 3 cards to shop
+export interface RoundEffect {
+    effect: RoundEffectName,
+    duration: number,
+}
 
 export interface Game {
+    _id?: string,
     name: string,
     shop: {
         offers: Card[],
@@ -18,13 +21,16 @@ export interface Game {
     roundNumber: number,
     roundScore: number,
     roundStarter: PlayerID,
-    roundCards: (Card|undefined)[],
+    roundEffects: RoundEffect[],
+    roundCards: (Card | undefined)[],
     players: {
         "p1": GamePlayerData,
         "p2": GamePlayerData,
     },
     message: string,
     latestWinner: PlayerID,
+    version: number,
+    roundsToWin: number,
 }
 
 export interface GamePlayerData {
@@ -34,6 +40,13 @@ export interface GamePlayerData {
     deck: Card[],
     discard: Card[],
     score: number,
+}
+
+export interface GameOptions{
+    p1Name:string,
+    p2Name:string,
+    alternativeDeck:boolean,
+    rounds:number,
 }
 
 export const GameCollection = new Mongo.Collection<Game>('games');
