@@ -44,7 +44,7 @@ export const Shop: React.FC<ShopProps> = ({game, onPurchase, clientPlayer}) => {
                         placement={"bottom"}
                         overlay={shopContent}
                         rootClose>
-            <Button>SHOP</Button>
+            <Button className={"mt-4"}>SHOP</Button>
         </OverlayTrigger>
     );
 }

@@ -47,8 +47,8 @@ export const GameView: React.FC = () => {
     const startGame = React.useCallback((gameOptions: GameOptions, tmpGame: Game) => {
         const game = cloneDeep(tmpGame);
         if (gameOptions.alternativeDeck) {
-            game.players.p1.discard = cloneDeep(startDeck);
-            game.players.p2.discard = cloneDeep(startDeck);
+            game.players.p1.discard = cloneDeep(startDeck(10));
+            game.players.p2.discard = cloneDeep(startDeck(30));
         } else {
             game.players.p1.discard = cloneDeep(startDeckSplitDino);
             game.players.p2.discard = cloneDeep(startDeckSplitCat);
@@ -94,7 +94,7 @@ export const GameView: React.FC = () => {
                     <div className={"row d-flex justify-content-between"}>
                         <p className={"text-center mb-0"}>
                             <small>
-                                v1.1.4
+                                v1.1.5
                             </small>
                         </p>
                         <a href={"https://globalgamejam.org/2022/games/cattosaurus-4"} className={"text-center"}>

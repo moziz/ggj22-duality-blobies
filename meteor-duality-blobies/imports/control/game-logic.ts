@@ -5,12 +5,12 @@ import {PlayerID} from "/imports/data/player";
 import {AddGameMessage} from "/imports/data/chat";
 
 
-const getDefaultPlayer: (player: PlayerID) => GamePlayerData = (player) => {
+const getDefaultPlayer: (player: PlayerID, idBase: number) => GamePlayerData = (player, idBase) => {
     return {
         name: player,
         deck: [],
         id: player,
-        discard: cloneDeep(startDeck),
+        discard: cloneDeep(startDeck(idBase)),
         hand: [],
         score: 0,
     }
@@ -25,11 +25,11 @@ export const startNewGame: () => Game = () => {
     const newGame: Game = {
         name: "new game",
         players: {
-            p1: getDefaultPlayer("p1"),
-            p2: getDefaultPlayer("p2"),
+            p1: getDefaultPlayer("p1",10),
+            p2: getDefaultPlayer("p2", 30),
         },
         shop: {
-            offers: cloneDeep(getShopPool(3)),
+            offers: cloneDeep(getShopPool(3, 100)),
             active: false,
             firstGotOne: false,
             secondGotOne: false,
@@ -134,7 +134,7 @@ export const getShopTurn = (game: Game) => {
 
 
 const nextRound = (game: Game) => {
-    game.shop.offers = cloneDeep(getShopPool(3));
+    game.shop.offers = cloneDeep(getShopPool(3, getNewCardId(game)));
     game.shop.firstGotOne = false;
     game.shop.secondGotOne = false;
     game.roundNumber += 1;
@@ -406,13 +406,13 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
         const cards = getPlayedColors(game.roundCards);
         const cardsInHand = getPlayedColors(game.players[activeP].hand);
         if (cards.Cat > 1 && cardsInHand.Dino === 0) {
-            game.players[activeP].hand.push(getBadCard("Dino"));
+            game.players[activeP].hand.push(getBadCard("Dino", getNewCardId(game)));
         }
         if (cards.Dino > 1 && cardsInHand.Cat === 0) {
-            game.players[activeP].hand.push(getBadCard("Cat"));
+            game.players[activeP].hand.push(getBadCard("Cat", getNewCardId(game)));
         }
         if (game.players[activeP].hand.length === 0) {
-            game.players[activeP].hand.push(getBadCard(Math.random() > 0.5 ? "Cat" : "Dino"));
+            game.players[activeP].hand.push(getBadCard(Math.random() > 0.5 ? "Cat" : "Dino", getNewCardId(game)));
         }
     }
     return true;
@@ -431,4 +431,21 @@ export function shuffle(array: Array<any>) {
             array[randomIndex], array[currentIndex]];
     }
     return array;
+}
+
+export function getNewCardId(game: Game): number {
+    return Math.max(
+        maxIdInCards(game.roundCards),
+        maxIdInCards(game.shop.offers),
+        maxIdInCards(game.players.p2.discard),
+        maxIdInCards(game.players.p2.hand),
+        maxIdInCards(game.players.p2.deck),
+        maxIdInCards(game.players.p1.discard),
+        maxIdInCards(game.players.p1.hand),
+        maxIdInCards(game.players.p1.deck),
+    )
+}
+
+export function maxIdInCards(cs: (Card | undefined)[]): number {
+    return Math.max(...cs.map(value => value?.id ?? 0));
 }
