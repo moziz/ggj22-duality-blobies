@@ -1323,13 +1323,20 @@ window.addEventListener("load", ev => {
 			enable_errors = false;
 		};
 		
+		let frameTime = new Clock();
+		let avg = 160;
+		
 		// start render loop
-        (function loop() {
+        const loop = () => {
             requestAnimationFrame(() => {
                 render(program);
-				setTimeout(loop, 16.67);
+				avg = avg * 0.9 + frameTime.getElapsedTime() * 10000.0 * 0.1
+				//frame_log(avg);
+				frameTime.restart();
+				loop();
             });
-        })();
+        };
+		loop();
     }
 	
 }, false);</script></head><body></body></html>
