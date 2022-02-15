@@ -3,18 +3,20 @@ import {Card} from "/imports/data/card-data";
 import {PlayerID} from "/imports/data/player";
 import {CardComponent} from "/imports/ui/CardComponent";
 import {Button, OverlayTrigger, Popover} from "react-bootstrap";
+import {getShopTurn} from "/imports/control/game-logic";
+import {Game} from "/imports/data/game";
 
 interface ShopProps {
-    offers: Card[],
-    turn: PlayerID,
-    active: boolean,
     onPurchase: (c: Card, p: PlayerID) => void,
     clientPlayer?: PlayerID,
+    game: Game
 }
 
-export const Shop: React.FC<ShopProps> = ({offers, turn, active, onPurchase, clientPlayer}) => {
-
-    const infoLabel = active ? "Player " + turn + " should select a new card!"
+export const Shop: React.FC<ShopProps> = ({game, onPurchase, clientPlayer}) => {
+    const turn = getShopTurn(game);
+    const offers = game.shop.offers;
+    const active = game.shop.active;
+    const infoLabel = active ? "Player " + game.players[turn].name + " should select a new card!"
         : "Play 4 cards to finish the round first then the Loser of the round will buy first.";
 
     const onPlayerPurchase = useCallback((c: Card) => onPurchase(c, turn), [turn, onPurchase]);
@@ -29,7 +31,7 @@ export const Shop: React.FC<ShopProps> = ({offers, turn, active, onPurchase, cli
                     playCard={onPlayerPurchase}
                     canPlay={active && turn === clientPlayer}
                     cannotReason={"Not your turn to buy!"}
-                    playLabel={"Purchace"}
+                    playLabel={"Purchase"}
                 />)}
             </Popover.Body>
         </Popover>
@@ -42,7 +44,7 @@ export const Shop: React.FC<ShopProps> = ({offers, turn, active, onPurchase, cli
                         placement={"bottom"}
                         overlay={shopContent}
                         rootClose>
-            <Button>SHOP</Button>
+            <Button className={"mt-4"}>SHOP</Button>
         </OverlayTrigger>
     );
 }

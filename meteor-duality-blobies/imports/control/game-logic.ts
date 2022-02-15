@@ -5,12 +5,12 @@ import {PlayerID} from "/imports/data/player";
 import {AddGameMessage} from "/imports/data/chat";
 
 
-const getDefaultPlayer: (player: PlayerID) => GamePlayerData = (player) => {
+const getDefaultPlayer: (player: PlayerID, idBase: number) => GamePlayerData = (player, idBase) => {
     return {
         name: player,
         deck: [],
         id: player,
-        discard: cloneDeep(startDeck),
+        discard: cloneDeep(startDeck(idBase)),
         hand: [],
         score: 0,
     }
@@ -25,11 +25,11 @@ export const startNewGame: () => Game = () => {
     const newGame: Game = {
         name: "new game",
         players: {
-            p1: getDefaultPlayer("p1"),
-            p2: getDefaultPlayer("p2"),
+            p1: getDefaultPlayer("p1",10),
+            p2: getDefaultPlayer("p2", 30),
         },
         shop: {
-            offers: cloneDeep(getShopPool(3)),
+            offers: cloneDeep(getShopPool(3, 100)),
             active: false,
             firstGotOne: false,
             secondGotOne: false,
@@ -134,7 +134,7 @@ export const getShopTurn = (game: Game) => {
 
 
 const nextRound = (game: Game) => {
-    game.shop.offers = cloneDeep(getShopPool(3));
+    game.shop.offers = cloneDeep(getShopPool(3, getNewCardId(game)));
     game.shop.firstGotOne = false;
     game.shop.secondGotOne = false;
     game.roundNumber += 1;
@@ -167,7 +167,7 @@ export const roundScore = (game: Game) => {
     }
     const winner: PlayerID = powers.p1 > powers.p2 ? "p1" : "p2";
     game.latestWinner = winner;
-    game.message = "Player " + winner + " is winner of the round! Score +" + game.roundScore + ".";
+    game.message = "" + game.players[winner].name + " is winner of the round! Scoring " + game.roundScore + " points.";
     game.players[winner].score += game.roundScore;
     game.roundScore = 1;
     toShopPhase(game);
@@ -281,7 +281,7 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
                 }
                 game.players[player].hand.push(c);
             }
-            AddGameMessage(game.name, "" + player + " draws " + effect.effectArgs["amount"] + " cards!");
+            AddGameMessage(game.name, "" + game.players[player].name + " draws " + effect.effectArgs["amount"] + " cards!");
         }
         if (effect.effectType === "Swap") {
             const counts = getPlayedColors(game.roundCards);
@@ -299,11 +299,11 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
             const target = effect.effectArgs["target"];
             const power = card.power;
             if (target === "all") {
-                AddGameMessage(game.name, "" + player + " destroys them all!");
+                AddGameMessage(game.name, "" + game.players[player].name + " destroys them all!");
                 game.roundCards = [];
             }
             if (target === "Cat") {
-                AddGameMessage(game.name, "" + player + " destroys cats!");
+                AddGameMessage(game.name, "" + game.players[player].name + " destroys cats!");
                 for (let i = 0; i < game.roundCards.length; ++i) {
                     if ((game.roundCards[i]?.side ?? "Both") === "Cat") {
                         game.roundCards[i] = undefined;
@@ -311,7 +311,7 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
                 }
             }
             if (target === "Dino") {
-                AddGameMessage(game.name, "" + player + " destroys dinos!");
+                AddGameMessage(game.name, "" + game.players[player].name + " destroys dinos!");
                 for (let i = 0; i < game.roundCards.length; ++i) {
                     if ((game.roundCards[i]?.side ?? "Both") === "Dino") {
                         game.roundCards[i] = undefined;
@@ -321,7 +321,7 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
             if (target === "smaller") {
                 for (let i = 0; i < game.roundCards.length; ++i) {
                     if ((game.roundCards[i]?.power ?? 0) < power) {
-                        AddGameMessage(game.name, "" + player + " destroys " + game.roundCards[i]?.name + "!");
+                        AddGameMessage(game.name, "" + game.players[player].name + " destroys " + game.roundCards[i]?.name + "!");
                         game.roundCards[i] = undefined;
                     }
                 }
@@ -329,7 +329,7 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
             if (target === "bigger") {
                 for (let i = 0; i < game.roundCards.length; ++i) {
                     if ((game.roundCards[i]?.power ?? 0) > power) {
-                        AddGameMessage(game.name, "" + player + " destroys " + game.roundCards[i]?.name + "!");
+                        AddGameMessage(game.name, "" + game.players[player].name + " destroys " + game.roundCards[i]?.name + "!");
                         game.roundCards[i] = undefined;
                     }
                 }
@@ -342,7 +342,7 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
             let growPowerAfterEat = 0;
 
             if (target === "all") {
-                AddGameMessage(game.name, "" + player + " eats them all!");
+                AddGameMessage(game.name, "" + game.players[player].name + " eats them all!");
                 for (let i = 0; i < game.roundCards.length; ++i) {
                     let eat = discardFromPlayedCards(game, i);
                     if (eat && grow) {
@@ -351,7 +351,7 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
                 }
             }
             if (target === "Cat") {
-                AddGameMessage(game.name, "" + player + " eats cats!");
+                AddGameMessage(game.name, "" + game.players[player].name + " eats cats!");
                 for (let i = 0; i < game.roundCards.length; ++i) {
                     let eat = discardFromPlayedCards(game, i, c => c.side === "Cat");
                     if (eat && grow) {
@@ -360,7 +360,7 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
                 }
             }
             if (target === "Dino") {
-                AddGameMessage(game.name, "" + player + " eats dinos!");
+                AddGameMessage(game.name, "" + game.players[player].name + " eats dinos!");
                 for (let i = 0; i < game.roundCards.length; ++i) {
                     let eat = discardFromPlayedCards(game, i, c => c.side === "Dino");
                     if (eat && grow) {
@@ -369,7 +369,7 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
                 }
             }
             if (target === "smaller") {
-                AddGameMessage(game.name, "" + player + " eats weaker!");
+                AddGameMessage(game.name, "" + game.players[player].name + " eats weaker!");
                 for (let i = 0; i < game.roundCards.length; ++i) {
                     let eat = discardFromPlayedCards(game, i, c => c.power < power);
                     if (eat && grow) {
@@ -378,7 +378,7 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
                 }
             }
             if (target === "bigger") {
-                AddGameMessage(game.name, "" + player + " eats stronger!");
+                AddGameMessage(game.name, "" + game.players[player].name + " eats stronger!");
                 for (let i = 0; i < game.roundCards.length; ++i) {
                     let eat = discardFromPlayedCards(game, i, c => c.power > power);
                     if (eat && grow) {
@@ -406,13 +406,13 @@ export const playCardInGame: (game: Game, card: Card, player: PlayerID) => boole
         const cards = getPlayedColors(game.roundCards);
         const cardsInHand = getPlayedColors(game.players[activeP].hand);
         if (cards.Cat > 1 && cardsInHand.Dino === 0) {
-            game.players[activeP].hand.push(getBadCard("Dino"));
+            game.players[activeP].hand.push(getBadCard("Dino", getNewCardId(game)));
         }
         if (cards.Dino > 1 && cardsInHand.Cat === 0) {
-            game.players[activeP].hand.push(getBadCard("Cat"));
+            game.players[activeP].hand.push(getBadCard("Cat", getNewCardId(game)));
         }
         if (game.players[activeP].hand.length === 0) {
-            game.players[activeP].hand.push(getBadCard(Math.random() > 0.5 ? "Cat" : "Dino"));
+            game.players[activeP].hand.push(getBadCard(Math.random() > 0.5 ? "Cat" : "Dino", getNewCardId(game)));
         }
     }
     return true;
@@ -431,4 +431,21 @@ export function shuffle(array: Array<any>) {
             array[randomIndex], array[currentIndex]];
     }
     return array;
+}
+
+export function getNewCardId(game: Game): number {
+    return Math.max(
+        maxIdInCards(game.roundCards),
+        maxIdInCards(game.shop.offers),
+        maxIdInCards(game.players.p2.discard),
+        maxIdInCards(game.players.p2.hand),
+        maxIdInCards(game.players.p2.deck),
+        maxIdInCards(game.players.p1.discard),
+        maxIdInCards(game.players.p1.hand),
+        maxIdInCards(game.players.p1.deck),
+    )
+}
+
+export function maxIdInCards(cs: (Card | undefined)[]): number {
+    return Math.max(...cs.map(value => value?.id ?? 0));
 }

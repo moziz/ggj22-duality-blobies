@@ -6,7 +6,7 @@ import {PlayerID} from "/imports/data/player";
 import {Card} from "/imports/data/card-data";
 import {PlayedCards} from "/imports/ui/PlayedCards";
 import {Shop} from "/imports/ui/Shop";
-import {getPlayersPower, getShopTurn} from "/imports/control/game-logic";
+import {getPlayersPower} from "/imports/control/game-logic";
 import {Chat} from "/imports/ui/Chat";
 import {Deck} from "/imports/ui/Deck";
 import {useAudio, useMultiAudio} from "/imports/ui/useAudio";
@@ -104,7 +104,7 @@ export const GameComponent: React.FC<GameProps> = (
     const gameEnded = (scores.p2 >= game.roundsToWin || scores.p1 >= game.roundsToWin)
     const gameEndedElement = gameEnded ?
         <div className={"col-4 d-flex flex-column justify-content-center align-items-center"}>
-            <h1 className={"text-center pulse"}>Winner is {scores.p2 >= game.roundsToWin ? "P2" : "p1"}</h1>
+            <h1 className={"text-center pulse"}>Winner is {scores.p2 >= game.roundsToWin ? game.players.p2.name : game.players.p1.name}</h1>
         </div> : undefined;
     const gameSetupElement = (!gameStarted ? <GameSetupComponent startGame={startGame}/> : null);
 
@@ -115,8 +115,7 @@ export const GameComponent: React.FC<GameProps> = (
             {gameSetupElement}
             <div className={"row"}>
                 {gameStarted ?
-                    <PlayedCards playedCards={game.roundCards}
-                                 startPlayer={game.roundStarter}
+                    <PlayedCards game={game}
                                  p1Power={powers.p1}
                                  p2Power={powers.p2}/>
                     : null
@@ -126,9 +125,7 @@ export const GameComponent: React.FC<GameProps> = (
             <div className={"mb-4 row"}>
                 {gameStarted ?
                     <Shop
-                        offers={game.shop.offers}
-                        turn={getShopTurn(game)}
-                        active={game.shop.active}
+                        game={game}
                         onPurchase={purchaseCardWithSound}
                         clientPlayer={clientPlayer}
                     /> : null
@@ -146,7 +143,7 @@ export const GameComponent: React.FC<GameProps> = (
                 boxShadow: "inset 0 0 0 1000px rgba(255,255,255,.5)",
             }}>
                 <div className={"col-4 d-flex flex-column p-0"}>
-                    <h2 className={"text-center"}>Player 1</h2>
+                    <h2 className={"text-center"}>{game.players.p1.name}</h2>
                     {game.players["p1"].score ?
                         <h5 className={"text-center"}>Score {game.players["p1"].score} / {game.roundsToWin}</h5> : null}
                     <HandComponent cards={game.players["p1"].hand}
@@ -160,7 +157,7 @@ export const GameComponent: React.FC<GameProps> = (
                 </div>
                 {playArea}
                 <div className={"col-4 d-flex flex-column p-0"}>
-                    <h2 className={"text-center"}>Player 2</h2>
+                    <h2 className={"text-center"}>{game.players.p2.name}</h2>
                     {game.players["p2"].score ?
                         <h5 className={"text-center"}>Score {game.players["p2"].score} / {game.roundsToWin}</h5> : null}
                     <HandComponent cards={game.players["p2"].hand}

@@ -6,7 +6,7 @@ import {Game, GameCollection, GameOptions} from "/imports/data/game";
 import {Meteor} from "meteor/meteor";
 import {GameComponent} from "/imports/ui/GameComponent";
 import {drawPhase, handlePurchase, playCardInGame, startNewGame} from "/imports/control/game-logic";
-import {Card, startDeckSplitCat, startDeckSplitDino} from "/imports/data/card-data";
+import {Card, startDeck, startDeckSplitCat, startDeckSplitDino} from "/imports/data/card-data";
 import {PlayerID} from "/imports/data/player";
 import {cloneDeep} from "lodash";
 import {Button, ButtonGroup} from "react-bootstrap";
@@ -29,12 +29,9 @@ const useGame = (gameId: string = "") => useTracker(() => {
 }, [gameId])
 
 export const GameView: React.FC = () => {
-
     let {gameId} = useParams();
     const {isLoading, gameObject} = useGame(gameId);
-
     const [clientPlayer, setClientPlayer] = React.useState<PlayerID | undefined>(undefined);
-
     const setGame = React.useCallback((game: Game) => {
         if (gameId)
             Meteor.call("upsertGame", gameId, game)
@@ -50,6 +47,9 @@ export const GameView: React.FC = () => {
     const startGame = React.useCallback((gameOptions: GameOptions, tmpGame: Game) => {
         const game = cloneDeep(tmpGame);
         if (gameOptions.alternativeDeck) {
+            game.players.p1.discard = cloneDeep(startDeck(10));
+            game.players.p2.discard = cloneDeep(startDeck(30));
+        } else {
             game.players.p1.discard = cloneDeep(startDeckSplitDino);
             game.players.p2.discard = cloneDeep(startDeckSplitCat);
         }
@@ -77,10 +77,10 @@ export const GameView: React.FC = () => {
                             <p className={"mb-0"}><b>Select side:</b></p>
                             <ButtonGroup className={"mb-2"}>
                                 <Button onClick={() => setClientPlayer("p1")}>
-                                    Player 1
+                                    {gameObject.players.p1.name}
                                 </Button>
                                 <Button onClick={() => setClientPlayer("p2")}>
-                                    Player 2
+                                    {gameObject.players.p2.name}
                                 </Button>
                             </ButtonGroup>
                         </>
@@ -94,7 +94,7 @@ export const GameView: React.FC = () => {
                     <div className={"row d-flex justify-content-between"}>
                         <p className={"text-center mb-0"}>
                             <small>
-                                v1.1.2
+                                v1.1.5
                             </small>
                         </p>
                         <a href={"https://globalgamejam.org/2022/games/cattosaurus-4"} className={"text-center"}>

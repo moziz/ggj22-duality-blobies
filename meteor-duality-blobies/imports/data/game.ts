@@ -23,10 +23,7 @@ export interface Game {
     roundStarter: PlayerID,
     roundEffects: RoundEffect[],
     roundCards: (Card | undefined)[],
-    players: {
-        "p1": GamePlayerData,
-        "p2": GamePlayerData,
-    },
+    players: Record<PlayerID, GamePlayerData>,
     message: string,
     latestWinner: PlayerID,
     version: number,

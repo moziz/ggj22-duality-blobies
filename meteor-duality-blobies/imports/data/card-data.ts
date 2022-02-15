@@ -25,6 +25,7 @@ export interface ComboEffectCardFactoryData extends ComboEffect {
 }
 
 export interface Card {
+    id: number;
     name: string;
     power: number;
     side: Side;
@@ -32,7 +33,7 @@ export interface Card {
     visuals: number;
 }
 
-export const getBadCard: (side: Side) => Card = (side) => {
+export const getBadCard: (side: Side, id: number) => Card = (side, id) => {
     const effect: ComboEffect = {
         effectType: "None",
         text: "For the balance",
@@ -41,6 +42,7 @@ export const getBadCard: (side: Side) => Card = (side) => {
     };
 
     return {
+        id,
         name: "Bad " + side,
         side,
         power: 0,
@@ -56,6 +58,7 @@ export const getErrorCard: (props?: Partial<Card>) => Card = (props = {}) => {
         trigger: "None",
     };
     const errorCard: Card = {
+        id: -1,
         name: "ERROR CAT",
         side: "Cat",
         power: -99,
@@ -65,45 +68,41 @@ export const getErrorCard: (props?: Partial<Card>) => Card = (props = {}) => {
     return {...errorCard, ...props}
 }
 
-export const startDeck: Card[] = [
-    {name: "Dino", power: 1, side: "Dino", effects: [], visuals: 1},
-    {name: "Dino", power: 2, side: "Dino", effects: [], visuals: 2},
-    {name: "Dino", power: 3, side: "Dino", effects: [], visuals: 3},
-    {name: "Dino", power: 2, side: "Dino", effects: [], visuals: 4},
-    {name: "Dino", power: 1, side: "Dino", effects: [], visuals: 5},
+export const startDeck: (idBase: number) => Card[] = (idBase) => [
+    {id: idBase + 1, name: "Dino", power: 1, side: "Dino", effects: [], visuals: 1},
+    {id: idBase + 2, name: "Dino", power: 2, side: "Dino", effects: [], visuals: 2},
+    {id: idBase + 3, name: "Dino", power: 3, side: "Dino", effects: [], visuals: 3},
+    {id: idBase + 4, name: "Dino", power: 2, side: "Dino", effects: [], visuals: 4},
+    {id: idBase + 5, name: "Dino", power: 1, side: "Dino", effects: [], visuals: 5},
 
-    {name: "Cat", power: 1, side: "Cat", effects: [], visuals: 1},
-    {name: "Cat", power: 2, side: "Cat", effects: [], visuals: 2},
-    {name: "Cat", power: 3, side: "Cat", effects: [], visuals: 3},
-    {name: "Cat", power: 2, side: "Cat", effects: [], visuals: 4},
-    {name: "Cat", power: 1, side: "Cat", effects: [], visuals: 5},
+    {id: idBase + 11, name: "Cat", power: 1, side: "Cat", effects: [], visuals: 1},
+    {id: idBase + 12, name: "Cat", power: 2, side: "Cat", effects: [], visuals: 2},
+    {id: idBase + 13, name: "Cat", power: 3, side: "Cat", effects: [], visuals: 3},
+    {id: idBase + 14, name: "Cat", power: 2, side: "Cat", effects: [], visuals: 4},
+    {id: idBase + 15, name: "Cat", power: 1, side: "Cat", effects: [], visuals: 5},
 ]
 
 export const startDeckSplitDino: Card[] = [
-    {name: "Dino", power: 1, side: "Dino", effects: [], visuals: 1},
-    {name: "Dino", power: 2, side: "Dino", effects: [], visuals: 2},
-    {name: "Dino", power: 3, side: "Dino", effects: [], visuals: 3},
-    {name: "Dino", power: 2, side: "Dino", effects: [], visuals: 4},
-    {name: "Dino", power: 1, side: "Dino", effects: [], visuals: 5},
-    {name: "Dino", power: 3, side: "Dino", effects: [], visuals: 3},
-    {name: "Dino", power: 2, side: "Dino", effects: [], visuals: 4},
-    {name: "Dino", power: 1, side: "Dino", effects: [], visuals: 5},
+    {id: 1, name: "Dino", power: 1, side: "Dino", effects: [], visuals: 1},
+    {id: 2, name: "Dino", power: 2, side: "Dino", effects: [], visuals: 2},
+    {id: 3, name: "Dino", power: 3, side: "Dino", effects: [], visuals: 3},
+    {id: 4, name: "Dino", power: 1, side: "Dino", effects: [], visuals: 4},
+    {id: 5, name: "Dino", power: 2, side: "Dino", effects: [], visuals: 5},
+    {id: 6, name: "Dino", power: 3, side: "Dino", effects: [], visuals: 6},
 ]
 
 export const startDeckSplitCat: Card[] = [
-    {name: "Cat", power: 1, side: "Cat", effects: [], visuals: 1},
-    {name: "Cat", power: 2, side: "Cat", effects: [], visuals: 2},
-    {name: "Cat", power: 3, side: "Cat", effects: [], visuals: 3},
-    {name: "Cat", power: 2, side: "Cat", effects: [], visuals: 4},
-    {name: "Cat", power: 1, side: "Cat", effects: [], visuals: 5},
-    {name: "Cat", power: 3, side: "Cat", effects: [], visuals: 3},
-    {name: "Cat", power: 2, side: "Cat", effects: [], visuals: 4},
-    {name: "Cat", power: 1, side: "Cat", effects: [], visuals: 5},
+    {id: 11, name: "Cat", power: 1, side: "Cat", effects: [], visuals: 1},
+    {id: 12, name: "Cat", power: 2, side: "Cat", effects: [], visuals: 2},
+    {id: 13, name: "Cat", power: 3, side: "Cat", effects: [], visuals: 3},
+    {id: 14, name: "Cat", power: 1, side: "Cat", effects: [], visuals: 4},
+    {id: 15, name: "Cat", power: 2, side: "Cat", effects: [], visuals: 5},
+    {id: 16, name: "Cat", power: 3, side: "Cat", effects: [], visuals: 6},
 ]
 
 const triggerHelpText: Record<EffectTriggerPhase, string> = {
     Discard: "When the card is discarded",
-    Play:"When the card is played",
+    Play: "When the card is played",
     StartOfDrawPhase: "At the start of round",
     None: "Never",
     PlayFirst: "If played as first card of the round",
@@ -111,34 +110,34 @@ const triggerHelpText: Record<EffectTriggerPhase, string> = {
 }
 
 const roundEffectHelpText: Record<RoundEffectName, string> = {
-    None: "Nothing hapens",
-    Mute: "Disable cards' special effects"
+    None: "Nothing happens",
+    Mute: "Disable cards' special effects",
 }
 
-const effectTypeHelpText: Record<EffectType, (effect:ComboEffect)=>string> = {
+const effectTypeHelpText: Record<EffectType, (effect: ComboEffect) => string> = {
     None: () => "Does nothing",
     Draw: () => "Draw new cards to hand",
     AddRoundEffect: (effect => "Add " + effect.effectArgs["effectName"] + ":" + roundEffectHelpText[effect.effectArgs["effectName"] as RoundEffectName]),
     Destroy: () => "Destroy: remove cards from the game",
     Eat: () => "Eat: discards some cards, +1 power each",
-    Grow: ()=> "Change card's power",
+    Grow: () => "Change card's power",
     Swap: () => "Change positions of played cards",
 }
 
-export const getEffectHelp = (effect:ComboEffect) => {
+export const getEffectHelp = (effect: ComboEffect) => {
     return triggerHelpText[effect.trigger] + ": " + effectTypeHelpText[effect.effectType](effect);
 }
 
 export const effects: ComboEffectCardFactoryData[] = [
-    {cardName: "Draw 3", text: "Play: Draw 3", trigger: "Play", effectType: "Draw", effectArgs: {"amount": 3}},
+    {cardName: "Draw 2", text: "Play: Draw 2", trigger: "Play", effectType: "Draw", effectArgs: {"amount": 2}},
     {
         cardName: "Draw 4",
         text: "Play: Draw 4",
         trigger: "Play",
         effectType: "Draw",
         effectArgs: {"amount": 4},
-        minPower: 1,
-        maxPower: 2,
+        minPower: 0,
+        maxPower: 0,
     },
     {cardName: "Swap C", text: "Play: Swap Cats", trigger: "Play", effectType: "Swap", effectArgs: {"target": "Cat"}},
     {cardName: "Swap D", text: "Play: Swap Dinos", trigger: "Play", effectType: "Swap", effectArgs: {"target": "Dino"}},
@@ -224,7 +223,7 @@ const randomPower = (min: number, max: number) => {
     return Math.floor(min + r);
 }
 
-const getRandomCard: (excludeEffectType: string[], excludeVisuals: number[]) => Card = (excludeEffectType, excludeVisuals) => {
+const getRandomCard: (excludeEffectType: string[], excludeVisuals: number[], id: number) => Card = (excludeEffectType, excludeVisuals, id) => {
     const side: Side = Math.random() > 0.5 ? "Dino" : "Cat";
     let effect: ComboEffectCardFactoryData;
     let counter = 0;
@@ -241,6 +240,7 @@ const getRandomCard: (excludeEffectType: string[], excludeVisuals: number[]) => 
     delete effect.maxPower;
     delete effect.minPower;
     return {
+        id,
         name: effect.cardName,
         side,
         power,
@@ -249,10 +249,10 @@ const getRandomCard: (excludeEffectType: string[], excludeVisuals: number[]) => 
     }
 }
 
-export const getShopPool = (amount: number) => {
+export const getShopPool = (amount: number, baseId: number) => {
     const deck: Card[] = []
     for (let i = 0; i < amount; ++i) {
-        deck.push(getRandomCard(deck.map(c => c.effects[0].effectType), deck.map(c => c.visuals)));
+        deck.push(getRandomCard(deck.map(c => c.effects[0].effectType), deck.map(c => c.visuals), baseId + i));
     }
     return deck;
 }

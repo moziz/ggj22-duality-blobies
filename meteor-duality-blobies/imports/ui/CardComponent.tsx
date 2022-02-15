@@ -66,27 +66,28 @@ export const CardComponent: React.FC<CardProps> = (
             }
             {card.effects.length > 0 ? card.effects.map(
                 (effect, index) => {
-                return <p key={effect.text + index} className={"m-0"} title={getEffectHelp(effect)}>{faceDown ? "" : (effect.text)}</p>
-            }) : <p/>
+                    return <p key={effect.text + index} className={"m-0"}
+                              title={getEffectHelp(effect)}>{faceDown ? "" : (effect.text)}</p>
+                }) : <p/>
             }
-                <div className={"d-flex justify-content-around"}>
-            {(playCard && !faceDown) ?
-                (
-                canPlay ? (
-                <Button
-                disabled={!canPlay}
-                onClick={() => playCard(card)}
-                size={"sm"}
-                title={"moi"}
-                >
-            {playLabel ?? "PLAY"}
-                </Button>
-                ) :
-                <p><small><i>{cannotReason}</i></small></p>
-                ) : null
-            }
-            {}
-                </div>
-                </div>
-                );
-            };
+            <div className={"d-flex justify-content-around"}>
+                {(playCard && !faceDown) ?
+                    (
+                        canPlay ? (
+                                <Button
+                                    disabled={!canPlay}
+                                    onClick={() => playCard(card)}
+                                    size={"sm"}
+                                    title={"moi"}
+                                >
+                                    {playLabel ?? "PLAY"}
+                                </Button>
+                            ) :
+                            <p><small><i>{cannotReason}</i></small></p>
+                    ) : null
+                }
+            </div>
+            <div style={{position:"relative", bottom:0, left:0, visibility:"hidden"}}>{card.id}</div>
+        </div>
+    );
+};
