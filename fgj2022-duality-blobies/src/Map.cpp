@@ -6,6 +6,8 @@
 #include <assert.h>
 #include <SFML/Graphics.hpp>
 #include <SFML/System/Clock.hpp>
+#include "Gamepad.h"
+#include "GamepadMgr.h"
 
 #ifdef TARGET_OS_MAC
 #include "ResourcePath.hpp"
@@ -19,6 +21,8 @@ std::string resourcePath(void)
 extern float g_deltaTime;
 
 static bool initialized = false;
+static bool useStickAim = false;
+
 static sf::Texture* texture = nullptr;
 static sf::Shader* mapVisShader = nullptr;
 extern sf::Clock timeFromStart;
@@ -44,6 +48,8 @@ Map::Map()
 			getResourcePath("assets/shader/2d.glsl"),
 			sf::Shader::Type::Fragment
 		);
+
+		GamepadMgr::Instance().Initialize();
 	}
 }
 
@@ -163,13 +169,6 @@ void Map::draw()
 		g_window->setMouseCursorVisible(false);
 	}
 
-	bool playerBeingDamaged = false;
-	const float healthDamageDuration = 2.0f;
-	const float shieldDamageDuration = 0.5f;
-	const float shieldRecoveryDuration = 2.0f;
-	const float healthRegenDuration = 10.0f;
-	const float pi = 3.14159f;
-
 	float xInput = 0, yInput = 0, zInput = 0;
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A))
 		++xInput;
@@ -179,6 +178,103 @@ void Map::draw()
 		++yInput;
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || sf::Keyboard::isKeyPressed(sf::Keyboard::S))
 		--yInput;
+
+	static bool useJoystick = false;
+	if (xInput != 0 || yInput != 0)
+		useJoystick = false;
+
+	typedef Gamepad::GAMEPAD_AXIS Axis;
+	typedef Gamepad::GAMEPAD_TRIGGER Trigger;
+
+	auto setStick = [](float& x, float& y, Axis ax, Axis ay, bool negate) {
+		const float maxValue = 100;
+		const float deadZone = maxValue * 0.5f;
+		float rawValX = GamepadMgr::GetGamepad().getAxisPosition(ax);
+		float rawValY = GamepadMgr::GetGamepad().getAxisPosition(ay);
+		float rawLen = sqrtf(rawValX * rawValX + rawValY * rawValY);
+		if (!useJoystick && (rawLen > deadZone))
+			useJoystick = true;
+
+		if (useJoystick)
+		{
+			float neg = negate ? -1.0f : 1.0f;
+			if (rawLen < deadZone)
+				rawValX = rawValY = 0;
+
+			x = rawValX / maxValue * neg;
+			y = rawValY / maxValue * neg;
+		}
+	};
+
+	auto setTriggerAsButton = [](bool& input, Trigger axis) {
+		const float maxValue = 100;
+		float rawVal = GamepadMgr::GetGamepad().getTriggerValue(axis);
+		if (!useJoystick && fabsf(rawVal) > maxValue * 0.5f)
+			useJoystick = true;
+
+		if (useJoystick)
+		{
+			const float deadZone = maxValue * 0.01f;
+			float neg = rawVal < 0 ? -1.0f : 1.0f;
+			input = rawVal / maxValue > 0.01f;
+		}
+	};
+
+	bool grenadeInput = false;
+	bool laserInput = false;
+	sf::Vector2f aimStick;
+
+	//for (int i = 0; i < 16; ++i)
+	//	printf("%f, ", sf::Joystick::getAxisPosition(i, sf::Joystick::Axis::X));
+
+	if (GamepadMgr::HasGamepad())
+	{
+		setStick(xInput, yInput, Gamepad::leftStick_X, Gamepad::leftStick_Y, true);
+		setStick(aimStick.x, aimStick.y, Gamepad::rightStick_X, Gamepad::rightStick_Y, false);
+		setTriggerAsButton(laserInput, Gamepad::rightTrigger);
+		setTriggerAsButton(grenadeInput, Gamepad::leftTrigger);
+	}
+	else
+	{
+		GamepadMgr::Instance().Initialize();
+	}
+
+	if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+	{
+		useStickAim = false;
+		grenadeInput = true;
+	}
+
+	if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
+	{
+		useStickAim = false;
+		laserInput = true;
+	}
+
+	if (length(aimStick) > 0)
+		useStickAim = true;
+
+	for (int i = 0, end = sf::Joystick::getButtonCount(0); i < end; ++i)
+	{
+		if (sf::Joystick::isButtonPressed(0, i))
+		{
+			if (i % 2)
+				laserInput = true;
+			else
+				grenadeInput = true;
+		}
+	}
+
+	if (useStickAim)
+	{
+		aimPos = aimStick * 0.15f + playerPos;
+	}
+
+	const float laserScopeMin = 0.95f;
+	if (useStickAim && length(aimStick) > 0.7f && laserClock.getElapsedTime() / sf::seconds(currentlaserCooldownCurrent) > 2.0f)
+		laserScope = fminf(1.0f, fmaxf(laserScopeMin, laserScope + (laserScopeMin - laserScope) * 0.01f));
+	else
+		laserScope = fminf(1.0f, fmaxf(laserScopeMin, laserScope + (1.001f - laserScope) * 0.01f));
 
 	static bool screenShake = false;
 
@@ -239,6 +335,12 @@ void Map::draw()
 	float spawnDelay = 1.01f - fmaxf(0.0f, fminf(1.0f, score / 10000.0f));
 
 	const float enemyDamageRadius = 0.1f;
+	const float healthDamageDuration = 2.0f;
+	const float shieldDamageDuration = 0.5f;
+	const float shieldRecoveryDuration = 2.0f;
+	const float healthRegenDuration = 10.0f;
+	const float pi = 3.14159f;
+
 	if (enemySpawnCounter.getElapsedTime().asSeconds() > spawnDelay && enemyPoss.size() < 40)
 	{
 		enemySpawnCounter.restart();
@@ -249,6 +351,7 @@ void Map::draw()
 		enemyBlobs.push_back(enemyPoss.back() + sf::Vector2f(rx, ry) * 0.1f);
 	}
 
+	bool playerBeingDamaged = false;
 	float enemySpeed = 1.0f + score / 10000.0f;
 
 	for (int i = 0; i < enemyPoss.size(); ++i)
@@ -302,19 +405,22 @@ void Map::draw()
 		playerShield = fminf(1.0f, playerShield + g_deltaTime / shieldRecoveryDuration);
 	}
 
-	const float lazerCooldown = 0.5f;
-	const float lazerMissedCooldown = 2.0f;
-	const float lazerDuration = 0.51f;
-	const float lazerLength = 0.3f;
-	const float lazerWidth = 0.02f;
+	const float laserCooldown = 0.5f;
+	const float laserMissedCooldown = 2.0f;
+	const float laserDuration = 0.51f;
+	const float laserLength = 0.3f;
+	const float laserWidthWithMouse = 0.02f;
+	const float laserWidthWithStick = 0.03f;
+	const float laserWidth = useStickAim ? laserWidthWithStick : laserWidthWithMouse;
 
 	{
 		static bool wasPressed = false;
-		if (!sf::Mouse::isButtonPressed(sf::Mouse::Left))
+		const bool pressed = sf::Mouse::isButtonPressed(sf::Mouse::Left) || grenadeInput;
+		if (!pressed)
 		{
 			wasPressed = false;
 		}
-		else if (g_window->hasFocus() && !wasPressed && sf::Mouse::isButtonPressed(sf::Mouse::Left))
+		else if (g_window->hasFocus() && !wasPressed && pressed)
 		{
 			const float grenadeFlightSpeed = 0.01f;
 
@@ -326,29 +432,31 @@ void Map::draw()
 		}
 	}
 
-	if (lazerClock.getElapsedTime().asSeconds() > currentLazerCooldownCurrent)
+	if (laserClock.getElapsedTime().asSeconds() > currentlaserCooldownCurrent)
 	{
 		static bool wasPressed = false;
-		if (!sf::Mouse::isButtonPressed(sf::Mouse::Right))
+		const bool pressed = laserInput;
+		if (!pressed)
 		{
 			wasPressed = false;
 		}
-		else if (g_window->hasFocus() && !wasPressed && sf::Mouse::isButtonPressed(sf::Mouse::Right))
+		else if (g_window->hasFocus() && !wasPressed && pressed)
 		{
 			wasPressed = true;
 
-			lazerClock.restart();
+			laserClock.restart();
 
-			sf::Vector2f lazerDirection = playerPos - aimPos;
-			lazerStart = playerPos;
-			lazerEnd = playerPos + lazerDirection / length(lazerDirection) * lazerLength;
+			sf::Vector2f laserDirection = playerPos - aimPos;
+			laserStart = playerPos;
+			laserEnd = playerPos + laserDirection / length(laserDirection) * laserLength;
+			laserScope = 1.0f;
 
 			int hitCount = 0;
 
 			for (int i = 0; i < enemyPoss.size(); i++)
 			{
-				float dist = distanceFromLine(lazerStart, lazerEnd, enemyPoss[i]);
-				if (dist < lazerWidth)
+				float dist = distanceFromLine(laserStart, laserEnd, enemyPoss[i]);
+				if (dist < laserWidth)
 				{
 					enemyDeath.push_back(enemyBlobs[i]);
 					enemyDeathClock.emplace_back();
@@ -367,13 +475,13 @@ void Map::draw()
 			if (hitCount == 0)
 			{
 				combo = 0;
-				currentLazerCooldownCurrent = lazerMissedCooldown;
+				currentlaserCooldownCurrent = laserMissedCooldown;
 			}
 			else
 			{
 				score += combo * hitCount;
 				combo += hitCount;
-				currentLazerCooldownCurrent = lazerCooldown;
+				currentlaserCooldownCurrent = laserCooldown;
 			}
 		}
 	}
@@ -430,21 +538,37 @@ void Map::draw()
 	}
 
 	mapVisShader->setUniform("playerPos", playerPos);
-	mapVisShader->setUniform("aimDirection", aimPos);
+	if (!useStickAim)
+	{
+		mapVisShader->setUniform("aimDirection", aimPos);
+		mapVisShader->setUniform("cameraPos", (playerPos + aimPos) / 2.0f);
+	}
+	else
+	{
+		mapVisShader->setUniform("aimDirection", aimPos);
+		mapVisShader->setUniform("cameraPos", playerPos);
+	}
 
 	mapVisShader->setUniform("playerHealth", playerHealth);
 	mapVisShader->setUniform("playerShield", playerShield);
 	mapVisShader->setUniform("playerBeingDamaged", playerBeingDamaged);
 
-	float lazerProgress = lazerClock.getElapsedTime() / sf::seconds(lazerDuration);
-	float lazerCooldownProgress = lazerClock.getElapsedTime() / sf::seconds(currentLazerCooldownCurrent);
-	if (lazerProgress >= 0.0 && lazerProgress <= 1.0)
+	float laserProgress = laserClock.getElapsedTime() / sf::seconds(laserDuration);
+	if (laserScope < 1.0f)
 	{
-		mapVisShader->setUniform("lazer_start", lazerStart);
-		mapVisShader->setUniform("lazer_end", lazerEnd);
-		mapVisShader->setUniform("lazer_progress", lazerProgress);
+		laserProgress = laserScope;
+		laserStart = playerPos;
+		laserEnd = aimPos;
 	}
-	mapVisShader->setUniform("lazer_cooldown", lazerCooldownProgress);
+
+	float laserCooldownProgress = laserClock.getElapsedTime() / sf::seconds(currentlaserCooldownCurrent);
+	if (laserProgress >= 0.0 && laserProgress <= 1.0)
+	{
+		mapVisShader->setUniform("laser_start", laserStart);
+		mapVisShader->setUniform("laser_end", laserEnd);
+		mapVisShader->setUniform("laser_progress", laserProgress);
+	}
+	mapVisShader->setUniform("laser_cooldown", laserCooldownProgress);
 
 	if (grenadePoss.size() > 0)
 	{
@@ -483,15 +607,15 @@ void Map::draw()
 	static float scoreBlend = 0.0f;
 	static float comboBlend = 0.0f;
 
-	auto lerp = [](float a, float b)
+	auto scoreLerp = [](float a, float b)
 	{
 		float r = a + (b - a) * (1.0f * g_deltaTime);
 		r = fmaxf(fminf(a, b), fminf(r, fmaxf(a, b)));
 		return r;
 	};
 
-	scoreBlend = lerp(scoreBlend, float(score));
-	comboBlend = lerp(comboBlend, float(combo));
+	scoreBlend = scoreLerp(scoreBlend, float(score));
+	comboBlend = scoreLerp(comboBlend, float(combo));
 
 	mapVisShader->setUniform("score", scoreBlend);
 	mapVisShader->setUniform("combo", comboBlend);
@@ -514,7 +638,7 @@ void Map::draw()
 				return v / fmaxf(0.0001f, length(v));
 			};
 
-			p += normalize(lazerEnd - lazerStart) * smoothstep(0.3f, 0.0f, lazerClock.getElapsedTime().asSeconds()) * 0.006f;
+			p += normalize(laserEnd - laserStart) * smoothstep(0.3f, 0.0f, laserClock.getElapsedTime().asSeconds()) * 0.006f;
 
 
 			for (int i = 0; i < grenadePoss.size(); ++i)

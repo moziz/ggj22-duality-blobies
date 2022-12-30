@@ -12,6 +12,11 @@ add_compile_definitions(
 
 add_executable(ggj22 ${GGJ22_SOURCES})
 
+if(MSVC)
+  target_compile_options(ggj22 PUBLIC "/ZI")
+  target_link_options(ggj22 PUBLIC "/INCREMENTAL")
+endif()
+
 if (WIN32)
 	target_include_directories(ggj22 PRIVATE "external/include/")
 

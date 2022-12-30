@@ -11,10 +11,11 @@ uniform float playerShield;
 uniform bool playerBeingDamaged;
 
 uniform vec2 aimDirection;
-uniform vec2 lazer_start;
-uniform vec2 lazer_end;
-uniform float lazer_progress;
-uniform float lazer_cooldown;
+uniform vec2 cameraPos;
+uniform vec2 laser_start;
+uniform vec2 laser_end;
+uniform float laser_progress;
+uniform float laser_cooldown;
 
 
 //const int enemy_max = 2;
@@ -164,7 +165,7 @@ vec4 drawPlayer(vec2 pos)
 	float radius = 0.03;
 	float dist = length(pos - obj);
 	float height = smoothstep(0.0, 0.3, 1 - dist / radius);
-	vec3 color = vec3(0.9,2.0,0) * smoothstep(0.3, 1.0, lazer_cooldown) + vec3(0,0,1.2);
+	vec3 color = vec3(0.9,2.0,0) * smoothstep(0.3, 1.0, laser_cooldown) + vec3(0,0,1.2);
 	if (playerBeingDamaged)
 	{
 		color = vec3(0, 0.8, 3);
@@ -182,12 +183,12 @@ vec4 drawAim(vec2 pos)
 	return vec4(0.8,0.8,0.1,height);
 }
 
-vec4 drawLazer(vec2 pos)
+vec4 drawlaser(vec2 pos)
 {
-	vec2 a = lazer_start;
-	vec2 d = lazer_end - lazer_start;
+	vec2 a = laser_start;
+	vec2 d = laser_end - laser_start;
 	float t = ((pos.x - a.x) * d.x + (pos.y - a.y) * d.y) / (d.x * d.x + d.y * d.y);
-	float radius = 0.02 * s(1.0, 0.0, lazer_progress);
+	float radius = 0.02 * s(1.0, 0.0, laser_progress);
 	float dist = length((a + d * t) - pos);
 	float height = smoothstep(0.0, 0.8, 1 - dist / radius) * 1.2;
 	return vec4(1,2,3,height);
@@ -248,11 +249,11 @@ vec4 scene(vec2 pos)
 		world = vec4(aimWeight.xyz * blend + world.xyz * (1-blend), aimWeight.w);
 	}
 
-	vec4 lazerWeight = drawLazer(pos);
-	if (lazerWeight.w > world.w)
+	vec4 laserWeight = drawlaser(pos);
+	if (laserWeight.w > world.w)
 	{
-		float blend = smoothstep(world.w, world.w + 0.1, lazerWeight.w);
-		world = vec4(lazerWeight.xyz * blend + world.xyz * (1-blend), lazerWeight.w);
+		float blend = smoothstep(world.w, world.w + 0.1, laserWeight.w);
+		world = vec4(laserWeight.xyz * blend + world.xyz * (1-blend), laserWeight.w);
 	}
 
 	vec4 grenadeWeight = drawGrenades(pos);
@@ -413,7 +414,7 @@ vec3 intersect( in vec3 ro, in vec3 rd )
  { 
 	pixel_size = 1.0f / 2000.0f;
 	 
-	vec3 pos = vec3(0.,2.5f,-0.02f) + (playerPos.xyy + aimDirection.xyy * 0.5 - vec3(0.75)) * 0.075;
+	vec3 pos = vec3(0.,2.5f,-0.02f) + (cameraPos.xyy - vec3(0.75)) * 0.075;
 	vec3 forward = vec3(0.,-1.0 - smoothstep(0, 20, float(combo)),.02);
 	vec3 right = normalize(cross(vec3(0,1,0), forward));
 	vec3 up = normalize(cross(right, forward));

@@ -15,10 +15,11 @@ struct Map
 	std::vector<sf::Vector2f> splosionPoss;
 	std::vector<sf::Clock> splosionClocks;
 
-	sf::Vector2f lazerStart;
-	sf::Vector2f lazerEnd;
-	sf::Clock lazerClock;
-	float currentLazerCooldownCurrent = 0.5f;
+	sf::Vector2f laserStart;
+	sf::Vector2f laserEnd;
+	sf::Clock laserClock;
+	float laserScope = 1.0f;
+	float currentlaserCooldownCurrent = 0.5f;
 
 	std::vector<sf::Vector2f> enemyDeath;
 	std::vector<sf::Clock> enemyDeathClock;
